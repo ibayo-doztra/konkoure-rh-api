@@ -1,0 +1,10 @@
+{
+  "name": "@swc/core",
+  "version": "1.16.22-wasm-shim",
+  "private": true,
+  "description": "Remplace @swc/core par @swc/wasm (le binaire natif est bloqué par Smart App Control sous Windows).",
+  "main": "index.cjs",
+  "dependencies": {
+    "@swc/wasm": "1.16.22"
+  }
+}
