@@ -1,0 +1,1 @@
+REVOKE SELECT (nfc_badge_uid, nfc_badge_active, nfc_badge_assigned_at) ON public.employees FROM authenticated;

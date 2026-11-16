@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS candidates_unique_email_per_job ON public.candidates (job_id, lower(email)) WHERE email IS NOT NULL;

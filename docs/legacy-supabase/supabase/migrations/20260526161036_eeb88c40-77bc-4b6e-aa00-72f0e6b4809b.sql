@@ -1,0 +1,1 @@
+DELETE FROM public.okrs WHERE trim(coalesce(objective,'')) = '';

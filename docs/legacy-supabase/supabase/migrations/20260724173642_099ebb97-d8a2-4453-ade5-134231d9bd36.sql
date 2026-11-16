@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.employees_guard_org_assignment() FROM PUBLIC, anon, authenticated;

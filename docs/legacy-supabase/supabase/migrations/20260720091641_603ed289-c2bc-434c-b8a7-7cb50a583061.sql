@@ -1,0 +1,2 @@
+REVOKE EXECUTE ON FUNCTION public.get_employee_sensitive(uuid) FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.update_employee_profile_details(uuid, jsonb) FROM PUBLIC, anon, authenticated;

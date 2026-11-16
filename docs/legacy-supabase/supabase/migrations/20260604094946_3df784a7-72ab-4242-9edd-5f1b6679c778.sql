@@ -1,0 +1,2 @@
+ALTER TABLE public.departments ADD COLUMN IF NOT EXISTS deleted_at timestamptz NULL;
+CREATE INDEX IF NOT EXISTS departments_org_active_idx ON public.departments (organization_id) WHERE deleted_at IS NULL;

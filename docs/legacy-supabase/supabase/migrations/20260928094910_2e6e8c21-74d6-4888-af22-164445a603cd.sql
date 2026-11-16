@@ -1,0 +1,1 @@
+REVOKE INSERT ON public.candidates FROM anon;

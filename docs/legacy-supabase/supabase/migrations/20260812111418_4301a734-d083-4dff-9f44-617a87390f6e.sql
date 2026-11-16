@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION private.is_recruitment_staff(uuid, uuid) TO authenticated, service_role;
