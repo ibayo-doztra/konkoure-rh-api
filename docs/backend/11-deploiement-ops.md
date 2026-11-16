@@ -28,6 +28,8 @@ variable manquante ou invalide échoue immédiatement.
 ### Redis
 `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_TLS`,
 `REDIS_DB_CACHE` (0), `REDIS_DB_QUEUE` (1), `REDIS_DB_LIMITER` (2).
+`LIMITER_STORE` : `redis` partout, `memory` uniquement pour les tests
+(`.env.test`). En local : `docker compose up -d redis`.
 
 ### Authentification
 `ACCESS_TOKEN_TTL` (`15m`), `REFRESH_TOKEN_TTL` (`30d`),
@@ -47,7 +49,8 @@ variable manquante ou invalide échoue immédiatement.
 `UPLOAD_MAX_BYTES` (10485760).
 
 ### E-mail
-`RESEND_API_KEY`, `MAIL_FROM_ADDRESS` (`no-reply@doztra.com`),
+`MAIL_MAILER` (`resend`), `RESEND_API_KEY`,
+`MAIL_FROM_ADDRESS` (`support@konkoure.doztra.cloud`, 00-HANDOFF §4),
 `MAIL_FROM_NAME` (`Konkouré`), `SUPPORT_EMAIL`,
 `DEMO_REQUEST_RECIPIENT` (`bayo.ibrahima@doztra.com`),
 `RESEND_WEBHOOK_SECRET`.

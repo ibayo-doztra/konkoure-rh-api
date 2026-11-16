@@ -10,21 +10,22 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Le dépôt est encore le scaffold du kit API, très en deçà de la cible décrite dans `docs/backend/` :
+Phase 1 en cours : le **socle auth et `/me`** est livré (`/api/v1/auth/*` sauf invitations, `/api/v1/me`, `/me/password`, `/me/sessions`, `/me/organizations`). Reste à faire pour la cible de `docs/backend/` :
 
-| Sujet | Actuellement | Cible (docs/backend/00 §3, 01) |
+| Sujet | État | Reste à faire |
 |---|---|---|
-| Structure | `app/controllers`, `app/models`… à plat | modules verticaux `app/modules/<domaine>/{controllers,services,repositories,validators}` + `app/shared/` |
-| Couches | controller → modèle directement | Controller → Service → Repository (scopé `organization_id`) → Model |
-| Auth | tokens d'accès + session (starter) | guard `access_tokens`, refresh token, argon2, Bouncer, RBAC par organisation |
-| Routes | `start/routes.ts` unique | `start/routes/<module>.ts`, préfixes `/api/v1/{auth,me,org,platform,public,webhooks}` |
-| Absents | — | Redis, BullMQ, limiter, mail, drive, i18n, tenant/entitlement/idempotency middlewares |
+| Tables | `users`, jetons d'accès/refresh, `password_reset_tokens`, `organizations`, `user_roles`, `audit_logs` (partition DEFAULT), `platform_admins` | tout le reste de 03 §1 (invitations, RH, abonnements…), RLS et rôles SQL (0140) |
+| Tenant | — | middleware `X-Organization-Id`, `TenantRepository`, `withTenant()`, Bouncer, entitlements, idempotence |
+| `/me` | `employee`, `subscription`, `modules` renvoyés à `null`/`[]` | à remplir quand RH et facturation existeront |
+| Absents | — | BullMQ (les e-mails partent par le messager en mémoire de `@adonisjs/mail`), drive, `POST /organizations` |
 
 Ajouter une dépendance externe, changer un contrat d'endpoint existant ou écrire une migration destructive : **demander d'abord** (docs/backend/13 §8).
 
 ## Commandes
 
 Gestionnaire de paquets : **pnpm** (pas npm).
+
+Redis (limiteur) : `docker compose up -d redis` (Docker Desktop doit tourner). Les tests n'en ont pas besoin (`LIMITER_STORE=memory` dans `.env.test`). Sans `RESEND_API_KEY`, les e-mails échouent et sont seulement journalisés (`mail.dispatch_failed`).
 
 Base : **PostgreSQL** (serveur local, PostgreSQL 18 en dev) configuré via les variables `DB_*` de `.env`. Bases `konkoure` (dev) et `konkoure_test` (sélectionnée par `.env.test`). Pour migrer la base de test : `NODE_ENV=test node ace migration:run`. Tout script qui lit `.env` doit passer par le parseur d'AdonisJS (`EnvParser`) : `$` y est interpolé et les échappements sont interprétés, un parsing naïf donne de mauvaises valeurs.
 
@@ -52,13 +53,17 @@ Sur la machine de dev Windows, Smart App Control bloque le binaire natif `@swc/c
 ## Architecture du code existant
 
 - **Fichiers générés, à ne pas éditer** :
-  - `database/schema.ts` : classes `*Schema` régénérées par `migration:run` (`schemaGeneration` dans `config/database.ts`, règles de typage dans `database/schema_rules.ts`). Les modèles **étendent** ces classes, par exemple `class User extends compose(UserSchema, withAuthFinder(hash))`, au lieu de déclarer les colonnes. Après une migration, relancer `migration:run` pour mettre à jour les types.
-  - `.adonisjs/` : générés par les hooks `init` d'`adonisrc.ts` (`indexEntities`, `generateRegistry` de Tuyau). Les routes référencent les controllers via `controllers.X` importé de `#generated/controllers`, pas par import direct. `.adonisjs/client/registry` donne les types de routes au client Japa et au frontend (Tuyau).
-- **Réponses** : `providers/api_provider.ts` ajoute `ctx.serialize()`, qui enveloppe toujours dans `{ data }` et valide les métadonnées de pagination Lucid. Les controllers renvoient `serialize(XTransformer.transform(model))`. Les transformers (`app/transformers/`) choisissent explicitement les champs exposés : c'est là qu'on empêche la fuite de champs sensibles.
-- **Middleware** (`start/kernel.ts`) : `force_json_response` global, puis bodyparser/session/shield/auth (route), `silent_auth` sur toutes les routes, `middleware.auth()` nommé à appliquer par groupe.
-- **Validation** : VineJS dans `app/validators/`. `start/validator.ts` convertit globalement les dates VineJS en `DateTime` Luxon.
-- **Imports** : alias de sous-chemins `#controllers/*`, `#models/*`, `#services/*`, etc. (`package.json` → `imports`). Les nouveaux dossiers de la cible (`app/modules`, `app/shared`, `app/repositories`…) devront y être ajoutés.
-- **Tests** : `tests/bootstrap.ts` (plugins assert, api-client, auth et session api-client, assertions DB). Le serveur HTTP ne démarre que pour la suite `functional`. Le client est typé par le registry Tuyau. `.env.test` force `SESSION_DRIVER=memory`.
+  - `database/schema.ts` : classes `*Schema` régénérées par `migration:run` (ou `node ace schema:generate`). Les modèles (`app/models/`) **étendent** ces classes et ajoutent `static table`, `selfAssignPrimaryKey = true` et un hook `@beforeCreate` qui pose `newId()` (uuid v7). Les enums PostgreSQL, `citext` et `jsonb` sont typés par `database/schema_rules.ts` : y ajouter chaque nouvelle colonne de ce type, sinon elle sort en `any`.
+  - `.adonisjs/` : générés par les hooks `init` d'`adonisrc.ts`. Les controllers des modules sont importés paresseusement dans `start/routes/<module>.ts` (`() => import('#modules/…')`), pas via `#generated/controllers`.
+- **Modules** : `app/modules/<domaine>/{controllers,services,repositories,validators,transformers,mails}` (alias `#modules/*`), code transverse dans `app/shared/` (alias `#shared/*`). Les services et repositories sont des classes exportées aussi en singleton par défaut (`export default new XService()`).
+- **Erreurs** : lever `new AppException('E_…')` (`#shared/exceptions/app_exception`), le statut HTTP est fixé par le code. Pour une erreur de champ : `AppException.validation(field, rule, 'validation.<clé i18n>')`. `app/exceptions/handler.ts` rend toujours `{ error: { code, message, requestId, details } }`, traduit `errors.<code>` et les messages `validation.*`, et ne renvoie jamais de pile.
+- **Réponses** : `ctx.serialize(objet)` enveloppe dans `{ data }`, mais **pas les tableaux** (renvoyés bruts) : pour une liste, renvoyer `{ data: [...] }`. Les DTO de sortie sont des fonctions explicites (ex. `app/modules/users/transformers/me_transformer.ts`) : on ne sérialise jamais un modèle directement.
+- **Middleware** (`start/kernel.ts`) : côté serveur, `request_context` (uuid v7 en `X-Request-Id`, logger enfant), JSON forcé, langue (`Accept-Language`, fr par défaut), CORS ; côté routeur, bodyparser, shield, auth. `middleware.auth()` renvoie `E_TOKEN_EXPIRED` pour un jeton expiré et refuse les comptes inactifs. Limiteurs globaux dans `start/limiter.ts` (300/min/IP, 600/min/utilisateur) ; les budgets propres à un endpoint sont dans les services.
+- **Audit et e-mails** : `auditService.record(trx, contexte, entrée)` dans la transaction de la mutation (`audit_logs` en insertion seule) ; e-mails via `dispatchMail()` après le commit (un échec est journalisé, jamais remonté).
+- **Pas de session** : le paquet `@adonisjs/session` a été retiré ; le seul cookie est le refresh token web (`konkoure_refresh`).
+- **Validation** : VineJS dans `app/modules/*/validators/`. Messages traduits par `resources/lang/{fr,en}/validator.json` ; autres traductions : `errors.json`, `emails.json`, `validation.json`. `start/validator.ts` convertit les dates VineJS en `DateTime` Luxon.
+- **Tests** : `tests/bootstrap.ts` simule le mailer pour toute la suite. Utilitaires : `tests/helpers/auth.ts` (`createUser`, `createOrganization`, `grantRoles`, `apiLogin` qui ouvre une vraie session) et `tests/helpers/http.ts` (`expectStatus(requête, code)`, à préférer à `(await …).assertStatus()` que le lint refuse). Chaque groupe : `testUtils.db().withGlobalTransaction()` et `limiter.clear(['memory'])`.
+- **Prettier** ignore `docs/` et `*.md` : `pnpm format` ne doit jamais reformater les spécifications.
 - **Env** : toute variable est déclarée et validée dans `start/env.ts`. Pas de `process.env` ailleurs.
 
 ## Règles de la cible à appliquer à tout nouveau code
@@ -69,7 +74,7 @@ Détail dans `docs/backend/01`, `05`, `10`, `13` :
 - Autorisation uniquement dans des policies Bouncer, appelées depuis le controller avant toute mutation. Le controller ne contient ni requête Lucid ni logique métier.
 - Identifiants `uuid` v7 générés applicativement, `timestamptz` en UTC, soft delete `deleted_at` sur les entités référencées.
 - Erreurs au format `{ error: { code: 'E_…', message, requestId, details } }` (codes en docs/backend/01 §6). Pagination offset ou curseur selon le volume (§7). En-tête `Idempotency-Key` sur les mutations sensibles (§8).
-- E-mails, appels HTTP et jobs déclenchés après commit (`trx.after('commit', …)`), jamais dans la transaction.
+- E-mails, appels HTTP et jobs déclenchés après commit, jamais dans la transaction.
 - Ordre de création d'une fonctionnalité, gabarits et checklist : `docs/backend/13`. Chaque endpoint a au minimum des tests succès, refus par rôle, **isolation tenant** et validation (`docs/backend/10` §2).
 - Code et identifiants en anglais, messages utilisateur via i18n fr/en, commits conventionnels (`feat(leaves): …`).
 

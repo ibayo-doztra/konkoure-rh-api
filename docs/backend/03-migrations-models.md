@@ -12,6 +12,7 @@ Les fichiers sont horodatés dans cet ordre strict (dépendances de clés
 0010_users
 0011_auth_access_tokens
 0012_auth_refresh_tokens
+0013_password_reset_tokens
 0020_organizations
 0021_user_roles
 0022_invitations

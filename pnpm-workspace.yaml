@@ -1,3 +1,5 @@
+allowBuilds:
+  argon2: true
 # Smart App Control (Windows) bloque le binaire natif de @swc/core.
 # On le remplace par une couche d'adaptation basée sur @swc/wasm (voir tools/swc-wasm-shim).
 overrides:

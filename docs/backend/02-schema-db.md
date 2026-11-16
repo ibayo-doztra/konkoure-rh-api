@@ -68,7 +68,7 @@ CREATE TYPE leave_status        AS ENUM ('pending','approved','rejected','cancel
 CREATE TYPE job_status          AS ENUM ('draft','published','closed','archived');
 CREATE TYPE candidate_stage     AS ENUM ('new','screening','interview','offer','hired','rejected');
 CREATE TYPE candidate_event_type AS ENUM ('created','stage_changed','scored','note_added','note_deleted','document_added','email_sent');
-CREATE TYPE performance_model   AS ENUM ('classic','okr');
+CREATE TYPE performance_model   AS ENUM ('classic','sap');  -- 'sap' (CPM) par défaut, 00-HANDOFF §4
 CREATE TYPE goal_category       AS ENUM ('business','development','behavioral');
 CREATE TYPE goal_status         AS ENUM ('not_started','in_progress','achieved','late','cancelled');
 CREATE TYPE goal_activity_status AS ENUM ('planned','in_progress','done');
@@ -109,16 +109,34 @@ CREATE TYPE email_delivery_status AS ENUM ('pending','sent','failed');
 | `last_login_at` | `timestamptz NULL` | |
 | `failed_login_attempts` | `int NOT NULL DEFAULT 0` | |
 | `locked_until` | `timestamptz NULL` | |
+| `must_reset_password` | `bool NOT NULL DEFAULT false` | compte importé sans hachage utilisable (04 §7) |
 | `is_active` | `bool NOT NULL DEFAULT true` | |
 | `deleted_at` | `timestamptz NULL` | |
 
 Pas de `organization_id` : un utilisateur est global, rattaché via `user_roles`.
-Index : `UNIQUE(email) WHERE deleted_at IS NULL`.
+Index : `UNIQUE(email) WHERE deleted_at IS NULL`. Contrainte
+`preferred_language IN ('fr','en')`.
 
 ### `auth_access_tokens` (table gérée par `@adonisjs/auth`)
 `id bigserial`, `tokenable_id uuid`, `type text`, `name text`, `hash text`,
-`abilities json`, `created_at`, `updated_at`, `last_used_at`, `expires_at`.
-Index sur `(tokenable_id, type)` et `hash`.
+`abilities text` (JSON sérialisé par `@adonisjs/auth`, qui le relit avec
+`JSON.parse` : une colonne `json` casse la vérification), `created_at`,
+`updated_at`, `last_used_at`, `expires_at`.
+`name` contient le `family_id` de la session de refresh : révoquer une session
+supprime ensemble ses refresh tokens et son access token.
+Index sur `(tokenable_id, type)`, `hash` et `name`.
+
+### `password_reset_tokens`
+| Colonne | Type | Notes |
+|---|---|---|
+| `id` | uuid PK | |
+| `user_id` | uuid NOT NULL | FK users CASCADE |
+| `token_hash` | `text NOT NULL UNIQUE` | SHA-256 du jeton envoyé par e-mail |
+| `expires_at` | `timestamptz NOT NULL` | TTL `PASSWORD_RESET_TTL` (1 h) |
+| `used_at` | `timestamptz NULL` | usage unique ; une nouvelle demande invalide les précédentes |
+| `created_at` | `timestamptz NOT NULL` | |
+
+Index : `(user_id)`, `(expires_at)`. Table globale (pas d'`organization_id`).
 
 ### `auth_refresh_tokens`
 | Colonne | Type | Notes |

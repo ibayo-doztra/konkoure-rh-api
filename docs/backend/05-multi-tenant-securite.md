@@ -120,7 +120,8 @@ Toute mutation des catégories suivantes écrit dans `audit_logs` **dans la mêm
 transaction** que la mutation :
 
 - authentification : `auth.login`, `auth.login_failed`, `auth.logout`,
-  `auth.password_reset`, `security.refresh_reuse_detected`, `auth.account_locked`
+  `auth.password_reset`, `auth.password_changed`, `security.refresh_reuse_detected`,
+  `auth.account_locked`
 - rôles et accès : `role.granted`, `role.revoked`, `invitation.sent`,
   `invitation.accepted`, `platform_admin.granted`, `impersonation.started`
 - RH : `employee.created|updated|deleted`, `contract.*`, `salary.viewed`,

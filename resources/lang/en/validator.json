@@ -1,0 +1,28 @@
+{
+  "shared": {
+    "messages": {
+      "required": "The {field} field is required.",
+      "string": "The {field} field must be a string.",
+      "email": "Invalid e-mail address.",
+      "url": "The {field} field must be a valid https URL.",
+      "uuid": "The {field} field must be a valid identifier.",
+      "minLength": "The {field} field must have at least {min} characters.",
+      "maxLength": "The {field} field must have at most {max} characters.",
+      "confirmed": "The confirmation does not match.",
+      "enum": "The {field} value is not allowed.",
+      "accepted": "You must accept the terms of use.",
+      "boolean": "The {field} field must be true or false."
+    },
+    "fields": {
+      "email": "e-mail",
+      "password": "password",
+      "fullName": "full name",
+      "preferredLanguage": "language",
+      "acceptTerms": "terms",
+      "token": "link",
+      "currentPassword": "current password",
+      "avatarUrl": "photo",
+      "deviceLabel": "device"
+    }
+  }
+}

@@ -17,7 +17,8 @@ export const http = defineConfig({
    * Generate a unique request id for each incoming request.
    * Useful to correlate logs and debug a request flow.
    */
-  generateRequestId: true,
+  // Request ids are uuid v7, assigned by request_context_middleware (docs/backend/01 §4).
+  generateRequestId: false,
 
   /**
    * Allow HTTP method spoofing via the "_method" form/query parameter.

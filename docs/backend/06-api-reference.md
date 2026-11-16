@@ -54,15 +54,37 @@ générique côté client), `429`.
 
 ### `POST /auth/login`
 Entrée : `{ email, password, deviceLabel?, rememberDevice? }`.
+`deviceLabel` est envoyé par l'application mobile : il est enregistré sur la
+session et sélectionne la durée de refresh mobile (`REFRESH_TOKEN_TTL_MOBILE`,
+90 j au lieu de 30). `rememberDevice` est accepté mais sans effet pour l'instant.
 `200` : même charge utile que `register`, plus la liste des organisations
 (`{ id, name, slug, logoUrl, roles[] }`).
 Erreurs : `401 E_UNAUTHORIZED`, `423 E_ACCOUNT_LOCKED`,
-`409 E_PASSWORD_RESET_REQUIRED`, `429`.
+`409 E_PASSWORD_RESET_REQUIRED` (un lien de réinitialisation est envoyé), `429`.
+
+`register`, `login` et `refresh` posent aussi le refresh token dans le cookie
+`konkoure_refresh` (signé, `HttpOnly`, `SameSite=Strict`, `Path=/api/v1/auth`,
+`Secure` en production, domaine `REFRESH_COOKIE_DOMAIN`). Le client web l'utilise
+et ignore `refreshToken` du corps ; le mobile utilise le corps.
 
 ### `POST /auth/refresh`
-Entrée : `{ refreshToken }` ou cookie httpOnly.
-`200` : nouveaux `accessToken` + `refreshToken`.
-Erreurs : `401 E_UNAUTHORIZED` (réutilisation détectée ⇒ famille révoquée).
+Entrée : `{ refreshToken }` ou cookie httpOnly (corps vide).
+`200` : `{ accessToken, expiresIn, refreshToken, refreshExpiresIn }`. L'access
+token précédent de la session cesse de fonctionner.
+Erreurs : `401 E_UNAUTHORIZED` (inconnu, expiré, ou réutilisation détectée ⇒
+famille révoquée), `429` (60 / h / utilisateur).
+
+### Autres réponses de `/auth`
+`logout`, `logout-all`, `forgot-password`, `reset-password`, `verify-email`,
+`resend-verification` répondent `204` sans corps.
+- `POST /auth/forgot-password` : `{ email }`. Lien envoyé :
+  `${WEB_APP_URL}/reset-password?token=…`. `429` au-delà de 3 / h / e-mail.
+- `POST /auth/reset-password` : `{ token, password, password_confirmation }`.
+  Lien invalide, expiré ou déjà utilisé ⇒ `422` avec `details[0].field = "token"`.
+- `POST /auth/verify-email` : `{ token }` (lien `${WEB_APP_URL}/verify-email?token=…`,
+  jeton signé contenant l'adresse). Invalide ⇒ `422`, `field = "token"`.
+- Politique de mot de passe (04 §2) : un refus renvoie `422` avec
+  `details[0].rule` ∈ `composition | common | personal`.
 
 ---
 
@@ -82,6 +104,51 @@ Erreurs : `401 E_UNAUTHORIZED` (réutilisation détectée ⇒ famille révoquée
 | POST | `/me/notifications/read-all` | Marque tout lu |
 | GET | `/me/export` | Export RGPD (job asynchrone, renvoie un lien) |
 | DELETE | `/me` | Suppression / anonymisation |
+
+### `GET /me`
+Également renvoyé par `PATCH /me`.
+
+```json
+{ "data": {
+  "user": { "id":"0192…", "email":"a@b.com", "fullName":"A B", "avatarUrl":null,
+            "emailVerified":false, "preferredLanguage":"fr",
+            "mustChangePassword":false },
+  "isPlatformAdmin": false,
+  "organizations": [
+    { "id":"0192…", "name":"Doztra", "slug":"doztra", "logoUrl":null,
+      "defaultLanguage":"fr", "defaultCurrency":"GNF", "plan":"free",
+      "performanceModel":"sap", "roles":["owner"] }
+  ],
+  "employee": { "id":"0192…", "firstName":"A", "lastName":"B" },
+  "subscription": { "planCode":"free", "planName":"Gratuit", "maxEmployees":10,
+                    "aiCreditsPerMonth":20, "status":"trialing",
+                    "currentPeriodEnd":null, "cycle":"mensuel", "priceGnf":0,
+                    "trialEndsAt":"2026-12-16T00:00:00.000Z", "planEffective":false },
+  "modules": ["hr","timeclock","leaves","performance","settings"]
+}}
+```
+
+- Le serveur ne choisit jamais l'organisation active (01 §4) : le client choisit
+  dans `organizations` et envoie `X-Organization-Id`.
+- `mustChangePassword` reflète `users.must_reset_password` (comptes importés).
+- `employee` est la fiche liée dans l'organisation choisie ; `subscription` et
+  `modules` (droits effectifs calculés serveur) sont ceux de cette organisation.
+  **Tant que les modules RH et facturation ne sont pas livrés**, l'API renvoie
+  `employee: null`, `subscription: null`, `modules: []` et `plan: null`.
+
+`GET /me/organizations` renvoie `{ data: [...] }` avec les mêmes éléments que
+`organizations` ci-dessus.
+
+### `GET /me/sessions`
+`{ data: [{ id, deviceLabel, ip, userAgent, startedAt, lastActivityAt, expiresAt,
+current }] }` : une entrée par famille de refresh tokens ouverte ; `id` est
+l'identifiant de famille utilisé par `DELETE /me/sessions/:id` (session d'un
+autre utilisateur ⇒ `404`).
+
+### `POST /me/password`
+`{ currentPassword, password, password_confirmation }` → `204`. Mot de passe
+actuel faux ⇒ `422`, `field = "currentPassword"`. Révoque toutes les autres
+sessions, conserve la session courante.
 
 ---
 
@@ -512,7 +579,7 @@ Format, pagination et erreurs identiques au reste du document.
 
 | Méthode | Chemin | Rôle | Description |
 |---|---|---|---|
-| GET | `/v1/me` | authentifié | profil, organisation active, rôles, employé lié, abonnement, modules, super-admin |
+| GET | `/me` | authentifié | contrat détaillé en §2 (`GET /me`) |
 | GET | `/v1/dashboard/kpis?period=` | owner, hr_admin, manager (périmètre) | KPIs en direct |
 | GET | `/v1/employees/:id/leave-balance` | soi, manager, RH | solde, jours en attente |
 | PATCH | `/v1/candidates/:id/stage` | recrutement | change l'étape, journalise |

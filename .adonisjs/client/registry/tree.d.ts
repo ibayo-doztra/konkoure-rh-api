@@ -3,19 +3,22 @@ import type { routes } from './index.ts'
 
 export interface ApiDefinition {
   auth: {
-    newAccount: {
-      store: typeof routes['auth.new_account.store']
-    }
-    accessTokens: {
-      store: typeof routes['auth.access_tokens.store']
-    }
+    register: typeof routes['auth.register']
+    login: typeof routes['auth.login']
+    refresh: typeof routes['auth.refresh']
+    forgotPassword: typeof routes['auth.forgotPassword']
+    resetPassword: typeof routes['auth.resetPassword']
+    verifyEmail: typeof routes['auth.verifyEmail']
+    logout: typeof routes['auth.logout']
+    logoutAll: typeof routes['auth.logoutAll']
+    resendVerification: typeof routes['auth.resendVerification']
   }
-  profile: {
-    profile: {
-      show: typeof routes['profile.profile.show']
-    }
-    accessTokens: {
-      destroy: typeof routes['profile.access_tokens.destroy']
-    }
+  me: {
+    show: typeof routes['me.show']
+    update: typeof routes['me.update']
+    changePassword: typeof routes['me.changePassword']
+    sessions: typeof routes['me.sessions']
+    revokeSession: typeof routes['me.revokeSession']
+    organizations: typeof routes['me.organizations']
   }
 }

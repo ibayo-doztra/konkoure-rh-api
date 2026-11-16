@@ -1,37 +1,24 @@
 /*
 |--------------------------------------------------------------------------
-| Routes file
+| Routes
 |--------------------------------------------------------------------------
 |
-| The routes file is used for defining the HTTP routes.
+| One file per module in start/routes/, all under /api/v1 (docs/backend/01 §5).
 |
 */
 
-import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
-import { controllers } from '#generated/controllers'
+import { throttleIp } from '#start/limiter'
+import { registerAuthRoutes } from '#start/routes/auth'
+import { registerMeRoutes } from '#start/routes/me'
 
-router.get('/', () => {
-  return { hello: 'world' }
-})
+/** Liveness probe (docs/backend/06 §14). */
+router.get('/health', () => ({ status: 'ok' }))
 
 router
   .group(() => {
-    router
-      .group(() => {
-        router.post('signup', [controllers.NewAccount, 'store'])
-        router.post('login', [controllers.AccessTokens, 'store'])
-      })
-      .prefix('auth')
-      .as('auth')
-
-    router
-      .group(() => {
-        router.get('profile', [controllers.Profile, 'show'])
-        router.post('logout', [controllers.AccessTokens, 'destroy'])
-      })
-      .prefix('account')
-      .as('profile')
-      .use(middleware.auth())
+    registerAuthRoutes()
+    registerMeRoutes()
   })
   .prefix('/api/v1')
+  .use(throttleIp)

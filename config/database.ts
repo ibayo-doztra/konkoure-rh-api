@@ -40,6 +40,8 @@ const dbConfig = defineConfig({
       schemaGeneration: {
         enabled: true,
         rulesPaths: ['./database/schema_rules.js'],
+        // Partition technique, pas une entité métier.
+        excludeTables: ['audit_logs_default'],
       },
       debug: app.inDev,
     },
