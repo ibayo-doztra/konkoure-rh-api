@@ -8,6 +8,45 @@ import type { routes } from './index.ts'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'openapi.html': {
+    methods: ["GET","HEAD"]
+    pattern: '/docs'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'openapi.json': {
+    methods: ["GET","HEAD"]
+    pattern: '/docs.json'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
+  'openapi.yaml': {
+    methods: ["GET","HEAD"]
+    pattern: '/docs.yaml'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: unknown
+      errorResponse: unknown
+      rawResponse: ExtractRawResponse<unknown>
+    }
+  }
   'auth.register': {
     methods: ["POST"]
     pattern: '/api/v1/auth/register'

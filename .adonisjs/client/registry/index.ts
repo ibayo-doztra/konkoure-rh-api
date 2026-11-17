@@ -8,6 +8,24 @@ export type { Route, Path } from './schema.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'openapi.html': {
+    methods: ["GET","HEAD"],
+    pattern: '/docs',
+    tokens: [[0,"docs"]],
+    types: placeholder as Registry['openapi.html']['types'],
+  },
+  'openapi.json': {
+    methods: ["GET","HEAD"],
+    pattern: '/docs.json',
+    tokens: [[0,"docs.json"]],
+    types: placeholder as Registry['openapi.json']['types'],
+  },
+  'openapi.yaml': {
+    methods: ["GET","HEAD"],
+    pattern: '/docs.yaml',
+    tokens: [[0,"docs.yaml"]],
+    types: placeholder as Registry['openapi.yaml']['types'],
+  },
   'auth.register': {
     methods: ["POST"],
     pattern: '/api/v1/auth/register',

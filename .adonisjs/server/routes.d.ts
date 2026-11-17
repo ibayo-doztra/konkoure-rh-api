@@ -4,6 +4,9 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'openapi.html': { paramsTuple?: []; params?: {} }
+    'openapi.json': { paramsTuple?: []; params?: {} }
+    'openapi.yaml': { paramsTuple?: []; params?: {} }
     'auth.register': { paramsTuple?: []; params?: {} }
     'auth.login': { paramsTuple?: []; params?: {} }
     'auth.refresh': { paramsTuple?: []; params?: {} }
@@ -21,11 +24,17 @@ export type ScannedRoutes = {
     'me.organizations': { paramsTuple?: []; params?: {} }
   }
   GET: {
+    'openapi.html': { paramsTuple?: []; params?: {} }
+    'openapi.json': { paramsTuple?: []; params?: {} }
+    'openapi.yaml': { paramsTuple?: []; params?: {} }
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'openapi.html': { paramsTuple?: []; params?: {} }
+    'openapi.json': { paramsTuple?: []; params?: {} }
+    'openapi.yaml': { paramsTuple?: []; params?: {} }
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
