@@ -4,7 +4,7 @@ import { throttleUser } from '#start/limiter'
 
 const AuthController = () => import('#modules/auth/controllers/auth_controller')
 
-/** `/api/v1/auth/*` — 06-api-reference §1. Invitations come with the users module. */
+/** `/api/v1/auth/*` — 06-api-reference §1. */
 export function registerAuthRoutes() {
   router
     .group(() => {
@@ -14,6 +14,10 @@ export function registerAuthRoutes() {
       router.post('forgot-password', [AuthController, 'forgotPassword']).as('forgotPassword')
       router.post('reset-password', [AuthController, 'resetPassword']).as('resetPassword')
       router.post('verify-email', [AuthController, 'verifyEmail']).as('verifyEmail')
+      router.get('invitations/:token', [AuthController, 'invitation']).as('invitations.show')
+      router
+        .post('invitations/:token/accept', [AuthController, 'acceptInvitation'])
+        .as('invitations.accept')
 
       router
         .group(() => {

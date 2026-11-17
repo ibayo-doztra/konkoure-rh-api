@@ -14,6 +14,10 @@ export interface ApiDefinition {
     forgotPassword: typeof routes['auth.forgotPassword']
     resetPassword: typeof routes['auth.resetPassword']
     verifyEmail: typeof routes['auth.verifyEmail']
+    invitations: {
+      show: typeof routes['auth.invitations.show']
+      accept: typeof routes['auth.invitations.accept']
+    }
     logout: typeof routes['auth.logout']
     logoutAll: typeof routes['auth.logoutAll']
     resendVerification: typeof routes['auth.resendVerification']
@@ -25,5 +29,16 @@ export interface ApiDefinition {
     sessions: typeof routes['me.sessions']
     revokeSession: typeof routes['me.revokeSession']
     organizations: typeof routes['me.organizations']
+  }
+  organizations: {
+    store: typeof routes['organizations.store']
+  }
+  org: {
+    invitations: {
+      index: typeof routes['org.invitations.index']
+      store: typeof routes['org.invitations.store']
+      resend: typeof routes['org.invitations.resend']
+      destroy: typeof routes['org.invitations.destroy']
+    }
   }
 }

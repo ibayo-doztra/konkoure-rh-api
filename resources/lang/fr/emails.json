@@ -13,5 +13,18 @@
   "sessionCompromised": {
     "subject": "Alerte de sécurité sur votre compte — Konkouré",
     "body": "Une session de votre compte a été réutilisée de façon suspecte et a été fermée par précaution. Si vous ne reconnaissez pas cette activité, changez votre mot de passe."
+  },
+  "invitation": {
+    "subject": "Invitation à rejoindre {organization} sur Konkouré",
+    "body": "{inviter} vous invite à rejoindre {organization} sur Konkouré avec le rôle « {role} ». Ce lien est valable 7 jours.",
+    "action": "Accepter l'invitation"
+  },
+  "roles": {
+    "owner": "Propriétaire",
+    "hr_admin": "Administrateur RH",
+    "manager": "Manager",
+    "employee": "Employé",
+    "recruiter": "Recruteur",
+    "security_agent": "Agent de sécurité"
   }
 }

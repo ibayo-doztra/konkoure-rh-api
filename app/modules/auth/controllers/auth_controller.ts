@@ -25,6 +25,12 @@ import {
 } from '#modules/auth/http_helpers'
 import type User from '#models/user'
 import { confirmedBody } from '#shared/utils/openapi'
+import invitationService from '#modules/invitations/services/invitation_service'
+import { invitationPreviewDto } from '#modules/invitations/transformers/invitation_transformer'
+import {
+  acceptInvitationValidator,
+  invitationTokenValidator,
+} from '#modules/invitations/validators/invitation_validator'
 
 /** `/api/v1/auth/*` (06-api-reference §1). HTTP concerns only. */
 export default class AuthController {
@@ -113,6 +119,27 @@ export default class AuthController {
   async resendVerification(ctx: HttpContext) {
     await emailVerification.resend(ctx.auth.getUserOrFail())
     return ctx.response.noContent()
+  }
+
+  @ApiOperation({ summary: 'Preview an invitation (organization, e-mail, role)' })
+  async invitation(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(invitationTokenValidator)
+    return ctx.serialize(invitationPreviewDto(await invitationService.preview(params.token)))
+  }
+
+  @ApiOperation({ summary: 'Accept an invitation and open a session' })
+  @ApiBody({ schema: confirmedBody(acceptInvitationValidator, 'password', ['params']) })
+  async acceptInvitation(ctx: HttpContext) {
+    const { params, password, fullName } =
+      await ctx.request.validateUsing(acceptInvitationValidator)
+    const { user, tokens } = await invitationService.accept(
+      params.token,
+      { password, fullName },
+      clientInfo(ctx),
+      auditContext(ctx)
+    )
+    setRefreshCookie(ctx, tokens)
+    return ctx.serialize(await this.sessionPayload(user, tokens))
   }
 
   private async sessionPayload(user: User, tokens: IssuedTokens) {

@@ -4,6 +4,7 @@ import { errors as authErrors } from '@adonisjs/auth'
 import { errors as limiterErrors } from '@adonisjs/limiter'
 import { errors as coreErrors } from '@adonisjs/core'
 import { errors as lucidErrors } from '@adonisjs/lucid'
+import { errors as bouncerErrors } from '@adonisjs/bouncer'
 import {
   AppException,
   ERROR_STATUS,
@@ -32,6 +33,7 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     'E_TOO_MANY_REQUESTS',
     'E_ROUTE_NOT_FOUND',
     'E_ROW_NOT_FOUND',
+    'E_AUTHORIZATION_FAILURE',
   ]
 
   async handle(error: unknown, ctx: HttpContext) {
@@ -74,6 +76,10 @@ export default class HttpExceptionHandler extends ExceptionHandler {
     }
     if (error instanceof authErrors.E_UNAUTHORIZED_ACCESS) {
       return { code: 'E_UNAUTHORIZED', details: [] }
+    }
+    if (error instanceof bouncerErrors.E_AUTHORIZATION_FAILURE) {
+      // A policy denies with 404 when the resource lies outside the tenant (01 §6).
+      return { code: error.status === 404 ? 'E_NOT_FOUND' : 'E_FORBIDDEN', details: [] }
     }
     if (error instanceof limiterErrors.E_TOO_MANY_REQUESTS) {
       return { code: 'E_RATE_LIMITED', details: [], retryAfter: error.response.availableIn }

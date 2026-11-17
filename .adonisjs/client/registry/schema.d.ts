@@ -125,6 +125,32 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['verifyEmail']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'auth.invitations.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/auth/invitations/:token'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').invitationTokenValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['invitation']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['invitation']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['invitation']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'auth.invitations.accept': {
+    methods: ["POST"]
+    pattern: '/api/v1/auth/invitations/:token/accept'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').acceptInvitationValidator)>>
+      paramsTuple: [ParamValue]
+      params: { token: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').acceptInvitationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['acceptInvitation']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['acceptInvitation']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/auth/controllers/auth_controller').default['acceptInvitation']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'auth.logout': {
     methods: ["POST"]
     pattern: '/api/v1/auth/logout'
@@ -240,6 +266,71 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/users/controllers/me_controller').default['organizations']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/users/controllers/me_controller').default['organizations']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/users/controllers/me_controller').default['organizations']>>>
+    }
+  }
+  'organizations.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/organizations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/organization_validator').createOrganizationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/organization_validator').createOrganizationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.invitations.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/invitations'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').listInvitationsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.invitations.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/invitations'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').createInvitationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').createInvitationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.invitations.resend': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/invitations/:id/resend'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').invitationIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').invitationIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['resend']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['resend']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.invitations.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/invitations/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').invitationIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/invitations/validators/invitation_validator').invitationIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
 }

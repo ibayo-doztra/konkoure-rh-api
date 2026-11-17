@@ -86,6 +86,21 @@ famille révoquée), `429` (60 / h / utilisateur).
 - Politique de mot de passe (04 §2) : un refus renvoie `422` avec
   `details[0].rule` ∈ `composition | common | personal`.
 
+### Invitations (lien `${WEB_APP_URL}/invitation?token=…`)
+- `GET /auth/invitations/:token` → `200`
+  `{ organizationName, email, role, expiresAt, accountExists }`. Jeton inconnu,
+  expiré, révoqué ou déjà accepté ⇒ `404 E_NOT_FOUND`.
+- `POST /auth/invitations/:token/accept` :
+  `{ password, password_confirmation, fullName? }` → `200`, même charge utile
+  que `login` (cookie de refresh compris).
+  - **Nouveau compte** : créé avec ce mot de passe (politique 04 §2), e-mail
+    considéré comme vérifié par le lien.
+  - **Compte existant** (`accountExists: true`) : `password` est son mot de
+    passe actuel, contrôlé comme `/auth/login` (`401`, `423`, `409
+    E_PASSWORD_RESET_REQUIRED`) ; le rôle est simplement ajouté. Un lien
+    d'invitation ne vaut donc jamais connexion sans mot de passe.
+  - Lien inutilisable ⇒ `404`. Journaux `invitation.accepted` + `role.granted`.
+
 ---
 
 ## 2. Utilisateur courant `/me`
@@ -171,6 +186,57 @@ sessions, conserve la session courante.
 | DELETE | `/org/invitations/:id` | O H | Révoque |
 | GET | `/org/entitlements` | tous | Modules et quotas effectifs du plan |
 | GET | `/org/dashboard` | tous | KPI agrégés, `?period=week\|month\|quarter` |
+
+### `POST /organizations`
+```ts
+vine.object({
+  name: vine.string().trim().minLength(2).maxLength(120),
+  defaultLanguage: vine.enum(['fr','en']).optional(),       // défaut 'fr'
+  performanceModel: vine.enum(['classic','sap']).optional(), // défaut 'sap'
+})
+```
+Le `slug` est généré par le serveur à partir du nom (ASCII minuscule, tirets,
+60 caractères au plus, suffixe `-2`, `-3`… s'il est pris) ; un `slug` envoyé par
+le client est ignoré. Pays `GN`, fuseau `Africa/Conakry` et devise `GNF` par défaut.
+
+`201` : un élément au format de `GET /me` → `organizations[]` :
+```json
+{ "data": { "id":"0192…", "name":"Doztra", "slug":"doztra", "logoUrl":null,
+  "defaultLanguage":"fr", "defaultCurrency":"GNF", "plan":null,
+  "performanceModel":"sap", "roles":["owner"] }}
+```
+Création, rôle `owner` et journaux `organization.created` + `role.granted` dans
+une seule transaction. La fiche employé liée et l'abonnement d'essai (04 §3)
+sont ajoutés par les modules RH et facturation.
+Erreurs : `401`, `403 E_EMAIL_NOT_VERIFIED`, `422`, `429`.
+
+### Contexte `/org/*`
+En-tête `X-Organization-Id` absent ou non uuid ⇒ `400 E_BAD_REQUEST`
+(`details[0].field = "X-Organization-Id"`) ; e-mail non vérifié ⇒
+`403 E_EMAIL_NOT_VERIFIED` ; aucun rôle dans cette organisation ⇒ `403 E_FORBIDDEN`.
+
+### Invitations `/org/invitations`
+Élément renvoyé (jamais le jeton ni son hash) :
+```json
+{ "id":"0192…", "email":"a@b.com", "role":"manager", "status":"pending",
+  "expiresAt":"…", "invitedBy":"0192…", "sendCount":1, "lastSentAt":"…",
+  "acceptedAt":null, "createdAt":"…" }
+```
+`status` ∈ `pending | accepted | revoked | expired` ; une invitation en attente
+dont la date est passée est renvoyée `expired`.
+- `GET` : pagination offset (`?page`, `?perPage` ≤ 100), filtre
+  `?filter[status]=`, tri `created_at` décroissant. `{ data, meta }`.
+- `POST` ⚡ `{ email, role }` → `201`. Lien valable 7 jours, e-mail envoyé après
+  commit. Seul un `owner` peut inviter un `owner` (`403` sinon). Déjà membre ⇒
+  `409`, `details[0].rule = "alreadyMember"` ; invitation en attente valide ⇒
+  `409`, `rule = "pending"` (une invitation en attente expirée est remplacée).
+- `POST /:id/resend` → `200` : nouveau lien, nouvelle échéance à 7 jours, l'ancien
+  lien cesse de fonctionner. 3 envois / 24 h (`429`). Non `pending` ⇒ `409`,
+  `rule = "notPending"`.
+- `DELETE /:id` → `204` (statut `revoked`). Non `pending` ⇒ `409`.
+- Invitation d'une autre organisation ⇒ `404`. Journaux `invitation.sent`,
+  `invitation.resent`, `invitation.revoked`.
+- `employee_id` (lien vers une fiche employé) arrive avec le module RH.
 
 ### `GET /org/dashboard`
 Renvoie, filtré selon le rôle (un `employee` ne voit que ses propres chiffres) :

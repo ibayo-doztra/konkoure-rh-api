@@ -47,6 +47,22 @@ export class MembershipRepository {
       roles: row.roles as AppRole[],
     }))
   }
+
+  /**
+   * Roles held by the user in one non-deleted organization (tenant middleware,
+   * docs/backend/01 §4). Empty when the user is not a member.
+   */
+  async rolesIn(userId: string, organizationId: string): Promise<AppRole[]> {
+    const rows = await db
+      .from('user_roles as ur')
+      .join('organizations as o', 'o.id', 'ur.organization_id')
+      .where('ur.user_id', userId)
+      .where('ur.organization_id', organizationId)
+      .whereNull('o.deleted_at')
+      .orderBy('ur.role')
+      .select('ur.role')
+    return rows.map((row) => row.role as AppRole)
+  }
 }
 
 export default new MembershipRepository()

@@ -7,5 +7,17 @@
   },
   "token": {
     "invalid": "This link is invalid or has expired."
+  },
+  "organizationHeader": {
+    "required": "The X-Organization-Id header must contain the organization id."
+  },
+  "invitation": {
+    "alreadyMember": "This person is already a member of the organization.",
+    "pending": "An invitation is already pending for this address.",
+    "ownerRole": "Only an owner can invite another owner.",
+    "notPending": "This invitation is no longer pending."
+  },
+  "idempotencyKey": {
+    "uuid": "The Idempotency-Key header must be a uuid."
   }
 }

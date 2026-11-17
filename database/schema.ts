@@ -94,6 +94,41 @@ export class AuthRefreshTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class InvitationSchema extends BaseModel {
+  static $columns = ['acceptedAt', 'acceptedUserId', 'createdAt', 'email', 'employeeId', 'expiresAt', 'id', 'invitedBy', 'lastSentAt', 'organizationId', 'role', 'sendCount', 'status', 'tokenHash', 'updatedAt'] as const
+  $columns = InvitationSchema.$columns
+  @column.dateTime()
+  declare acceptedAt: DateTime | null
+  @column()
+  declare acceptedUserId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string
+  @column()
+  declare employeeId: string | null
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare invitedBy: string | null
+  @column.dateTime()
+  declare lastSentAt: DateTime
+  @column()
+  declare organizationId: string
+  @column()
+  declare role: 'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'
+  @column()
+  declare sendCount: number
+  @column()
+  declare status: 'pending' | 'accepted' | 'revoked' | 'expired'
+  @column()
+  declare tokenHash: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns

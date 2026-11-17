@@ -9,14 +9,17 @@ type BodySchema = NonNullable<Parameters<typeof ApiBody>[0]['schema']>
  */
 export function confirmedBody(
   validator: { toJSONSchema(): object },
-  field = 'password'
+  field = 'password',
+  /** Top-level keys that are not part of the body, such as `params`. */
+  omit: string[] = []
 ): BodySchema {
   const schema = validator.toJSONSchema() as {
     properties: Record<string, unknown>
     required?: string[]
   }
+  for (const key of omit) delete schema.properties[key]
   const confirmation = `${field}_confirmation`
   schema.properties[confirmation] = schema.properties[field]
-  schema.required = [...(schema.required ?? []), confirmation]
+  schema.required = [...(schema.required ?? []).filter((key) => !omit.includes(key)), confirmation]
   return schema as BodySchema
 }

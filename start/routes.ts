@@ -13,6 +13,8 @@ import env from '#start/env'
 import { throttleIp } from '#start/limiter'
 import { registerAuthRoutes } from '#start/routes/auth'
 import { registerMeRoutes } from '#start/routes/me'
+import { registerOrganizationRoutes } from '#start/routes/organizations'
+import { registerOrgRoutes } from '#start/routes/org'
 
 /** Liveness probe (docs/backend/06 §14). */
 router.get('/health', () => ({ status: 'ok' }))
@@ -26,6 +28,8 @@ router
   .group(() => {
     registerAuthRoutes()
     registerMeRoutes()
+    registerOrganizationRoutes()
+    registerOrgRoutes()
   })
   .prefix('/api/v1')
   .use(throttleIp)

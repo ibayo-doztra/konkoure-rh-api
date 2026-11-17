@@ -23,6 +23,12 @@ export default {
     user_roles: {
       columns: { role: { tsType: APP_ROLE } },
     },
+    invitations: {
+      columns: {
+        role: { tsType: APP_ROLE },
+        status: { tsType: `'pending' | 'accepted' | 'revoked' | 'expired'` },
+      },
+    },
     platform_admins: {
       columns: { level: { tsType: `'root' | 'support'` } },
     },

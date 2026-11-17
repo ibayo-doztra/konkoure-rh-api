@@ -10,8 +10,9 @@ const base = {
   port: env.get('REDIS_PORT'),
   password: env.get('REDIS_PASSWORD')?.release(),
   tls: env.get('REDIS_TLS', false) ? {} : undefined,
+  // Never give up: a Redis outage must not require restarting the API.
   retryStrategy(times: number) {
-    return times > 10 ? null : times * 50
+    return Math.min(times * 200, 5000)
   },
 }
 
@@ -19,6 +20,7 @@ const redisConfig = defineConfig({
   connection: 'limiter',
 
   connections: {
+    cache: { ...base, db: env.get('REDIS_DB_CACHE', 0), keyPrefix: 'cache:' },
     limiter: { ...base, db: env.get('REDIS_DB_LIMITER', 2), keyPrefix: 'limiter:' },
   },
 })

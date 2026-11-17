@@ -62,6 +62,18 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"auth"],[0,"verify-email"]],
     types: placeholder as Registry['auth.verifyEmail']['types'],
   },
+  'auth.invitations.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/auth/invitations/:token',
+    tokens: [[0,"api"],[0,"v1"],[0,"auth"],[0,"invitations"],[1,"token"]],
+    types: placeholder as Registry['auth.invitations.show']['types'],
+  },
+  'auth.invitations.accept': {
+    methods: ["POST"],
+    pattern: '/api/v1/auth/invitations/:token/accept',
+    tokens: [[0,"api"],[0,"v1"],[0,"auth"],[0,"invitations"],[1,"token"],[0,"accept"]],
+    types: placeholder as Registry['auth.invitations.accept']['types'],
+  },
   'auth.logout': {
     methods: ["POST"],
     pattern: '/api/v1/auth/logout',
@@ -115,6 +127,36 @@ const routes = {
     pattern: '/api/v1/me/organizations',
     tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"organizations"]],
     types: placeholder as Registry['me.organizations']['types'],
+  },
+  'organizations.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/organizations',
+    tokens: [[0,"api"],[0,"v1"],[0,"organizations"]],
+    types: placeholder as Registry['organizations.store']['types'],
+  },
+  'org.invitations.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/invitations',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"invitations"]],
+    types: placeholder as Registry['org.invitations.index']['types'],
+  },
+  'org.invitations.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/invitations',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"invitations"]],
+    types: placeholder as Registry['org.invitations.store']['types'],
+  },
+  'org.invitations.resend': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/invitations/:id/resend',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"invitations"],[1,"id"],[0,"resend"]],
+    types: placeholder as Registry['org.invitations.resend']['types'],
+  },
+  'org.invitations.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/invitations/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"invitations"],[1,"id"]],
+    types: placeholder as Registry['org.invitations.destroy']['types'],
   },
 } as const satisfies Record<string, AdonisEndpoint>
 

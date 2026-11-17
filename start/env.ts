@@ -38,6 +38,7 @@ export default await Env.create(new URL('../', import.meta.url), {
   REDIS_PORT: Env.schema.number(),
   REDIS_PASSWORD: Env.schema.secret.optional(),
   REDIS_TLS: Env.schema.boolean.optional(),
+  REDIS_DB_CACHE: Env.schema.number.optional(),
   REDIS_DB_LIMITER: Env.schema.number.optional(),
 
   // Rate limit : `memory` réservé aux tests (store non partagé entre réplicas)

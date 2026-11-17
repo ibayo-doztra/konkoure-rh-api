@@ -24,7 +24,8 @@ export class UserRepository {
   }
 
   create(
-    data: Pick<User, 'email' | 'passwordHash' | 'fullName' | 'preferredLanguage'>,
+    data: Pick<User, 'email' | 'passwordHash' | 'fullName' | 'preferredLanguage'> &
+      Partial<Pick<User, 'emailVerifiedAt'>>,
     trx: TransactionClientContract
   ) {
     return User.create(data, { client: trx })
