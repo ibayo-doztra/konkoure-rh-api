@@ -1,6 +1,8 @@
 import db from '@adonisjs/lucid/services/db'
 import type User from '#models/user'
+import type Employee from '#models/employee'
 import { AppException } from '#shared/exceptions/app_exception'
+import { employeeOfUser } from '#modules/hr/repositories/employee_repository'
 import users from '#modules/users/repositories/user_repository'
 import memberships, { type MembershipRow } from '#modules/users/repositories/membership_repository'
 import platformAdmins from '#modules/users/repositories/platform_admin_repository'
@@ -18,7 +20,7 @@ export interface ProfileUpdate {
 /**
  * Current-user data (docs/backend/06 §2). The server never picks the active
  * organization: rights are returned for the one the client names, if the user
- * belongs to it. `employee` is filled by the HR module.
+ * belongs to it, like the linked employee record.
  */
 export class MeService {
   async snapshot(
@@ -29,6 +31,7 @@ export class MeService {
     isPlatformAdmin: boolean
     organizations: MembershipRow[]
     entitlements: Entitlements | null
+    employee: Employee | null
   }> {
     const [rows, isPlatformAdmin] = await Promise.all([
       memberships.forUser(user.id),
@@ -45,6 +48,7 @@ export class MeService {
       isPlatformAdmin,
       organizations,
       entitlements: selected >= 0 ? resolved[selected] : null,
+      employee: selected >= 0 ? await employeeOfUser(rows[selected].id, user.id) : null,
     }
   }
 

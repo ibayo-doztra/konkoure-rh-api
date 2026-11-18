@@ -6,6 +6,8 @@
   "E_EMAIL_NOT_VERIFIED": "Verify your e-mail address to continue.",
   "E_MODULE_NOT_INCLUDED": "This module is not included in your plan.",
   "E_SUBSCRIPTION_INACTIVE": "Your subscription has expired or is suspended.",
+  "E_QUOTA_EXCEEDED": "Your plan's maximum number of employees has been reached.",
+  "E_HIERARCHY_CYCLE": "This assignment would create a loop in the hierarchy.",
   "E_NOT_FOUND": "Resource not found.",
   "E_CONFLICT": "This operation conflicts with the current state.",
   "E_PASSWORD_RESET_REQUIRED": "You must set a new password. A link has just been sent to your e-mail.",

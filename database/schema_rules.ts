@@ -29,6 +29,14 @@ export default {
         status: { tsType: `'pending' | 'accepted' | 'revoked' | 'expired'` },
       },
     },
+    employees: {
+      columns: {
+        status: { tsType: `'active' | 'on_leave' | 'suspended' | 'terminated'` },
+        address: JSON_OBJECT,
+        emergency_contact: JSON_OBJECT,
+        profile_details: JSON_OBJECT,
+      },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

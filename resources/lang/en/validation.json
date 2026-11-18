@@ -25,6 +25,23 @@
   "member": {
     "lastOwner": "The organization must keep at least one active owner."
   },
+  "employee": {
+    "department": "This department does not exist.",
+    "manager": "This manager does not exist.",
+    "cycle": "An employee cannot report to themselves or to one of their reports.",
+    "emailTaken": "This e-mail address is already used by an employee.",
+    "numberTaken": "This employee number is already used.",
+    "alreadyLinked": "This record or account is already linked.",
+    "notFound": "This employee record does not exist."
+  },
+  "department": {
+    "nameTaken": "A department already has this name.",
+    "manager": "This manager does not exist.",
+    "parent": "This parent department does not exist.",
+    "cycle": "A department cannot depend on itself or on one of its sub-departments.",
+    "reassignTo": "The destination department is invalid.",
+    "hasEmployees": "This department still has employees."
+  },
   "entitlement": {
     "requiredModule": "Required module.",
     "currentPlan": "Current plan."

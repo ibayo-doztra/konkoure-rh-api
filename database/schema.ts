@@ -94,6 +94,98 @@ export class AuthRefreshTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class DepartmentSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'description', 'id', 'managerId', 'name', 'organizationId', 'parentDepartmentId', 'updatedAt', 'updatedBy'] as const
+  $columns = DepartmentSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerId: string | null
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare parentDepartmentId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class EmployeeSchema extends BaseModel {
+  static $columns = ['address', 'baseSalary', 'birthDate', 'createdAt', 'createdBy', 'deletedAt', 'departmentId', 'email', 'emergencyContact', 'employeeNumber', 'endDate', 'firstName', 'gender', 'hireDate', 'id', 'jobTitle', 'lastName', 'leaveBalance', 'managerId', 'nationalId', 'organizationId', 'passportDocumentPath', 'phone', 'photoUrl', 'profileDetails', 'salaryCurrency', 'status', 'updatedAt', 'updatedBy', 'userId'] as const
+  $columns = EmployeeSchema.$columns
+  @column()
+  declare address: Record<string, unknown>
+  @column()
+  declare baseSalary: string | null
+  @column.date()
+  declare birthDate: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare departmentId: string | null
+  @column()
+  declare email: string | null
+  @column()
+  declare emergencyContact: Record<string, unknown>
+  @column()
+  declare employeeNumber: string | null
+  @column.date()
+  declare endDate: DateTime | null
+  @column()
+  declare firstName: string
+  @column()
+  declare gender: string | null
+  @column.date()
+  declare hireDate: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare jobTitle: string | null
+  @column()
+  declare lastName: string
+  @column()
+  declare leaveBalance: string
+  @column()
+  declare managerId: string | null
+  @column()
+  declare nationalId: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare passportDocumentPath: string | null
+  @column()
+  declare phone: string | null
+  @column()
+  declare photoUrl: string | null
+  @column()
+  declare profileDetails: Record<string, unknown>
+  @column()
+  declare salaryCurrency: string | null
+  @column()
+  declare status: 'active' | 'on_leave' | 'suspended' | 'terminated'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare userId: string | null
+}
+
 export class InvitationSchema extends BaseModel {
   static $columns = ['acceptedAt', 'acceptedUserId', 'createdAt', 'email', 'employeeId', 'expiresAt', 'id', 'invitedBy', 'lastSentAt', 'organizationId', 'role', 'sendCount', 'status', 'tokenHash', 'updatedAt'] as const
   $columns = InvitationSchema.$columns

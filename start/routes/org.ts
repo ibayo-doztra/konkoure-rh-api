@@ -12,6 +12,9 @@ const CurrentOrganizationController = () =>
 
 const MembersController = () => import('#modules/organizations/controllers/members_controller')
 
+const DepartmentsController = () => import('#modules/hr/controllers/departments_controller')
+const EmployeesController = () => import('#modules/hr/controllers/employees_controller')
+
 /**
  * `/api/v1/org/*` — 06-api-reference §3 onwards. Every route runs behind
  * `auth` then `tenant` (X-Organization-Id, docs/backend/01 §4).
@@ -50,6 +53,38 @@ export function registerOrgRoutes() {
         })
         .prefix('invitations')
         .as('invitations')
+
+      router
+        .group(() => {
+          router
+            .group(() => {
+              router.get('/', [DepartmentsController, 'index']).as('index')
+              router.post('/', [DepartmentsController, 'store']).as('store')
+              router.get(':id', [DepartmentsController, 'show']).as('show')
+              router.patch(':id', [DepartmentsController, 'update']).as('update')
+              router.delete(':id', [DepartmentsController, 'destroy']).as('destroy')
+              router.get(':id/employees', [DepartmentsController, 'employees']).as('employees')
+            })
+            .prefix('departments')
+            .as('departments')
+
+          router
+            .group(() => {
+              router.get('/', [EmployeesController, 'index']).as('index')
+              router.post('/', [EmployeesController, 'store']).as('store')
+              // Before `:id`, which would otherwise capture it.
+              router.get('managers', [EmployeesController, 'managers']).as('managers')
+              router.get(':id', [EmployeesController, 'show']).as('show')
+              router.patch(':id', [EmployeesController, 'update']).as('update')
+              router.delete(':id', [EmployeesController, 'destroy']).as('destroy')
+              router.post(':id/restore', [EmployeesController, 'restore']).as('restore')
+              router.get(':id/salary', [EmployeesController, 'salary']).as('salary')
+              router.get(':id/team', [EmployeesController, 'team']).as('team')
+            })
+            .prefix('employees')
+            .as('employees')
+        })
+        .use(middleware.entitlement({ module: 'hr' }))
     })
     .prefix('org')
     .as('org')

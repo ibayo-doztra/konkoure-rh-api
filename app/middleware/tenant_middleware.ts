@@ -3,6 +3,7 @@ import type { NextFn } from '@adonisjs/core/types/http'
 import { AppException } from '#shared/exceptions/app_exception'
 import { TenantContext } from '#shared/tenant/tenant_context'
 import memberships from '#modules/users/repositories/membership_repository'
+import { employeeOfUser } from '#modules/hr/repositories/employee_repository'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
@@ -34,7 +35,8 @@ export default class TenantMiddleware {
     const roles = await memberships.rolesIn(user.id, organizationId)
     if (roles.length === 0) throw new AppException('E_FORBIDDEN')
 
-    ctx.tenant = new TenantContext(organizationId, roles)
+    const employee = await employeeOfUser(organizationId, user.id)
+    ctx.tenant = new TenantContext(organizationId, roles, employee?.id ?? null)
     return next()
   }
 }

@@ -7,6 +7,7 @@ export function invitationDto(invitation: Invitation) {
     id: invitation.id,
     email: invitation.email,
     role: invitation.role,
+    employeeId: invitation.employeeId,
     status: invitation.effectiveStatus,
     expiresAt: invitation.expiresAt.toISO(),
     invitedBy: invitation.invitedBy,

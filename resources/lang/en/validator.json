@@ -21,7 +21,9 @@
       "array.minLength": "The {field} field must contain at least {min} item(s).",
       "array.maxLength": "The {field} field must contain at most {max} items.",
       "distinct": "The {field} field contains duplicates.",
-      "file": "The {field} field must be a file."
+      "file": "The {field} field must be a file.",
+      "date": "The {field} field must be a valid date.",
+      "fixedLength": "The {field} field must contain exactly {size} characters."
     },
     "fields": {
       "email": "e-mail",

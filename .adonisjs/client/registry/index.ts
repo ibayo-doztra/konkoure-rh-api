@@ -224,6 +224,96 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"invitations"],[1,"id"]],
     types: placeholder as Registry['org.invitations.destroy']['types'],
   },
+  'org.departments.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/departments',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"]],
+    types: placeholder as Registry['org.departments.index']['types'],
+  },
+  'org.departments.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/departments',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"]],
+    types: placeholder as Registry['org.departments.store']['types'],
+  },
+  'org.departments.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/departments/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"],[1,"id"]],
+    types: placeholder as Registry['org.departments.show']['types'],
+  },
+  'org.departments.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/departments/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"],[1,"id"]],
+    types: placeholder as Registry['org.departments.update']['types'],
+  },
+  'org.departments.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/departments/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"],[1,"id"]],
+    types: placeholder as Registry['org.departments.destroy']['types'],
+  },
+  'org.departments.employees': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/departments/:id/employees',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"departments"],[1,"id"],[0,"employees"]],
+    types: placeholder as Registry['org.departments.employees']['types'],
+  },
+  'org.employees.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"]],
+    types: placeholder as Registry['org.employees.index']['types'],
+  },
+  'org.employees.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"]],
+    types: placeholder as Registry['org.employees.store']['types'],
+  },
+  'org.employees.managers': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/managers',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[0,"managers"]],
+    types: placeholder as Registry['org.employees.managers']['types'],
+  },
+  'org.employees.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"]],
+    types: placeholder as Registry['org.employees.show']['types'],
+  },
+  'org.employees.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/employees/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"]],
+    types: placeholder as Registry['org.employees.update']['types'],
+  },
+  'org.employees.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/employees/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"]],
+    types: placeholder as Registry['org.employees.destroy']['types'],
+  },
+  'org.employees.restore': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/:id/restore',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"restore"]],
+    types: placeholder as Registry['org.employees.restore']['types'],
+  },
+  'org.employees.salary': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/salary',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"salary"]],
+    types: placeholder as Registry['org.employees.salary']['types'],
+  },
+  'org.employees.team': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/team',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"team"]],
+    types: placeholder as Registry['org.employees.team']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

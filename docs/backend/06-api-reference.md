@@ -211,7 +211,7 @@ le client est ignoré. Pays `GN`, fuseau `Africa/Conakry` et devise `GNF` par d�
 ```
 Création, rôle `owner`, abonnement d'essai de 30 jours (plan `free`) et journaux
 `organization.created`, `role.granted`, `subscription.changed` dans une seule
-transaction. La fiche employé liée (04 §3) est ajoutée par le module RH.
+transaction, avec la fiche employé liée au créateur (04 §3, journal `employee.created`).
 Erreurs : `401`, `403 E_EMAIL_NOT_VERIFIED`, `422`, `429`.
 
 ### Contexte `/org/*`
@@ -264,7 +264,7 @@ En-tête `X-Organization-Id` absent ou non uuid ⇒ `400 E_BAD_REQUEST`
 dont la date est passée est renvoyée `expired`.
 - `GET` : pagination offset (`?page`, `?perPage` ≤ 100), filtre
   `?filter[status]=`, tri `created_at` décroissant. `{ data, meta }`.
-- `POST` ⚡ `{ email, role }` → `201`. Lien valable 7 jours, e-mail envoyé après
+- `POST` ⚡ `{ email, role, employeeId? }` → `201`. Lien valable 7 jours, e-mail envoyé après
   commit. Seul un `owner` peut inviter un `owner` (`403` sinon). Déjà membre ⇒
   `409`, `details[0].rule = "alreadyMember"` ; invitation en attente valide ⇒
   `409`, `rule = "pending"` (une invitation en attente expirée est remplacée).
@@ -274,7 +274,9 @@ dont la date est passée est renvoyée `expired`.
 - `DELETE /:id` → `204` (statut `revoked`). Non `pending` ⇒ `409`.
 - Invitation d'une autre organisation ⇒ `404`. Journaux `invitation.sent`,
   `invitation.resent`, `invitation.revoked`.
-- `employee_id` (lien vers une fiche employé) arrive avec le module RH.
+- `employeeId` lie le compte à cette fiche à l'acceptation. Fiche absente de
+  l'organisation ⇒ `422` ; fiche ou compte déjà lié ⇒ `409`,
+  `rule = "alreadyLinked"`. L'élément renvoyé porte aussi `employeeId`.
 
 ### `GET /org/entitlements`
 `{ data: { planCode, status, modules, readOnlyModules, maxEmployees,
@@ -357,9 +359,32 @@ Règles : `409 E_CONFLICT` si l'e-mail ou le matricule existe déjà dans
 l'organisation ; `403 E_QUOTA_EXCEEDED` si le nombre d'employés actifs atteint
 `max_employees` du plan ; `managerId` ne doit pas créer de cycle hiérarchique.
 
-`GET /org/employees/managers` retourne uniquement les employés qui sont
-responsables d'un département **ou** déjà `manager_id` d'au moins un employé
-(règle métier 07 §1.4).
+`GET /org/employees/managers` retourne uniquement les employés `active` qui sont
+responsables d'un département, déjà `manager_id` d'au moins un employé ou
+porteurs du rôle `manager` (règle métier 07 §1.4), en champs réduits.
+
+### Réponses employé
+Les champs dépendent du lecteur (04 §5, 05 §5) :
+- **réduits** (`recruiter`, `security_agent`, `/managers`) : `id`, `firstName`,
+  `lastName`, `jobTitle`, `departmentId`, `photoUrl` ;
+- **équipe** (`manager` sur son équipe) : réduits + `userId`, `employeeNumber`,
+  `email`, `phone`, `managerId`, `hireDate`, `endDate`, `status`, `leaveBalance`,
+  `createdAt`, `updatedAt` ;
+- **complets** (`owner`, `hr_admin`, soi-même) : équipe + `birthDate`, `address`,
+  `emergencyContact`.
+
+Le salaire n'apparaît que dans `GET /:id/salary` : `{ baseSalary, salaryCurrency }`,
+journal `salary.viewed`. Un `employee` voit sa seule fiche dans la liste (04 §5).
+Les recruteurs et agents ne cherchent que sur le nom, sans filtre `status` ou
+`managerId` ni tri. `PATCH` accepte les champs de `POST`, `null` vidant un champ
+facultatif. `filter[contractType]` arrivera avec les contrats.
+
+Passage à `terminated` (07 §1.5) : `endDate` posée, rôles retirés, subordonnés
+rattachés au manager de l'employé, responsabilité de département retirée. Mettre
+fin à sa propre fiche, ou à celle d'un `owner` sans être `owner` ⇒ `403` ; dernier
+`owner` actif ⇒ `409`, `rule = "lastOwner"`. La suppression logique rattache de même
+les subordonnés et retire la responsabilité de département. `POST /:id/restore`
+contrôle le quota et l'unicité de l'e-mail.
 
 ---
 
@@ -381,7 +406,12 @@ responsables d'un département **ou** déjà `manager_id` d'au moins un employé
 | PUT | `/org/employees/:id/skills` | O H |
 
 Suppression de département : `409 E_CONFLICT` si des employés y sont rattachés,
-sauf `?reassignTo=<departmentId>`.
+sauf `?reassignTo=<departmentId>`. Ses sous-départements remontent d'un niveau.
+
+Corps de `POST` et `PATCH /org/departments` : `name` (2 à 120 caractères, unique
+sans tenir compte de la casse), `description`, `managerId`, `parentDepartmentId`.
+Élément renvoyé : ces champs + `id`, `createdAt`, `updatedAt`. Référence hors
+organisation ⇒ `422` ; boucle de parents ⇒ `422 E_HIERARCHY_CYCLE`.
 
 ---
 

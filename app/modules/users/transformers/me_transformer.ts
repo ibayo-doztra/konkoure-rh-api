@@ -1,4 +1,5 @@
 import type User from '#models/user'
+import type Employee from '#models/employee'
 import type { MembershipRow } from '#modules/users/repositories/membership_repository'
 import type { SessionRow } from '#modules/auth/repositories/refresh_token_repository'
 import type { Entitlements } from '#modules/billing/services/entitlement_service'
@@ -45,12 +46,16 @@ export function meDto(snapshot: {
   isPlatformAdmin: boolean
   organizations: MembershipRow[]
   entitlements: Entitlements | null
+  employee: Employee | null
 }) {
+  const { employee } = snapshot
   return {
     user: userDto(snapshot.user),
     isPlatformAdmin: snapshot.isPlatformAdmin,
     organizations: snapshot.organizations.map(organizationDto),
-    employee: null,
+    employee: employee
+      ? { id: employee.id, firstName: employee.firstName, lastName: employee.lastName }
+      : null,
     subscription: snapshot.entitlements ? subscriptionDto(snapshot.entitlements) : null,
     modules: snapshot.entitlements?.modules ?? [],
   }

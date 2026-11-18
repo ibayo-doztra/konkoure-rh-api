@@ -63,5 +63,24 @@ export interface ApiDefinition {
       resend: typeof routes['org.invitations.resend']
       destroy: typeof routes['org.invitations.destroy']
     }
+    departments: {
+      index: typeof routes['org.departments.index']
+      store: typeof routes['org.departments.store']
+      show: typeof routes['org.departments.show']
+      update: typeof routes['org.departments.update']
+      destroy: typeof routes['org.departments.destroy']
+      employees: typeof routes['org.departments.employees']
+    }
+    employees: {
+      index: typeof routes['org.employees.index']
+      store: typeof routes['org.employees.store']
+      managers: typeof routes['org.employees.managers']
+      show: typeof routes['org.employees.show']
+      update: typeof routes['org.employees.update']
+      destroy: typeof routes['org.employees.destroy']
+      restore: typeof routes['org.employees.restore']
+      salary: typeof routes['org.employees.salary']
+      team: typeof routes['org.employees.team']
+    }
   }
 }
