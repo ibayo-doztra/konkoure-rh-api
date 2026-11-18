@@ -16,8 +16,11 @@ import { registerMeRoutes } from '#start/routes/me'
 import { registerOrganizationRoutes } from '#start/routes/organizations'
 import { registerOrgRoutes } from '#start/routes/org'
 
-/** Liveness probe (docs/backend/06 §14). */
-router.get('/health', () => ({ status: 'ok' }))
+const HealthController = () => import('#modules/health/controllers/health_controller')
+
+/** Probes (docs/backend/06 §14). */
+router.get('/health', [HealthController, 'show']).as('health.show')
+router.get('/health/ready', [HealthController, 'ready']).as('health.ready')
 
 /** Interactive docs (`/docs`, `/docs.json`, `/docs.yaml`), never exposed in production. */
 if (env.get('NODE_ENV') !== 'production') {

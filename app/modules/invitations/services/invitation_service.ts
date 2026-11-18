@@ -1,5 +1,4 @@
 import { DateTime } from 'luxon'
-import db from '@adonisjs/lucid/services/db'
 import hash from '@adonisjs/core/services/hash'
 import limiter from '@adonisjs/limiter/services/main'
 import type User from '#models/user'
@@ -11,7 +10,9 @@ import { withTenant } from '#shared/tenant/with_tenant'
 import type { TenantContext } from '#shared/tenant/tenant_context'
 import { dispatchMail } from '#shared/mail/dispatch_mail'
 import { randomToken, sha256 } from '#shared/utils/crypto'
-import invitations, {
+import {
+  invitationsIn,
+  organizationIdForInvitationToken,
   type InvitationListFilters,
 } from '#modules/invitations/repositories/invitation_repository'
 import organizations from '#modules/organizations/repositories/organization_repository'
@@ -42,7 +43,8 @@ const notFound = () => new AppException('E_NOT_FOUND')
 /** Invitations to an organization and their public acceptance (04 §3). */
 export class InvitationService {
   list(tenant: TenantContext, filters: InvitationListFilters) {
-    return invitations.paginate(tenant.organizationId, filters)
+    const { organizationId } = tenant
+    return withTenant(organizationId, (trx) => invitationsIn(organizationId, trx).paginate(filters))
   }
 
   /** Invites an e-mail with a role; the e-mail leaves after the commit. */
@@ -54,7 +56,8 @@ export class InvitationService {
   ): Promise<Invitation> {
     const token = randomToken(32)
     const invitation = await withTenant(tenant.organizationId, async (trx) => {
-      if (await invitations.isMember(tenant.organizationId, input.email, trx)) {
+      const invitations = invitationsIn(tenant.organizationId, trx)
+      if (await invitations.isMember(input.email)) {
         throw new AppException('E_CONFLICT', {
           details: [
             {
@@ -66,7 +69,7 @@ export class InvitationService {
         })
       }
 
-      const pending = await invitations.findPendingByEmail(tenant.organizationId, input.email, trx)
+      const pending = await invitations.findPendingByEmail(input.email)
       if (pending?.isUsable) {
         throw new AppException('E_CONFLICT', {
           details: [{ field: 'email', rule: 'pending', message: 'validation.invitation.pending' }],
@@ -75,20 +78,16 @@ export class InvitationService {
       if (pending) {
         // Past its date: frees the (organization, e-mail) pending slot.
         pending.status = 'expired'
-        await invitations.save(pending, trx)
+        await invitations.save(pending)
       }
 
-      const created = await invitations.create(
-        {
-          organizationId: tenant.organizationId,
-          email: input.email,
-          role: input.role,
-          tokenHash: sha256(token),
-          expiresAt: DateTime.now().plus({ days: TTL_DAYS }),
-          invitedBy: inviter.id,
-        },
-        trx
-      )
+      const created = await invitations.create({
+        email: input.email,
+        role: input.role,
+        tokenHash: sha256(token),
+        expiresAt: DateTime.now().plus({ days: TTL_DAYS }),
+        invitedBy: inviter.id,
+      })
       await auditService.record(trx, this.context(tenant, audit), {
         action: 'invitation.sent',
         targetType: 'invitation',
@@ -110,7 +109,9 @@ export class InvitationService {
     id: string,
     audit: AuditContext
   ): Promise<Invitation> {
-    const current = await invitations.findOrFail(tenant.organizationId, id)
+    const current = await withTenant(tenant.organizationId, (trx) =>
+      invitationsIn(tenant.organizationId, trx).findOrFail(id)
+    )
     if (current.status !== 'pending') throw this.notPending()
     await limiter
       .use({ requests: RESENDS_PER_DAY, duration: '24 hours' })
@@ -118,7 +119,8 @@ export class InvitationService {
 
     const token = randomToken(32)
     const invitation = await withTenant(tenant.organizationId, async (trx) => {
-      const locked = await invitations.findForUpdate(tenant.organizationId, id, trx)
+      const invitations = invitationsIn(tenant.organizationId, trx)
+      const locked = await invitations.findForUpdate(id)
       if (!locked) throw notFound()
       if (locked.status !== 'pending') throw this.notPending()
 
@@ -126,7 +128,7 @@ export class InvitationService {
       locked.expiresAt = DateTime.now().plus({ days: TTL_DAYS })
       locked.sendCount += 1
       locked.lastSentAt = DateTime.now()
-      await invitations.save(locked, trx)
+      await invitations.save(locked)
       await auditService.record(trx, this.context(tenant, audit), {
         action: 'invitation.resent',
         targetType: 'invitation',
@@ -142,12 +144,13 @@ export class InvitationService {
 
   async revoke(tenant: TenantContext, id: string, audit: AuditContext) {
     await withTenant(tenant.organizationId, async (trx) => {
-      const invitation = await invitations.findForUpdate(tenant.organizationId, id, trx)
+      const invitations = invitationsIn(tenant.organizationId, trx)
+      const invitation = await invitations.findForUpdate(id)
       if (!invitation) throw notFound()
       if (invitation.status !== 'pending') throw this.notPending()
 
       invitation.status = 'revoked'
-      await invitations.save(invitation, trx)
+      await invitations.save(invitation)
       await auditService.record(trx, this.context(tenant, audit), {
         action: 'invitation.revoked',
         targetType: 'invitation',
@@ -160,8 +163,7 @@ export class InvitationService {
 
   /** Public preview of a usable invitation; anything else is 404. */
   async preview(token: string): Promise<InvitationPreview> {
-    const invitation = await invitations.findByTokenHash(sha256(token))
-    if (!invitation?.isUsable) throw notFound()
+    const { invitation } = await this.findByToken(sha256(token))
     const organization = await organizations.findActive(invitation.organizationId)
     if (!organization) throw notFound()
 
@@ -186,8 +188,7 @@ export class InvitationService {
     audit: AuditContext
   ): Promise<{ user: User; tokens: IssuedTokens }> {
     const tokenHash = sha256(token)
-    const invitation = await invitations.findByTokenHash(tokenHash)
-    if (!invitation?.isUsable) throw notFound()
+    const { invitation, organizationId } = await this.findByToken(tokenHash)
 
     const existing = await users.findByEmail(invitation.email)
     let session: { user: User; tokens: IssuedTokens } | null = null
@@ -202,8 +203,9 @@ export class InvitationService {
       passwordHash = await hash.make(input.password)
     }
 
-    const user = await db.transaction(async (trx) => {
-      const locked = await invitations.findByTokenHash(tokenHash, trx)
+    const user = await withTenant(organizationId, async (trx) => {
+      const invitations = invitationsIn(organizationId, trx)
+      const locked = await invitations.findByTokenHash(tokenHash, { lock: true })
       if (!locked?.isUsable) throw notFound()
 
       let member: User
@@ -226,19 +228,15 @@ export class InvitationService {
         )
       }
 
-      const granted = await invitations.grantRole(
-        {
-          userId: member.id,
-          organizationId: locked.organizationId,
-          role: locked.role,
-          grantedBy: locked.invitedBy,
-        },
-        trx
-      )
+      const granted = await invitations.grantRole({
+        userId: member.id,
+        role: locked.role,
+        grantedBy: locked.invitedBy,
+      })
       locked.status = 'accepted'
       locked.acceptedAt = DateTime.now()
       locked.acceptedUserId = member.id
-      await invitations.save(locked, trx)
+      await invitations.save(locked)
 
       const context: AuditContext = {
         ...audit,
@@ -266,6 +264,17 @@ export class InvitationService {
     if (session) return session
     await user.refresh()
     return { user, tokens: await tokenService.issue(user, client) }
+  }
+
+  /** Usable invitation behind a token; unknown, used or expired tokens are 404. */
+  private async findByToken(tokenHash: string) {
+    const organizationId = await organizationIdForInvitationToken(tokenHash)
+    if (!organizationId) throw notFound()
+    const invitation = await withTenant(organizationId, (trx) =>
+      invitationsIn(organizationId, trx).findByTokenHash(tokenHash)
+    )
+    if (!invitation?.isUsable) throw notFound()
+    return { invitation, organizationId }
   }
 
   private context(tenant: TenantContext, audit: AuditContext): AuditContext {

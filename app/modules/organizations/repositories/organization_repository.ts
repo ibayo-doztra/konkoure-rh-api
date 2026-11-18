@@ -21,7 +21,7 @@ export class OrganizationRepository {
   }
 
   create(
-    data: Pick<Organization, 'name' | 'slug' | 'defaultLanguage' | 'createdBy'> &
+    data: Pick<Organization, 'id' | 'name' | 'slug' | 'defaultLanguage' | 'createdBy'> &
       Partial<Pick<Organization, 'performanceModel'>>,
     trx: TransactionClientContract
   ) {

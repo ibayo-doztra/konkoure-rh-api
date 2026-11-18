@@ -22,6 +22,14 @@ const pgConnection = {
   statement_timeout: env.get('DB_STATEMENT_TIMEOUT_MS', 10_000),
 }
 
+/**
+ * Seul le serveur HTTP prend le rôle applicatif : les migrations gardent le rôle
+ * propriétaire. Inutile quand DB_USER est déjà `konkoure_app` (production).
+ */
+const appRole = app.getEnvironment() === 'web' ? env.get('DB_APP_ROLE') : undefined
+
+type PgConnection = { query(sql: string, done: (error: Error | null) => void): void }
+
 const dbConfig = defineConfig({
   connection: 'pg',
 
@@ -32,6 +40,11 @@ const dbConfig = defineConfig({
       pool: {
         min: env.get('DB_POOL_MIN', 2),
         max: env.get('DB_POOL_MAX', 20),
+        ...(appRole && {
+          afterCreate(connection: PgConnection, done: (e: Error | null, c: PgConnection) => void) {
+            connection.query(`SET ROLE ${appRole}`, (error) => done(error, connection))
+          },
+        }),
       },
       migrations: {
         naturalSort: true,

@@ -38,7 +38,9 @@ function asMember(
   who: Member,
   organization: Organization
 ) {
-  return client[method](url)
+  // Dynamic method and URL: the request is deliberately outside the typed routes.
+  return client
+    .request(url, method.toUpperCase())
     .bearerToken(who.accessToken)
     .header('X-Organization-Id', organization.id)
 }

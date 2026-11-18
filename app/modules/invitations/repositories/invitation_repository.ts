@@ -1,7 +1,9 @@
 import { DateTime } from 'luxon'
+import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import Invitation, { type InvitationStatus } from '#models/invitation'
 import UserRole, { type AppRole } from '#models/user_role'
+import { TenantRepository } from '#shared/base/tenant_repository'
 
 export interface InvitationListFilters {
   status?: InvitationStatus
@@ -9,40 +11,23 @@ export interface InvitationListFilters {
   perPage: number
 }
 
-/**
- * Tenant-scoped invitation access (docs/backend/05 §1–2): every method takes
- * the organization id, except the token lookup used by the public accept flow,
- * where the token itself designates the organization.
- */
-export class InvitationRepository {
-  private scoped(organizationId: string, trx?: TransactionClientContract) {
-    return Invitation.query({ client: trx }).where('organization_id', organizationId)
+/** Tenant-scoped invitation access (docs/backend/05 §1–2). */
+export class InvitationRepository extends TenantRepository<typeof Invitation> {
+  constructor(organizationId: string, trx: TransactionClientContract) {
+    super(Invitation, organizationId, trx)
   }
 
-  findOrFail(organizationId: string, id: string, trx?: TransactionClientContract) {
-    return this.scoped(organizationId, trx).where('id', id).firstOrFail()
+  findPendingByEmail(email: string) {
+    return this.query().where('email', email).where('status', 'pending').forUpdate().first()
   }
 
-  findForUpdate(organizationId: string, id: string, trx: TransactionClientContract) {
-    return this.scoped(organizationId, trx).where('id', id).forUpdate().first()
+  findByTokenHash(tokenHash: string, options: { lock?: boolean } = {}) {
+    const query = this.query().where('token_hash', tokenHash)
+    return options.lock ? query.forUpdate().first() : query.first()
   }
 
-  findPendingByEmail(organizationId: string, email: string, trx: TransactionClientContract) {
-    return this.scoped(organizationId, trx)
-      .where('email', email)
-      .where('status', 'pending')
-      .forUpdate()
-      .first()
-  }
-
-  /** Cross-tenant by design: the secret token is the only key of the public flow. */
-  findByTokenHash(tokenHash: string, trx?: TransactionClientContract) {
-    const query = Invitation.query({ client: trx }).where('token_hash', tokenHash)
-    return trx ? query.forUpdate().first() : query.first()
-  }
-
-  paginate(organizationId: string, filters: InvitationListFilters) {
-    const query = this.scoped(organizationId).orderBy('created_at', 'desc').orderBy('id', 'desc')
+  paginate(filters: InvitationListFilters) {
+    const query = this.query().orderBy('created_at', 'desc').orderBy('id', 'desc')
     if (filters.status === 'expired') {
       query.where((q) =>
         q
@@ -59,26 +44,15 @@ export class InvitationRepository {
     return query.paginate(filters.page, filters.perPage)
   }
 
-  create(
-    data: Pick<
-      Invitation,
-      'organizationId' | 'email' | 'role' | 'tokenHash' | 'expiresAt' | 'invitedBy'
-    >,
-    trx: TransactionClientContract
-  ) {
-    return Invitation.create(data, { client: trx })
+  create(data: Pick<Invitation, 'email' | 'role' | 'tokenHash' | 'expiresAt' | 'invitedBy'>) {
+    return Invitation.create({ ...data, organizationId: this.organizationId }, { client: this.trx })
   }
 
-  save(invitation: Invitation, trx: TransactionClientContract) {
-    invitation.useTransaction(trx)
-    return invitation.save()
-  }
-
-  async isMember(organizationId: string, email: string, trx: TransactionClientContract) {
-    const row = await trx
+  async isMember(email: string) {
+    const row = await this.trx
       .from('user_roles as ur')
       .join('users as u', 'u.id', 'ur.user_id')
-      .where('ur.organization_id', organizationId)
+      .where('ur.organization_id', this.organizationId)
       .where('u.email', email)
       .whereNull('u.deleted_at')
       .first()
@@ -86,19 +60,31 @@ export class InvitationRepository {
   }
 
   /** Grants the role unless the user already holds it. */
-  async grantRole(
-    data: { userId: string; organizationId: string; role: AppRole; grantedBy: string | null },
-    trx: TransactionClientContract
-  ): Promise<boolean> {
-    const existing = await UserRole.query({ client: trx })
+  async grantRole(data: {
+    userId: string
+    role: AppRole
+    grantedBy: string | null
+  }): Promise<boolean> {
+    const existing = await UserRole.query({ client: this.trx })
       .where('user_id', data.userId)
-      .where('organization_id', data.organizationId)
+      .where('organization_id', this.organizationId)
       .where('role', data.role)
       .first()
     if (existing) return false
-    await UserRole.create(data, { client: trx })
+    await UserRole.create({ ...data, organizationId: this.organizationId }, { client: this.trx })
     return true
   }
 }
 
-export default new InvitationRepository()
+export function invitationsIn(organizationId: string, trx: TransactionClientContract) {
+  return new InvitationRepository(organizationId, trx)
+}
+
+/**
+ * Organization designated by a secret invitation token, the only cross-tenant
+ * lookup of the public flow (definer function, migration 0114).
+ */
+export async function organizationIdForInvitationToken(tokenHash: string): Promise<string | null> {
+  const result = await db.rawQuery('select invitation_org_id_for_token(?) as id', [tokenHash])
+  return result.rows[0]?.id ?? null
+}

@@ -60,6 +60,7 @@ export default defineConfig({
     () => import('@adonisjs/mail/mail_provider'),
     () => import('@foadonis/openapi/openapi_provider'),
     () => import('@adonisjs/bouncer/bouncer_provider'),
+    () => import('@adonisjs/drive/drive_provider'),
   ],
 
   /*
@@ -74,6 +75,7 @@ export default defineConfig({
     () => import('#start/routes'),
     () => import('#start/kernel'),
     () => import('#start/validator'),
+    () => import('#start/queue'),
   ],
 
   /*

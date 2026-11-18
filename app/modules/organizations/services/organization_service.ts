@@ -1,7 +1,8 @@
-import db from '@adonisjs/lucid/services/db'
 import type User from '#models/user'
 import type Organization from '#models/organization'
 import { AppException } from '#shared/exceptions/app_exception'
+import { withTenant } from '#shared/tenant/with_tenant'
+import { newId } from '#shared/utils/crypto'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import { slugCandidate, slugify } from '#modules/organizations/slug'
@@ -50,10 +51,13 @@ export class OrganizationService {
     attempt: number,
     audit: AuditContext
   ): Promise<Organization> {
-    return db.transaction(async (trx) => {
+    // The id is chosen first: the owner role is written inside the new tenant (RLS).
+    const id = newId()
+    return withTenant(id, async (trx) => {
       const slug = await this.freeSlug(base, attempt, trx)
       const organization = await organizations.create(
         {
+          id,
           name: input.name,
           slug,
           defaultLanguage: input.defaultLanguage ?? 'fr',

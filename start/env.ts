@@ -32,6 +32,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   DB_POOL_MIN: Env.schema.number.optional(),
   DB_POOL_MAX: Env.schema.number.optional(),
   DB_STATEMENT_TIMEOUT_MS: Env.schema.number.optional(),
+  // Rôle pris par le serveur HTTP quand DB_USER en est membre (RLS, 05 §1)
+  DB_APP_ROLE: Env.schema.enum.optional(['konkoure_app'] as const),
 
   // Redis
   REDIS_HOST: Env.schema.string({ format: 'host' }),
@@ -39,7 +41,11 @@ export default await Env.create(new URL('../', import.meta.url), {
   REDIS_PASSWORD: Env.schema.secret.optional(),
   REDIS_TLS: Env.schema.boolean.optional(),
   REDIS_DB_CACHE: Env.schema.number.optional(),
+  REDIS_DB_QUEUE: Env.schema.number.optional(),
   REDIS_DB_LIMITER: Env.schema.number.optional(),
+
+  // Files : `sync` exécute les jobs dans le processus (développement, tests)
+  QUEUE_DRIVER: Env.schema.enum.optional(['bullmq', 'sync'] as const),
 
   // Rate limit : `memory` réservé aux tests (store non partagé entre réplicas)
   LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const),
@@ -56,6 +62,16 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Sécurité
   CORS_ORIGINS: Env.schema.string.optional(),
+
+  // Stockage (docs/backend/11 §1)
+  DRIVE_DISK: Env.schema.enum.optional(['fs', 's3', 's3Public'] as const),
+  S3_ENDPOINT: Env.schema.string.optional({ format: 'url', tld: false }),
+  S3_REGION: Env.schema.string.optional(),
+  S3_ACCESS_KEY_ID: Env.schema.string.optional(),
+  S3_SECRET_ACCESS_KEY: Env.schema.secret.optional(),
+  S3_BUCKET_PUBLIC: Env.schema.string.optional(),
+  S3_BUCKET_PRIVATE: Env.schema.string.optional(),
+  S3_PUBLIC_BASE_URL: Env.schema.string.optional({ format: 'url', tld: false }),
 
   // E-mail (Resend). Sans clé, les e-mails ne partent pas (dev local).
   MAIL_MAILER: Env.schema.enum(['resend'] as const),
