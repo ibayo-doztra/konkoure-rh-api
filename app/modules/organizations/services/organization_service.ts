@@ -1,8 +1,10 @@
-import { DateTime } from 'luxon'
+import { DateTime, IANAZone } from 'luxon'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type Organization from '#models/organization'
 import { AppException } from '#shared/exceptions/app_exception'
 import { withTenant } from '#shared/tenant/with_tenant'
+import type { TenantContext } from '#shared/tenant/tenant_context'
 import { newId } from '#shared/utils/crypto'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
@@ -17,6 +19,22 @@ export interface CreateOrganizationInput {
   defaultLanguage?: 'fr' | 'en'
   performanceModel?: 'classic' | 'sap'
 }
+
+export interface UpdateOrganizationInput {
+  name?: string
+  defaultLanguage?: 'fr' | 'en'
+  defaultCurrency?: 'GNF'
+  timezone?: string
+  performanceModel?: 'classic' | 'sap'
+}
+
+const UPDATABLE_FIELDS = [
+  'name',
+  'defaultLanguage',
+  'defaultCurrency',
+  'timezone',
+  'performanceModel',
+] as const
 
 /** Every new organization starts on this plan, for 30 days (docs/backend/07 §6.2). */
 export const TRIAL_PLAN_CODE = 'free'
@@ -50,6 +68,108 @@ export class OrganizationService {
         if (!isSlugConflict(error) || attempt >= MAX_ATTEMPTS) throw error
       }
     }
+  }
+
+  async current(tenant: TenantContext): Promise<Organization> {
+    const organization = await organizations.findActive(tenant.organizationId)
+    if (!organization) throw new AppException('E_NOT_FOUND')
+    return organization
+  }
+
+  /** PATCH /org. The slug never changes: public careers links depend on it. */
+  async update(
+    tenant: TenantContext,
+    actor: User,
+    input: UpdateOrganizationInput,
+    audit: AuditContext
+  ): Promise<Organization> {
+    if (input.timezone !== undefined && !IANAZone.isValidZone(input.timezone)) {
+      throw AppException.validation('timezone', 'timezone', 'validation.organization.timezone')
+    }
+
+    return withTenant(tenant.organizationId, async (trx) => {
+      const organization = await this.lock(tenant, trx)
+      const before: Record<string, unknown> = {}
+      const after: Record<string, unknown> = {}
+      for (const field of UPDATABLE_FIELDS) {
+        const value = input[field]
+        if (value === undefined || value === organization[field]) continue
+        before[field] = organization[field]
+        after[field] = value
+      }
+      if (Object.keys(after).length === 0) return organization
+
+      organization.merge({ ...after, updatedBy: actor.id })
+      await organizations.save(organization, trx)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'organization.updated',
+        targetType: 'organization',
+        targetId: organization.id,
+        before,
+        after,
+      })
+      await organization.refresh()
+      return organization
+    })
+  }
+
+  /** PUT /org/settings: replaces the whole block (02 §11). */
+  updateSettings(
+    tenant: TenantContext,
+    actor: User,
+    settings: Record<string, unknown>,
+    audit: AuditContext
+  ): Promise<Organization> {
+    return withTenant(tenant.organizationId, async (trx) => {
+      const organization = await this.lock(tenant, trx)
+      const before = organization.settings
+      organization.merge({ settings, updatedBy: actor.id })
+      await organizations.save(organization, trx)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'organization.settings_updated',
+        targetType: 'organization',
+        targetId: organization.id,
+        before: { settings: before },
+        after: { settings },
+      })
+      await organization.refresh()
+      return organization
+    })
+  }
+
+  /**
+   * Soft delete confirmed by the exact name: access stops at once. The physical
+   * purge after 30 days (06 §3) is a later maintenance job.
+   */
+  async remove(tenant: TenantContext, actor: User, confirmName: string, audit: AuditContext) {
+    await withTenant(tenant.organizationId, async (trx) => {
+      const organization = await this.lock(tenant, trx)
+      if (organization.name !== confirmName) {
+        throw AppException.validation(
+          'confirmName',
+          'mismatch',
+          'validation.organization.confirmName'
+        )
+      }
+      organization.merge({ deletedAt: DateTime.now(), updatedBy: actor.id })
+      await organizations.save(organization, trx)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'organization.deleted',
+        targetType: 'organization',
+        targetId: organization.id,
+        before: { name: organization.name, slug: organization.slug },
+      })
+    })
+  }
+
+  private async lock(tenant: TenantContext, trx: TransactionClientContract) {
+    const organization = await organizations.findActiveForUpdate(tenant.organizationId, trx)
+    if (!organization) throw new AppException('E_NOT_FOUND')
+    return organization
+  }
+
+  private context(tenant: TenantContext, audit: AuditContext): AuditContext {
+    return { ...audit, organizationId: tenant.organizationId, actorRole: tenant.primaryRole }
   }
 
   private insert(

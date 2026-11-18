@@ -11,7 +11,17 @@
       "confirmed": "La confirmation ne correspond pas.",
       "enum": "La valeur du champ {field} n'est pas autorisée.",
       "accepted": "Vous devez accepter les conditions d'utilisation.",
-      "boolean": "Le champ {field} doit être vrai ou faux."
+      "boolean": "Le champ {field} doit être vrai ou faux.",
+      "number": "Le champ {field} doit être un nombre.",
+      "withoutDecimals": "Le champ {field} doit être un nombre entier.",
+      "min": "Le champ {field} doit être supérieur ou égal à {min}.",
+      "max": "Le champ {field} doit être inférieur ou égal à {max}.",
+      "regex": "Le format du champ {field} est invalide.",
+      "array": "Le champ {field} doit être une liste.",
+      "array.minLength": "Le champ {field} doit contenir au moins {min} élément(s).",
+      "array.maxLength": "Le champ {field} doit contenir au plus {max} éléments.",
+      "distinct": "Le champ {field} contient des doublons.",
+      "file": "Le champ {field} doit être un fichier."
     },
     "fields": {
       "email": "e-mail",

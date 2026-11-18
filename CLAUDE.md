@@ -10,13 +10,13 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
+Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
 
 | Sujet | Reste à faire |
 |---|---|
 | Tables | tout le reste de 03 §1 (RH, pointage, congés, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
 | `/me` | `employee` à `null` jusqu'au module RH ; notifications, export, suppression du compte |
-| `/org` | détail, réglages, logo, suppression, membres, tableau de bord |
+| `/org` | tableau de bord ; purge à 30 jours des organisations supprimées (avant le lancement) ; entrée `files` des logos (table 0104) |
 | Transverse | `/metrics`, `system_logs`, `modules_open_for_testing` (platform_settings) |
 
 Ajouter une dépendance externe, changer un contrat d'endpoint existant ou écrire une migration destructive : **demander d'abord** (docs/backend/13 §8).

@@ -307,6 +307,71 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['show']>>>
+    }
+  }
+  'org.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/organization_validator').updateOrganizationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/organization_validator').updateOrganizationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/organization_validator').deleteOrganizationValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/organization_validator').deleteOrganizationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.settings.update': {
+    methods: ["PUT"]
+    pattern: '/api/v1/org/settings'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/organization_validator').updateOrganizationSettingsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/organization_validator').updateOrganizationSettingsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['updateSettings']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['updateSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['updateSettings']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.logo.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/logo'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/organization_validator').organizationLogoValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/organization_validator').organizationLogoValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['uploadLogo']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['uploadLogo']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/current_organization_controller').default['uploadLogo']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.entitlements.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/entitlements'
@@ -318,6 +383,45 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
+    }
+  }
+  'org.members.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/members'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/organizations/validators/member_validator').listMembersValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.members.roles.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/members/:userId/roles'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/member_validator').updateMemberRolesValidator)>>
+      paramsTuple: [ParamValue]
+      params: { userId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/member_validator').updateMemberRolesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['updateRoles']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['updateRoles']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['updateRoles']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.members.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/members/:userId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/organizations/validators/member_validator').memberIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { userId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/organizations/validators/member_validator').memberIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/members_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'org.invitations.index': {

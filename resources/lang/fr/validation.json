@@ -17,6 +17,14 @@
     "ownerRole": "Seul un propriétaire peut inviter un autre propriétaire.",
     "notPending": "Cette invitation n'est plus en attente."
   },
+  "organization": {
+    "timezone": "Ce fuseau horaire n'est pas reconnu.",
+    "logo": "Le logo doit être une image PNG, JPEG ou WebP.",
+    "confirmName": "Le nom saisi ne correspond pas à celui de l'organisation."
+  },
+  "member": {
+    "lastOwner": "L'organisation doit conserver au moins un propriétaire actif."
+  },
   "entitlement": {
     "requiredModule": "Module requis.",
     "currentPlan": "Offre actuelle."
