@@ -15,6 +15,9 @@ processus HTTP (`node ace queue:work`), scalable indépendamment.
 
 Politique commune : 3 à 5 tentatives, backoff exponentiel (base 30 s, plafond
 1 h), `removeOnComplete: 1000`, `removeOnFail: 5000`.
+Les jobs portant un lien à usage unique (`mail.send`) ne sont pas conservés dans Redis
+après leur fin. `QUEUE_DRIVER=sync` exécute les jobs dans le processus, sans worker
+(développement et tests) ; la production utilise `bullmq`.
 Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 Échec définitif ⇒ écriture dans `system_logs` niveau `error` + alerte.
 

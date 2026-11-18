@@ -25,6 +25,13 @@ export async function withTenant<T>(orgId: string, fn: (trx: TransactionClientCo
 }
 ```
 
+Toute lecture ou écriture d'une table tenant passe donc par `withTenant()`. Trois
+exceptions documentées : `user_roles` est lisible sans tenant (le middleware en a
+besoin pour valider l'en-tête, l'écriture reste liée au tenant) ; `audit_logs`
+accepte les lignes sans organisation (événements d'authentification) ; le parcours
+public d'invitation résout l'organisation par la fonction `SECURITY DEFINER`
+`invitation_org_id_for_token(hash)`.
+
 Les jobs de fond et les tâches plateforme utilisent un rôle distinct
 (`konkoure_worker`) avec `BYPASSRLS` explicitement documenté, jamais le rôle web.
 

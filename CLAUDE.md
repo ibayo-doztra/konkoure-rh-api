@@ -10,14 +10,14 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Phase 1 en cours : le **socle auth et `/me`** est livré (`/api/v1/auth/*` sauf invitations, `/api/v1/me`, `/me/password`, `/me/sessions`, `/me/organizations`). Reste à faire pour la cible de `docs/backend/` :
+Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
 
-| Sujet | État | Reste à faire |
-|---|---|---|
-| Tables | `users`, jetons d'accès/refresh, `password_reset_tokens`, `organizations`, `user_roles`, `audit_logs` (partition DEFAULT), `platform_admins` | tout le reste de 03 §1 (invitations, RH, abonnements…), RLS et rôles SQL (0140) |
-| Tenant | — | middleware `X-Organization-Id`, `TenantRepository`, `withTenant()`, Bouncer, entitlements, idempotence |
-| `/me` | `employee`, `subscription`, `modules` renvoyés à `null`/`[]` | à remplir quand RH et facturation existeront |
-| Absents | — | BullMQ (les e-mails partent par le messager en mémoire de `@adonisjs/mail`), drive, `POST /organizations` |
+| Sujet | Reste à faire |
+|---|---|
+| Tables | tout le reste de 03 §1 (RH, pointage, congés, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
+| `/me` | `employee` à `null` jusqu'au module RH ; notifications, export, suppression du compte |
+| `/org` | détail, réglages, logo, suppression, membres, tableau de bord |
+| Transverse | `/metrics`, `system_logs`, `modules_open_for_testing` (platform_settings) |
 
 Ajouter une dépendance externe, changer un contrat d'endpoint existant ou écrire une migration destructive : **demander d'abord** (docs/backend/13 §8).
 
@@ -25,7 +25,9 @@ Ajouter une dépendance externe, changer un contrat d'endpoint existant ou écri
 
 Gestionnaire de paquets : **pnpm** (pas npm).
 
-Redis (limiteur) : `docker compose up -d redis` (Docker Desktop doit tourner). Les tests n'en ont pas besoin (`LIMITER_STORE=memory` dans `.env.test`). Sans `RESEND_API_KEY`, les e-mails échouent et sont seulement journalisés (`mail.dispatch_failed`).
+Redis : `docker compose up -d redis` (Docker Desktop doit tourner). **Les tests en ont besoin** (idempotence, cache des droits, BullMQ), même si le limiteur y est en mémoire. Sans `RESEND_API_KEY`, les e-mails échouent et sont seulement journalisés.
+
+Files : `QUEUE_DRIVER=sync` (défaut hors production) exécute les jobs dans le processus ; avec `bullmq`, lancer `node ace queue:work`.
 
 Base : **PostgreSQL** (serveur local, PostgreSQL 18 en dev) configuré via les variables `DB_*` de `.env`. Bases `konkoure` (dev) et `konkoure_test` (sélectionnée par `.env.test`). Pour migrer la base de test : `NODE_ENV=test node ace migration:run`. Tout script qui lit `.env` doit passer par le parseur d'AdonisJS (`EnvParser`) : `$` y est interpolé et les échappements sont interprétés, un parsing naïf donne de mauvaises valeurs.
 
@@ -59,7 +61,9 @@ Sur la machine de dev Windows, Smart App Control bloque le binaire natif `@swc/c
 - **Erreurs** : lever `new AppException('E_…')` (`#shared/exceptions/app_exception`), le statut HTTP est fixé par le code. Pour une erreur de champ : `AppException.validation(field, rule, 'validation.<clé i18n>')`. `app/exceptions/handler.ts` rend toujours `{ error: { code, message, requestId, details } }`, traduit `errors.<code>` et les messages `validation.*`, et ne renvoie jamais de pile.
 - **Réponses** : `ctx.serialize(objet)` enveloppe dans `{ data }`, mais **pas les tableaux** (renvoyés bruts) : pour une liste, renvoyer `{ data: [...] }`. Les DTO de sortie sont des fonctions explicites (ex. `app/modules/users/transformers/me_transformer.ts`) : on ne sérialise jamais un modèle directement.
 - **Middleware** (`start/kernel.ts`) : côté serveur, `request_context` (uuid v7 en `X-Request-Id`, logger enfant), JSON forcé, langue (`Accept-Language`, fr par défaut), CORS ; côté routeur, bodyparser, shield, auth. `middleware.auth()` renvoie `E_TOKEN_EXPIRED` pour un jeton expiré et refuse les comptes inactifs. Limiteurs globaux dans `start/limiter.ts` (300/min/IP, 600/min/utilisateur) ; les budgets propres à un endpoint sont dans les services.
-- **Audit et e-mails** : `auditService.record(trx, contexte, entrée)` dans la transaction de la mutation (`audit_logs` en insertion seule) ; e-mails via `dispatchMail()` après le commit (un échec est journalisé, jamais remonté).
+- **Tenant et RLS** : toute table tenant appelle `SELECT enable_tenant_rls('<table>')` dans sa migration. Toute lecture ou écriture passe par `withTenant(orgId, trx => …)` et un repository qui étend `TenantRepository` (`#shared/base/tenant_repository`). Le superutilisateur contourne la RLS : `DB_APP_ROLE=konkoure_app` (activé dans les e2e du frontend) l'applique au serveur HTTP. Les tests Japa vérifient la RLS avec `SET LOCAL ROLE konkoure_app`.
+- **Droits** : `entitlementService` (`#modules/billing/services/entitlement_service`, cache 60 s, à invalider à chaque changement d'abonnement) et `middleware.entitlement({ module })` après `tenant`.
+- **Audit et e-mails** : `auditService.record(trx, contexte, entrée)` dans la transaction de la mutation (`audit_logs` en insertion seule) ; e-mails via `dispatchMail()` après le commit, par BullMQ en production (un échec est journalisé, jamais remonté). Nouveau job : l'ajouter à `#shared/queue/jobs`.
 - **Pas de session** : le paquet `@adonisjs/session` a été retiré ; le seul cookie est le refresh token web (`konkoure_refresh`).
 - **Validation** : VineJS dans `app/modules/*/validators/`. Messages traduits par `resources/lang/{fr,en}/validator.json` ; autres traductions : `errors.json`, `emails.json`, `validation.json`. `start/validator.ts` convertit les dates VineJS en `DateTime` Luxon.
 - **Tests** : `tests/bootstrap.ts` simule le mailer pour toute la suite. Utilitaires : `tests/helpers/auth.ts` (`createUser`, `createOrganization`, `grantRoles`, `apiLogin` qui ouvre une vraie session) et `tests/helpers/http.ts` (`expectStatus(requête, code)`, à préférer à `(await …).assertStatus()` que le lint refuse). Chaque groupe : `testUtils.db().withGlobalTransaction()` et `limiter.clear(['memory'])`.

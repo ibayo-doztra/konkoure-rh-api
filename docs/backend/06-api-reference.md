@@ -137,7 +137,7 @@ famille révoquée), `429` (60 / h / utilisateur).
   "employee": { "id":"0192…", "firstName":"A", "lastName":"B" },
   "subscription": { "planCode":"free", "planName":"Gratuit", "maxEmployees":10,
                     "aiCreditsPerMonth":20, "status":"trialing",
-                    "currentPeriodEnd":null, "cycle":"mensuel", "priceGnf":0,
+                    "currentPeriodEnd":null, "cycle":"monthly", "priceGnf":0,
                     "trialEndsAt":"2026-12-16T00:00:00.000Z", "planEffective":false },
   "modules": ["hr","timeclock","leaves","performance","settings"]
 }}
@@ -146,10 +146,14 @@ famille révoquée), `429` (60 / h / utilisateur).
 - Le serveur ne choisit jamais l'organisation active (01 §4) : le client choisit
   dans `organizations` et envoie `X-Organization-Id`.
 - `mustChangePassword` reflète `users.must_reset_password` (comptes importés).
-- `employee` est la fiche liée dans l'organisation choisie ; `subscription` et
-  `modules` (droits effectifs calculés serveur) sont ceux de cette organisation.
-  **Tant que les modules RH et facturation ne sont pas livrés**, l'API renvoie
-  `employee: null`, `subscription: null`, `modules: []` et `plan: null`.
+- `GET /me` accepte un en-tête `X-Organization-Id` **optionnel**. `employee`,
+  `subscription` et `modules` (droits effectifs calculés serveur) sont ceux de cette
+  organisation. Sans en-tête, ou s'il est invalide ou désigne une organisation dont
+  l'utilisateur n'est pas membre : `subscription: null`, `modules: []`, sans erreur.
+- `status` ∈ `trialing | active | past_due | suspended | canceled | expired` (statut
+  effectif à l'instant de la requête) ; `cycle` ∈ `monthly | yearly`.
+- `organizations[].plan` est le code de l'offre courante, `null` sans abonnement.
+- **Tant que le module RH n'est pas livré**, `employee` vaut `null`.
 
 `GET /me/organizations` renvoie `{ data: [...] }` avec les mêmes éléments que
 `organizations` ci-dessus.
@@ -202,12 +206,12 @@ le client est ignoré. Pays `GN`, fuseau `Africa/Conakry` et devise `GNF` par d�
 `201` : un élément au format de `GET /me` → `organizations[]` :
 ```json
 { "data": { "id":"0192…", "name":"Doztra", "slug":"doztra", "logoUrl":null,
-  "defaultLanguage":"fr", "defaultCurrency":"GNF", "plan":null,
+  "defaultLanguage":"fr", "defaultCurrency":"GNF", "plan":"free",
   "performanceModel":"sap", "roles":["owner"] }}
 ```
-Création, rôle `owner` et journaux `organization.created` + `role.granted` dans
-une seule transaction. La fiche employé liée et l'abonnement d'essai (04 §3)
-sont ajoutés par les modules RH et facturation.
+Création, rôle `owner`, abonnement d'essai de 30 jours (plan `free`) et journaux
+`organization.created`, `role.granted`, `subscription.changed` dans une seule
+transaction. La fiche employé liée (04 §3) est ajoutée par le module RH.
 Erreurs : `401`, `403 E_EMAIL_NOT_VERIFIED`, `422`, `429`.
 
 ### Contexte `/org/*`
@@ -237,6 +241,12 @@ dont la date est passée est renvoyée `expired`.
 - Invitation d'une autre organisation ⇒ `404`. Journaux `invitation.sent`,
   `invitation.resent`, `invitation.revoked`.
 - `employee_id` (lien vers une fiche employé) arrive avec le module RH.
+
+### `GET /org/entitlements`
+`{ data: { planCode, status, modules, readOnlyModules, maxEmployees,
+aiCreditsPerMonth, trialEndsAt, currentPeriodEnd } }`. `readOnlyModules` liste les
+modules accessibles en lecture seule (abonnement suspendu ou expiré). Organisation
+sans abonnement ⇒ `403 E_SUBSCRIPTION_INACTIVE`.
 
 ### `GET /org/dashboard`
 Renvoie, filtré selon le rôle (un `employee` ne voit que ses propres chiffres) :
@@ -565,7 +575,7 @@ Djomy **et** un appel de vérification serveur.
 | POST | `/public/payments/:merchantReference/claim` | Rattache le paiement à un compte |
 
 ### Candidature
-`multipart/form-data` : `fullName`, `email`, `phone`, `cv` (pdf/png/jpg ≤ 10 Mo),
+`multipart/form-data` : `fullName`, `email`, `phone`, `cv` (PDF/DOC/DOCX/JPG/PNG ≤ 2 Mo),
 `coverLetter?`, `documents[<clé>]?` selon `job.required_documents`.
 Contrôles : offre `published` et non expirée, MIME réel, anti-doublon
 `(job_id, email)`, rate limit 5/h/IP et 3/h/e-mail, honeypot.
@@ -637,7 +647,7 @@ Toutes les listes de journaux sont paginées **par curseur** et plafonnées à
 | Méthode | Chemin | Auth |
 |---|---|---|
 | GET | `/health` | — | `{ status:'ok', version, uptime }` |
-| GET | `/health/ready` | — | vérifie PostgreSQL, Redis, migrations |
+| GET | `/health/ready` | — | `200` ou `503`, `{ status, checks: { database, redis, migrations } }` |
 | GET | `/metrics` | réseau interne | format Prometheus |
 
 ## Endpoints complémentaires requis par le frontend
@@ -646,14 +656,14 @@ Format, pagination et erreurs identiques au reste du document.
 | Méthode | Chemin | Rôle | Description |
 |---|---|---|---|
 | GET | `/me` | authentifié | contrat détaillé en §2 (`GET /me`) |
-| GET | `/v1/dashboard/kpis?period=` | owner, hr_admin, manager (périmètre) | KPIs en direct |
-| GET | `/v1/employees/:id/leave-balance` | soi, manager, RH | solde, jours en attente |
-| PATCH | `/v1/candidates/:id/stage` | recrutement | change l'étape, journalise |
-| GET | `/v1/candidates/:id/cv-url` | recrutement | URL signée courte du CV |
-| GET/PUT/DELETE | `/v1/employees/:id/badge` | owner, hr_admin | badge NFC, audité |
-| GET | `/v1/employees/:id/badge/history` | owner, hr_admin | historique |
-| POST | `/v1/public/jobs/:id/application-uploads` | public, limité | contrôle doublon + URLs d'envoi |
-| POST | `/v1/public/jobs/:id/applications` | public, limité | enregistrement + scoring n8n |
-| POST | `/v1/public/prepaid/codes` · `/payments` · `/payments/:id/claim` | public / authentifié | paiement avant inscription |
-| `*` | `/v1/platform/*` | super-admin | organisations, offres, utilisateurs, paiements, démos, journal, réglages |
+| GET | `/org/dashboard/kpis?period=` | owner, hr_admin, manager (périmètre) | KPIs en direct |
+| GET | `/org/employees/:id/leave-balance` | soi, manager, RH | solde, jours en attente |
+| PATCH | `/org/recruitment/candidates/:id/stage` | recrutement | change l'étape, journalise |
+| GET | `/org/recruitment/candidates/:id/cv-url` | recrutement | URL signée courte du CV |
+| GET/PUT/DELETE | `/org/employees/:id/badge` | owner, hr_admin | badge NFC, audité |
+| GET | `/org/employees/:id/badge/history` | owner, hr_admin | historique |
+| POST | `/public/jobs/:id/application-uploads` | public, limité | contrôle doublon + URLs d'envoi |
+| POST | `/public/jobs/:id/applications` | public, limité | enregistrement + scoring n8n |
+| POST | `/public/prepaid/codes` · `/payments` · `/payments/:id/claim` | public / authentifié | paiement avant inscription |
+| `*` | `/platform/*` | super-admin | organisations, offres, utilisateurs, paiements, démos, journal, réglages |
 Correspondance complète avec l'existant : `../frontend/03-integration-api.md`.
