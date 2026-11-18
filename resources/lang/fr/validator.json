@@ -1,0 +1,28 @@
+{
+  "shared": {
+    "messages": {
+      "required": "Le champ {field} est obligatoire.",
+      "string": "Le champ {field} doit être une chaîne de caractères.",
+      "email": "Adresse e-mail invalide.",
+      "url": "Le champ {field} doit être une URL https valide.",
+      "uuid": "Le champ {field} doit être un identifiant valide.",
+      "minLength": "Le champ {field} doit contenir au moins {min} caractères.",
+      "maxLength": "Le champ {field} doit contenir au plus {max} caractères.",
+      "confirmed": "La confirmation ne correspond pas.",
+      "enum": "La valeur du champ {field} n'est pas autorisée.",
+      "accepted": "Vous devez accepter les conditions d'utilisation.",
+      "boolean": "Le champ {field} doit être vrai ou faux."
+    },
+    "fields": {
+      "email": "e-mail",
+      "password": "mot de passe",
+      "fullName": "nom complet",
+      "preferredLanguage": "langue",
+      "acceptTerms": "conditions",
+      "token": "lien",
+      "currentPassword": "mot de passe actuel",
+      "avatarUrl": "photo",
+      "deviceLabel": "appareil"
+    }
+  }
+}

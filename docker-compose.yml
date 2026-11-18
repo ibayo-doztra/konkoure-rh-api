@@ -1,0 +1,20 @@
+# Services de développement local. PostgreSQL tourne déjà sur la machine ;
+# seul Redis est fourni ici (cache, rate limit, files — docs/backend/00 §3).
+services:
+  redis:
+    image: redis:7.4-alpine
+    container_name: konkoure-redis
+    ports:
+      - '127.0.0.1:6379:6379'
+    command: ['redis-server', '--appendonly', 'yes']
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  redis-data:

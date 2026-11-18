@@ -1,0 +1,27 @@
+{
+  "password": {
+    "composition": "Le mot de passe doit contenir une minuscule, une majuscule et un chiffre.",
+    "common": "Ce mot de passe est trop courant.",
+    "personal": "Le mot de passe ne doit pas contenir votre e-mail ni votre nom.",
+    "currentInvalid": "Le mot de passe actuel est incorrect."
+  },
+  "token": {
+    "invalid": "Ce lien est invalide ou a expiré."
+  },
+  "organizationHeader": {
+    "required": "L'en-tête X-Organization-Id doit contenir l'identifiant de l'organisation."
+  },
+  "invitation": {
+    "alreadyMember": "Cette personne est déjà membre de l'organisation.",
+    "pending": "Une invitation est déjà en attente pour cette adresse.",
+    "ownerRole": "Seul un propriétaire peut inviter un autre propriétaire.",
+    "notPending": "Cette invitation n'est plus en attente."
+  },
+  "entitlement": {
+    "requiredModule": "Module requis.",
+    "currentPlan": "Offre actuelle."
+  },
+  "idempotencyKey": {
+    "uuid": "L'en-tête Idempotency-Key doit être un uuid."
+  }
+}

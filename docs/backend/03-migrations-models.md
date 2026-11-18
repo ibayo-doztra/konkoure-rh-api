@@ -9,9 +9,11 @@ Les fichiers sont horodatés dans cet ordre strict (dépendances de clés
 0001_extensions
 0002_enums
 0003_functions_triggers          -- set_updated_at(), okr_progress()
+0004_tenant_rls                  -- rôles konkoure_app/worker, current_org_id(), enable_tenant_rls()
 0010_users
 0011_auth_access_tokens
 0012_auth_refresh_tokens
+0013_password_reset_tokens
 0020_organizations
 0021_user_roles
 0022_invitations
@@ -62,6 +64,7 @@ Les fichiers sont horodatés dans cet ordre strict (dépendances de clés
 0111_platform_settings
 0112_demo_requests
 0113_webhook_receipts
+0114_tenant_rls_core              -- droits et RLS de user_roles, invitations, audit_logs
 0120_social_accounts
 0121_social_posts
 0130_indexes_extra                -- index trigram, GiST d'exclusion, partiels
@@ -354,7 +357,13 @@ export const EmployeeFactory = factory
 Toute factory de modèle tenant exige un `organizationId` explicite : aucune
 factory ne crée d'organisation implicite.
 
-## 8. Rôles SQL applicatifs (`0140_grants_roles`)
+## 8. Rôles SQL applicatifs (`0004`, `0114`, `0140_grants_roles`)
+
+`konkoure_app` et `konkoure_worker` sont créés par `0004`, avec des privilèges par
+défaut sur les nouvelles tables et séquences. Chaque table tenant appelle
+`SELECT enable_tenant_rls('<table>')` dans sa migration. Si le rôle migrateur n'a ni
+`CREATEROLE` ni `BYPASSRLS`, ces rôles doivent exister avant. `0140` reste à écrire
+pour `konkoure_readonly` et les révocations des tables à venir.
 
 ```sql
 -- Rôle applicatif : ni superuser, ni owner des tables

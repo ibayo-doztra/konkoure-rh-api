@@ -7,44 +7,313 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AuditLogSchema extends BaseModel {
+  static $columns = ['action', 'actorEmail', 'actorRole', 'actorUserId', 'afterData', 'beforeData', 'createdAt', 'id', 'ip', 'organizationId', 'requestId', 'targetId', 'targetType', 'userAgent'] as const
+  $columns = AuditLogSchema.$columns
+  @column()
+  declare action: string
+  @column()
+  declare actorEmail: string | null
+  @column()
+  declare actorRole: string | null
+  @column()
+  declare actorUserId: string | null
+  @column()
+  declare afterData: Record<string, unknown> | null
+  @column()
+  declare beforeData: Record<string, unknown> | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare ip: string | null
+  @column()
+  declare organizationId: string | null
+  @column()
+  declare requestId: string | null
+  @column()
+  declare targetId: string | null
+  @column()
+  declare targetType: string | null
+  @column()
+  declare userAgent: string | null
+}
+
 export class AuthAccessTokenSchema extends BaseModel {
   static $columns = ['abilities', 'createdAt', 'expiresAt', 'hash', 'id', 'lastUsedAt', 'name', 'tokenableId', 'type', 'updatedAt'] as const
   $columns = AuthAccessTokenSchema.$columns
   @column()
   declare abilities: string
   @column.dateTime({ autoCreate: true })
-  declare createdAt: DateTime | null
+  declare createdAt: DateTime
   @column.dateTime()
   declare expiresAt: DateTime | null
   @column()
   declare hash: string
   @column({ isPrimary: true })
-  declare id: number
+  declare id: bigint | number
   @column.dateTime()
   declare lastUsedAt: DateTime | null
   @column()
   declare name: string | null
   @column()
-  declare tokenableId: number
+  declare tokenableId: string
   @column()
   declare type: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
+  declare updatedAt: DateTime
 }
 
-export class UserSchema extends BaseModel {
-  static $columns = ['createdAt', 'email', 'fullName', 'id', 'password', 'updatedAt'] as const
-  $columns = UserSchema.$columns
+export class AuthRefreshTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'deviceLabel', 'expiresAt', 'familyId', 'id', 'ip', 'parentId', 'replacedAt', 'revokedAt', 'tokenHash', 'userAgent', 'userId'] as const
+  $columns = AuthRefreshTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare deviceLabel: string | null
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column()
+  declare familyId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare ip: string | null
+  @column()
+  declare parentId: string | null
+  @column.dateTime()
+  declare replacedAt: DateTime | null
+  @column.dateTime()
+  declare revokedAt: DateTime | null
+  @column()
+  declare tokenHash: string
+  @column()
+  declare userAgent: string | null
+  @column()
+  declare userId: string
+}
+
+export class InvitationSchema extends BaseModel {
+  static $columns = ['acceptedAt', 'acceptedUserId', 'createdAt', 'email', 'employeeId', 'expiresAt', 'id', 'invitedBy', 'lastSentAt', 'organizationId', 'role', 'sendCount', 'status', 'tokenHash', 'updatedAt'] as const
+  $columns = InvitationSchema.$columns
+  @column.dateTime()
+  declare acceptedAt: DateTime | null
+  @column()
+  declare acceptedUserId: string | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column()
   declare email: string
   @column()
+  declare employeeId: string | null
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare invitedBy: string | null
+  @column.dateTime()
+  declare lastSentAt: DateTime
+  @column()
+  declare organizationId: string
+  @column()
+  declare role: 'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'
+  @column()
+  declare sendCount: number
+  @column()
+  declare status: 'pending' | 'accepted' | 'revoked' | 'expired'
+  @column()
+  declare tokenHash: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class OrganizationSchema extends BaseModel {
+  static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
+  $columns = OrganizationSchema.$columns
+  @column()
+  declare countryCode: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare defaultCurrency: string
+  @column()
+  declare defaultLanguage: string
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare logoUrl: string | null
+  @column()
+  declare name: string
+  @column()
+  declare performanceModel: 'classic' | 'sap'
+  @column()
+  declare settings: Record<string, unknown>
+  @column()
+  declare slug: string
+  @column()
+  declare timezone: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class PasswordResetTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'expiresAt', 'id', 'tokenHash', 'usedAt', 'userId'] as const
+  $columns = PasswordResetTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare tokenHash: string
+  @column.dateTime()
+  declare usedAt: DateTime | null
+  @column()
+  declare userId: string
+}
+
+export class PlanSchema extends BaseModel {
+  static $columns = ['aiCreditsPerMonth', 'code', 'createdAt', 'deletedAt', 'features', 'id', 'isPublic', 'maxEmployees', 'modules', 'name', 'priceGnf', 'priceYearlyGnf', 'sortOrder', 'updatedAt'] as const
+  $columns = PlanSchema.$columns
+  @column()
+  declare aiCreditsPerMonth: number
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare features: string[]
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPublic: boolean
+  @column()
+  declare maxEmployees: number
+  @column()
+  declare modules: string[]
+  @column()
+  declare name: string
+  @column()
+  declare priceGnf: string
+  @column()
+  declare priceYearlyGnf: string | null
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class PlatformAdminSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'id', 'isActive', 'level', 'updatedAt', 'userId'] as const
+  $columns = PlatformAdminSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare level: 'root' | 'support'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare userId: string
+}
+
+export class SubscriptionSchema extends BaseModel {
+  static $columns = ['cancelAtPeriodEnd', 'canceledAt', 'createdAt', 'currentPeriodEnd', 'currentPeriodStart', 'cycle', 'id', 'maxEmployeesOverride', 'modulesOverride', 'organizationId', 'planId', 'status', 'trialEndsAt', 'updatedAt'] as const
+  $columns = SubscriptionSchema.$columns
+  @column()
+  declare cancelAtPeriodEnd: boolean
+  @column.dateTime()
+  declare canceledAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare currentPeriodEnd: DateTime
+  @column.dateTime()
+  declare currentPeriodStart: DateTime
+  @column()
+  declare cycle: 'monthly' | 'yearly'
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare maxEmployeesOverride: number | null
+  @column()
+  declare modulesOverride: string[] | null | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare planId: string
+  @column()
+  declare status: 'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'
+  @column.dateTime()
+  declare trialEndsAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class UserRoleSchema extends BaseModel {
+  static $columns = ['createdAt', 'grantedBy', 'id', 'organizationId', 'role', 'userId'] as const
+  $columns = UserRoleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare grantedBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare role: 'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'
+  @column()
+  declare userId: string
+}
+
+export class UserSchema extends BaseModel {
+  static $columns = ['avatarUrl', 'createdAt', 'deletedAt', 'email', 'emailVerifiedAt', 'failedLoginAttempts', 'fullName', 'id', 'isActive', 'lastLoginAt', 'lockedUntil', 'mustResetPassword', 'passwordHash', 'preferredLanguage', 'updatedAt'] as const
+  $columns = UserSchema.$columns
+  @column()
+  declare avatarUrl: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare email: string
+  @column.dateTime()
+  declare emailVerifiedAt: DateTime | null
+  @column()
+  declare failedLoginAttempts: number
+  @column()
   declare fullName: string | null
   @column({ isPrimary: true })
-  declare id: number
-  @column({ serializeAs: null })
-  declare password: string
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column.dateTime()
+  declare lastLoginAt: DateTime | null
+  @column.dateTime()
+  declare lockedUntil: DateTime | null
+  @column()
+  declare mustResetPassword: boolean
+  @column()
+  declare passwordHash: string | null
+  @column()
+  declare preferredLanguage: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
-  declare updatedAt: DateTime | null
+  declare updatedAt: DateTime
 }

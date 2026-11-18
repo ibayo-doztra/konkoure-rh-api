@@ -1,0 +1,18 @@
+{
+  "E_BAD_REQUEST": "Requête mal formée.",
+  "E_UNAUTHORIZED": "Authentification requise ou identifiants invalides.",
+  "E_TOKEN_EXPIRED": "Votre session a expiré.",
+  "E_FORBIDDEN": "Vous n'êtes pas autorisé à effectuer cette action.",
+  "E_EMAIL_NOT_VERIFIED": "Vérifiez votre adresse e-mail pour continuer.",
+  "E_MODULE_NOT_INCLUDED": "Ce module n'est pas inclus dans votre offre.",
+  "E_SUBSCRIPTION_INACTIVE": "Votre abonnement est expiré ou suspendu.",
+  "E_NOT_FOUND": "Ressource introuvable.",
+  "E_CONFLICT": "Cette opération est en conflit avec l'état actuel.",
+  "E_PASSWORD_RESET_REQUIRED": "Vous devez définir un nouveau mot de passe. Un lien vient de vous être envoyé par e-mail.",
+  "E_PAYLOAD_TOO_LARGE": "Le contenu envoyé est trop volumineux.",
+  "E_VALIDATION": "Les données envoyées sont invalides.",
+  "E_ACCOUNT_LOCKED": "Compte temporairement verrouillé après plusieurs échecs. Réessayez plus tard.",
+  "E_RATE_LIMITED": "Trop de tentatives. Patientez avant de réessayer.",
+  "E_INTERNAL": "Une erreur inattendue est survenue.",
+  "E_DEPENDENCY_UNAVAILABLE": "Un service externe est momentanément indisponible."
+}

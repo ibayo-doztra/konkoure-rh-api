@@ -299,8 +299,9 @@ invalidé à tout changement d'abonnement.
 
 6.4 **Contrôle d'accès** — `entitlement_middleware` déclaré sur chaque groupe de
 routes (`.use(entitlement('recruitment'))`). Refus ⇒
-`403 E_MODULE_NOT_INCLUDED` avec `{ requiredModule, currentPlan }` pour que le
-client propose la montée en gamme. Le contrôle est **serveur uniquement** ;
+`403 E_MODULE_NOT_INCLUDED` avec, dans `details`, `{ field: 'requiredModule', rule: <module> }`
+et `{ field: 'currentPlan', rule: <code> }`, pour que le client propose la montée en
+gamme. Abonnement suspendu ou expiré ⇒ `403 E_SUBSCRIPTION_INACTIVE`, mêmes détails. Le contrôle est **serveur uniquement** ;
 masquer un menu côté client n'est pas une protection.
 
 6.5 **Statuts d'abonnement**
@@ -398,7 +399,7 @@ référence et reste modifiable.
 - Délai d'attente du workflow de scoring : 180 s (analyse typique 40–60 s). Dépassement → `timeout` (message dédié), distinct de `unreachable` (panne réelle). Aucun message de résultat avant la réponse du workflow.
 
 ## Règles confirmées récemment (complément)
-- Devise par défaut `GNF` pour organisations et contrats ; aucun salaire géré.
+- Devise par défaut `GNF` pour organisations et contrats ; pas de paie, le salaire est un champ à accès restreint (05 §5).
 - Création d'organisation : `performance_model = 'sap'` imposé, aucun choix proposé ; organisations existantes conservées.
 - Essai gratuit 30 jours sans `recruitment` ni `talents`.
 - Candidature publique : contrôle de doublon (e-mail ou téléphone, même offre) **avant** l'émission des URLs d'envoi, puis à nouveau à l'enregistrement ; un doublon ne consomme aucun crédit IA. Fichiers ≤ 2 Mo, téléphone `XXX XX XX XX`.

@@ -1,4 +1,10 @@
+allowBuilds:
+  argon2: true
+  # Accélération native optionnelle de BullMQ : le repli JavaScript suffit.
+  msgpackr-extract: false
 # Smart App Control (Windows) bloque le binaire natif de @swc/core.
 # On le remplace par une couche d'adaptation basée sur @swc/wasm (voir tools/swc-wasm-shim).
+minimumReleaseAgeExclude:
+  - '@adonisjs/mail@10.4.1'
 overrides:
   '@swc/core': file:./tools/swc-wasm-shim

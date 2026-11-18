@@ -1,37 +1,38 @@
 /*
 |--------------------------------------------------------------------------
-| Routes file
+| Routes
 |--------------------------------------------------------------------------
 |
-| The routes file is used for defining the HTTP routes.
+| One file per module in start/routes/, all under /api/v1 (docs/backend/01 §5).
 |
 */
 
-import { middleware } from '#start/kernel'
 import router from '@adonisjs/core/services/router'
-import { controllers } from '#generated/controllers'
+import openapi from '@foadonis/openapi/services/main'
+import env from '#start/env'
+import { throttleIp } from '#start/limiter'
+import { registerAuthRoutes } from '#start/routes/auth'
+import { registerMeRoutes } from '#start/routes/me'
+import { registerOrganizationRoutes } from '#start/routes/organizations'
+import { registerOrgRoutes } from '#start/routes/org'
 
-router.get('/', () => {
-  return { hello: 'world' }
-})
+const HealthController = () => import('#modules/health/controllers/health_controller')
+
+/** Probes (docs/backend/06 §14). */
+router.get('/health', [HealthController, 'show']).as('health.show')
+router.get('/health/ready', [HealthController, 'ready']).as('health.ready')
+
+/** Interactive docs (`/docs`, `/docs.json`, `/docs.yaml`), never exposed in production. */
+if (env.get('NODE_ENV') !== 'production') {
+  openapi.registerRoutes('/docs')
+}
 
 router
   .group(() => {
-    router
-      .group(() => {
-        router.post('signup', [controllers.NewAccount, 'store'])
-        router.post('login', [controllers.AccessTokens, 'store'])
-      })
-      .prefix('auth')
-      .as('auth')
-
-    router
-      .group(() => {
-        router.get('profile', [controllers.Profile, 'show'])
-        router.post('logout', [controllers.AccessTokens, 'destroy'])
-      })
-      .prefix('account')
-      .as('profile')
-      .use(middleware.auth())
+    registerAuthRoutes()
+    registerMeRoutes()
+    registerOrganizationRoutes()
+    registerOrgRoutes()
   })
   .prefix('/api/v1')
+  .use(throttleIp)

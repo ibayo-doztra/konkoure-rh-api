@@ -24,10 +24,16 @@ variable manquante ou invalide échoue immédiatement.
 `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_DATABASE`,
 `DB_SSL` (bool), `DB_POOL_MIN` (2), `DB_POOL_MAX` (20),
 `DB_READ_REPLICA_HOST` (optionnel), `DB_STATEMENT_TIMEOUT_MS` (10000).
+En production, `DB_USER=konkoure_app` pour l'API et `konkoure_worker` pour le worker.
+`DB_APP_ROLE=konkoure_app` fait prendre ce rôle au serveur HTTP quand `DB_USER` est
+un autre compte (développement, e2e).
 
 ### Redis
 `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_TLS`,
 `REDIS_DB_CACHE` (0), `REDIS_DB_QUEUE` (1), `REDIS_DB_LIMITER` (2).
+`QUEUE_DRIVER` : `bullmq` (défaut en production) ou `sync`.
+`LIMITER_STORE` : `redis` partout, `memory` uniquement pour les tests
+(`.env.test`). En local : `docker compose up -d redis`.
 
 ### Authentification
 `ACCESS_TOKEN_TTL` (`15m`), `REFRESH_TOKEN_TTL` (`30d`),
@@ -42,12 +48,13 @@ variable manquante ou invalide échoue immédiatement.
 `CAPTCHA_SECRET` (si activé), `FILE_SCAN_ENABLED` (bool).
 
 ### Stockage
-`S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`,
+`DRIVE_DISK` (`fs`, `s3`, `s3Public`), `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY`,
 `S3_BUCKET_PUBLIC`, `S3_BUCKET_PRIVATE`, `S3_PUBLIC_BASE_URL`,
 `UPLOAD_MAX_BYTES` (10485760).
 
 ### E-mail
-`RESEND_API_KEY`, `MAIL_FROM_ADDRESS` (`no-reply@doztra.com`),
+`MAIL_MAILER` (`resend`), `RESEND_API_KEY`,
+`MAIL_FROM_ADDRESS` (`support@konkoure.doztra.cloud`, 00-HANDOFF §4),
 `MAIL_FROM_NAME` (`Konkouré`), `SUPPORT_EMAIL`,
 `DEMO_REQUEST_RECIPIENT` (`bayo.ibrahima@doztra.com`),
 `RESEND_WEBHOOK_SECRET`.
@@ -76,30 +83,9 @@ variable manquante ou invalide échoue immédiatement.
 
 ## 2. Conteneurisation
 
-```dockerfile
-# Build
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN node ace build --ignore-ts-errors=false
-
-# Runtime
-FROM node:22-alpine
-WORKDIR /app
-ENV NODE_ENV=production TZ=UTC
-RUN addgroup -S app && adduser -S app -G app
-COPY --from=build /app/build ./
-RUN npm ci --omit=dev && npm cache clean --force
-USER app
-EXPOSE 3333
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3333/health || exit 1
-CMD ["node", "bin/server.js"]
-```
-
-Le worker utilise la même image avec `CMD ["node", "ace", "queue:work"]`.
+Le `Dockerfile` à la racine construit l'image sur Node 24 avec pnpm, en deux étapes,
+et l'exécute avec un utilisateur non root. Le worker utilise la même image avec
+`node ace.js queue:work`.
 Image non-root, sans outils de build, sans secrets. Scan de vulnérabilités
 (Trivy) en CI.
 
