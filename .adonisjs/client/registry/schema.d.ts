@@ -476,6 +476,201 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/invitations/controllers/invitations_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.departments.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/departments'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').paginationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.departments.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/departments'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/department_validator').createDepartmentValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/department_validator').createDepartmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.departments.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/departments/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/department_validator').departmentIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.departments.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/departments/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/department_validator').updateDepartmentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/department_validator').updateDepartmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.departments.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/departments/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/department_validator').deleteDepartmentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/department_validator').deleteDepartmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.departments.employees': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/departments/:id/employees'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').nestedEmployeesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['employees']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['employees']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/departments_controller').default['employees']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').listEmployeesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').createEmployeeValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').createEmployeeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.managers': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/managers'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').paginationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['managers']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['managers']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['managers']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/employees/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').updateEmployeeValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').updateEmployeeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/employees/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.restore': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/:id/restore'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['restore']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['restore']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['restore']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.salary': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/salary'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['salary']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['salary']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['salary']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.team': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/team'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').nestedEmployeesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['team']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['team']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['team']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
 }
 
 export namespace Route {

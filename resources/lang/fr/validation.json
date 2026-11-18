@@ -25,6 +25,23 @@
   "member": {
     "lastOwner": "L'organisation doit conserver au moins un propriétaire actif."
   },
+  "employee": {
+    "department": "Ce département n'existe pas.",
+    "manager": "Ce responsable n'existe pas.",
+    "cycle": "Un employé ne peut pas dépendre de lui-même ni d'un de ses subordonnés.",
+    "emailTaken": "Cette adresse e-mail est déjà utilisée par un employé.",
+    "numberTaken": "Ce matricule est déjà utilisé.",
+    "alreadyLinked": "Cette fiche ou ce compte est déjà lié.",
+    "notFound": "Cette fiche employé n'existe pas."
+  },
+  "department": {
+    "nameTaken": "Un département porte déjà ce nom.",
+    "manager": "Ce responsable n'existe pas.",
+    "parent": "Ce département parent n'existe pas.",
+    "cycle": "Un département ne peut pas dépendre de lui-même ni d'un de ses sous-départements.",
+    "reassignTo": "Le département de destination est invalide.",
+    "hasEmployees": "Ce département contient encore des employés."
+  },
   "entitlement": {
     "requiredModule": "Module requis.",
     "currentPlan": "Offre actuelle."

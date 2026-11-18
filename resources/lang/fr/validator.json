@@ -21,7 +21,9 @@
       "array.minLength": "Le champ {field} doit contenir au moins {min} élément(s).",
       "array.maxLength": "Le champ {field} doit contenir au plus {max} éléments.",
       "distinct": "Le champ {field} contient des doublons.",
-      "file": "Le champ {field} doit être un fichier."
+      "file": "Le champ {field} doit être un fichier.",
+      "date": "Le champ {field} doit être une date valide.",
+      "fixedLength": "Le champ {field} doit contenir exactement {size} caractères."
     },
     "fields": {
       "email": "e-mail",

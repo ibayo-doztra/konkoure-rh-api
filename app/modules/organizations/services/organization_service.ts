@@ -9,6 +9,7 @@ import { newId } from '#shared/utils/crypto'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import { slugCandidate, slugify } from '#modules/organizations/slug'
+import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import {
   findPlanByCode,
   subscriptionsIn,
@@ -52,9 +53,8 @@ function isSlugConflict(error: unknown): boolean {
 /** Organization onboarding (docs/backend/04 §3, 06 §3). */
 export class OrganizationService {
   /**
-   * Creates an organization whose creator becomes `owner`, in one audited
-   * transaction, with its trial subscription. The linked employee record is
-   * added by the HR module (06 §2: until then `employee` is null).
+   * Creates an organization whose creator becomes `owner`, with their linked
+   * employee record (04 §3) and the trial subscription, in one audited transaction.
    */
   async create(user: User, input: CreateOrganizationInput, audit: AuditContext) {
     if (!user.emailVerifiedAt) throw new AppException('E_EMAIL_NOT_VERIFIED')
@@ -199,6 +199,18 @@ export class OrganizationService {
         trx
       )
 
+      const [firstName, ...lastNames] = (user.fullName ?? user.email.split('@')[0])
+        .trim()
+        .split(/\s+/)
+      const employee = await employeesIn(organization.id, trx).create({
+        userId: user.id,
+        firstName,
+        lastName: lastNames.join(' '),
+        email: user.email,
+        createdBy: user.id,
+        updatedBy: user.id,
+      })
+
       const context = { ...audit, organizationId: organization.id, actorRole: 'owner' }
       await auditService.record(trx, context, {
         action: 'organization.created',
@@ -211,6 +223,12 @@ export class OrganizationService {
         targetType: 'user',
         targetId: user.id,
         after: { role: 'owner' },
+      })
+      await auditService.record(trx, context, {
+        action: 'employee.created',
+        targetType: 'employee',
+        targetId: employee.id,
+        after: { status: 'active', departmentId: null },
       })
 
       const plan = await findPlanByCode(TRIAL_PLAN_CODE, trx)

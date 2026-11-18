@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import hash from '@adonisjs/core/services/hash'
 import limiter from '@adonisjs/limiter/services/main'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type Invitation from '#models/invitation'
 import type { AppRole } from '#models/user_role'
@@ -16,6 +17,7 @@ import {
   type InvitationListFilters,
 } from '#modules/invitations/repositories/invitation_repository'
 import organizations from '#modules/organizations/repositories/organization_repository'
+import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import users from '#modules/users/repositories/user_repository'
 import authService from '#modules/auth/services/auth_service'
 import tokenService, {
@@ -51,12 +53,19 @@ export class InvitationService {
   async create(
     tenant: TenantContext,
     inviter: User,
-    input: { email: string; role: AppRole },
+    input: { email: string; role: AppRole; employeeId?: string },
     audit: AuditContext
   ): Promise<Invitation> {
     const token = randomToken(32)
     const invitation = await withTenant(tenant.organizationId, async (trx) => {
       const invitations = invitationsIn(tenant.organizationId, trx)
+      if (input.employeeId) {
+        const employee = await employeesIn(tenant.organizationId, trx).find(input.employeeId)
+        if (!employee) {
+          throw AppException.validation('employeeId', 'exists', 'validation.employee.notFound')
+        }
+        if (employee.userId) throw this.alreadyLinked()
+      }
       if (await invitations.isMember(input.email)) {
         throw new AppException('E_CONFLICT', {
           details: [
@@ -84,6 +93,7 @@ export class InvitationService {
       const created = await invitations.create({
         email: input.email,
         role: input.role,
+        employeeId: input.employeeId ?? null,
         tokenHash: sha256(token),
         expiresAt: DateTime.now().plus({ days: TTL_DAYS }),
         invitedBy: inviter.id,
@@ -231,6 +241,7 @@ export class InvitationService {
         role: locked.role,
         grantedBy: locked.invitedBy,
       })
+      if (locked.employeeId) await this.linkEmployee(locked, member, trx)
       locked.status = 'accepted'
       locked.acceptedAt = DateTime.now()
       locked.acceptedUserId = member.id
@@ -278,6 +289,30 @@ export class InvitationService {
     const organization = await organizations.findActive(organizationId)
     if (!organization) throw notFound()
     return { invitation, organizationId, organization }
+  }
+
+  /** A user is linked to at most one record per organization (07 §1.2). */
+  private async linkEmployee(invitation: Invitation, user: User, trx: TransactionClientContract) {
+    const employees = employeesIn(invitation.organizationId, trx)
+    await employees.lockHierarchy()
+    const employee = await employees.findForUpdate(invitation.employeeId!)
+    if (!employee) return
+    if (employee.userId === user.id) return
+    if (employee.userId || (await employees.findByUser(user.id))) throw this.alreadyLinked()
+    employee.userId = user.id
+    await employees.save(employee)
+  }
+
+  private alreadyLinked() {
+    return new AppException('E_CONFLICT', {
+      details: [
+        {
+          field: 'employeeId',
+          rule: 'alreadyLinked',
+          message: 'validation.employee.alreadyLinked',
+        },
+      ],
+    })
   }
 
   private context(tenant: TenantContext, audit: AuditContext): AuditContext {

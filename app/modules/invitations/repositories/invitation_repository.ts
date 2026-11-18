@@ -44,7 +44,12 @@ export class InvitationRepository extends TenantRepository<typeof Invitation> {
     return query.paginate(filters.page, filters.perPage)
   }
 
-  create(data: Pick<Invitation, 'email' | 'role' | 'tokenHash' | 'expiresAt' | 'invitedBy'>) {
+  create(
+    data: Pick<
+      Invitation,
+      'email' | 'role' | 'employeeId' | 'tokenHash' | 'expiresAt' | 'invitedBy'
+    >
+  ) {
     return Invitation.create({ ...data, organizationId: this.organizationId }, { client: this.trx })
   }
 

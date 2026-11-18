@@ -6,6 +6,7 @@ const ROLES = ['owner', 'hr_admin', 'manager', 'employee', 'recruiter', 'securit
 export const createInvitationValidator = vine.create({
   email: vine.string().trim().email().maxLength(255).toLowerCase(),
   role: vine.enum(ROLES),
+  employeeId: vine.string().uuid().optional(),
 })
 
 /** GET /org/invitations — offset pagination (01 §7), status filter whitelist. */

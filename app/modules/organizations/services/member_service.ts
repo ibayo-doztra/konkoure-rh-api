@@ -64,6 +64,29 @@ export class MemberService {
   }
 
   /**
+   * Same removal inside a caller's transaction (end of employment, 07 §1.5);
+   * a user who is no longer a member is left alone.
+   */
+  async revokeAllIn(
+    trx: TransactionClientContract,
+    tenant: TenantContext,
+    userId: string,
+    audit: AuditContext
+  ) {
+    const { organizationId } = tenant
+    if (!(await organizations.findActiveForUpdate(organizationId, trx))) {
+      throw new AppException('E_NOT_FOUND')
+    }
+    const members = membersIn(organizationId, trx)
+    const member = await members.findMember(userId)
+    if (!member) return
+    this.assertOwnerScope(tenant, member.roles)
+    await this.assertKeepsOwner(members, userId, member.roles)
+    await members.revoke(userId, member.roles)
+    await this.auditRoles(trx, tenant, audit, userId, [], member.roles)
+  }
+
+  /**
    * Runs under the organization lock, so two concurrent changes can never
    * leave it without an owner, on the member as it is once locked.
    */

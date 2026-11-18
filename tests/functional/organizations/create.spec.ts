@@ -61,6 +61,7 @@ test.group('POST /api/v1/organizations', (group) => {
     assert.deepEqual(
       actions.map((row) => [row.action, row.actorUserId]),
       [
+        ['employee.created', user.id],
         ['organization.created', user.id],
         ['role.granted', user.id],
         ['subscription.changed', user.id],
