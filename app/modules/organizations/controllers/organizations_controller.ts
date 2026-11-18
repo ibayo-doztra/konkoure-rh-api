@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
-import organizationService from '#modules/organizations/services/organization_service'
+import organizationService, {
+  TRIAL_PLAN_CODE,
+} from '#modules/organizations/services/organization_service'
 import { createOrganizationValidator } from '#modules/organizations/validators/organization_validator'
 import { organizationDto } from '#modules/users/transformers/me_transformer'
 import { auditContext } from '#modules/auth/http_helpers'
@@ -28,6 +30,7 @@ export default class OrganizationsController {
         defaultCurrency: organization.defaultCurrency,
         performanceModel: organization.performanceModel,
         roles: ['owner'],
+        plan: TRIAL_PLAN_CODE,
       })
     )
   }

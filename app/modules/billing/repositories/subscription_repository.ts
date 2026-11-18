@@ -1,0 +1,41 @@
+import type { DateTime } from 'luxon'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import Plan from '#models/plan'
+import Subscription from '#models/subscription'
+import { TenantRepository } from '#shared/base/tenant_repository'
+
+/** Subscriptions of one organization (docs/backend/02 §9). */
+export class SubscriptionRepository extends TenantRepository<typeof Subscription> {
+  constructor(organizationId: string, trx: TransactionClientContract) {
+    super(Subscription, organizationId, trx)
+  }
+
+  /** The most recent subscription carries the current state of the organization. */
+  current() {
+    return this.query().preload('plan').orderBy('created_at', 'desc').orderBy('id', 'desc').first()
+  }
+
+  createTrial(planId: string, startsAt: DateTime, endsAt: DateTime) {
+    return Subscription.create(
+      {
+        organizationId: this.organizationId,
+        planId,
+        status: 'trialing',
+        cycle: 'monthly',
+        trialEndsAt: endsAt,
+        currentPeriodStart: startsAt,
+        currentPeriodEnd: endsAt,
+      },
+      { client: this.trx }
+    )
+  }
+}
+
+export function subscriptionsIn(organizationId: string, trx: TransactionClientContract) {
+  return new SubscriptionRepository(organizationId, trx)
+}
+
+/** The catalogue is global: plans are not tenant data. */
+export function findPlanByCode(code: string, trx: TransactionClientContract) {
+  return Plan.query({ client: trx }).where('code', code).whereNull('deleted_at').first()
+}

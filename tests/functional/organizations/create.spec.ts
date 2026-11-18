@@ -38,7 +38,7 @@ test.group('POST /api/v1/organizations', (group) => {
       logoUrl: null,
       defaultLanguage: 'en',
       defaultCurrency: 'GNF',
-      plan: null,
+      plan: 'free',
       performanceModel: 'sap',
       roles: ['owner'],
     })
@@ -63,6 +63,7 @@ test.group('POST /api/v1/organizations', (group) => {
       [
         ['organization.created', user.id],
         ['role.granted', user.id],
+        ['subscription.changed', user.id],
       ]
     )
 

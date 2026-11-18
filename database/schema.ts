@@ -181,6 +181,39 @@ export class PasswordResetTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class PlanSchema extends BaseModel {
+  static $columns = ['aiCreditsPerMonth', 'code', 'createdAt', 'deletedAt', 'features', 'id', 'isPublic', 'maxEmployees', 'modules', 'name', 'priceGnf', 'priceYearlyGnf', 'sortOrder', 'updatedAt'] as const
+  $columns = PlanSchema.$columns
+  @column()
+  declare aiCreditsPerMonth: number
+  @column()
+  declare code: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare features: string[]
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPublic: boolean
+  @column()
+  declare maxEmployees: number
+  @column()
+  declare modules: string[]
+  @column()
+  declare name: string
+  @column()
+  declare priceGnf: string
+  @column()
+  declare priceYearlyGnf: string | null
+  @column()
+  declare sortOrder: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class PlatformAdminSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'id', 'isActive', 'level', 'updatedAt', 'userId'] as const
   $columns = PlatformAdminSchema.$columns
@@ -198,6 +231,39 @@ export class PlatformAdminSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare userId: string
+}
+
+export class SubscriptionSchema extends BaseModel {
+  static $columns = ['cancelAtPeriodEnd', 'canceledAt', 'createdAt', 'currentPeriodEnd', 'currentPeriodStart', 'cycle', 'id', 'maxEmployeesOverride', 'modulesOverride', 'organizationId', 'planId', 'status', 'trialEndsAt', 'updatedAt'] as const
+  $columns = SubscriptionSchema.$columns
+  @column()
+  declare cancelAtPeriodEnd: boolean
+  @column.dateTime()
+  declare canceledAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare currentPeriodEnd: DateTime
+  @column.dateTime()
+  declare currentPeriodStart: DateTime
+  @column()
+  declare cycle: 'monthly' | 'yearly'
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare maxEmployeesOverride: number | null
+  @column()
+  declare modulesOverride: string[] | null | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare planId: string
+  @column()
+  declare status: 'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'
+  @column.dateTime()
+  declare trialEndsAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class UserRoleSchema extends BaseModel {

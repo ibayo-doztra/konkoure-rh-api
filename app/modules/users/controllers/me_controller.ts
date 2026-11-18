@@ -11,6 +11,14 @@ import { meDto, organizationDto, sessionDto } from '#modules/users/transformers/
 import { auditContext, currentFamilyId } from '#modules/auth/http_helpers'
 import { confirmedBody } from '#shared/utils/openapi'
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
+/** Optional on `GET /me`: an invalid or stale value simply selects nothing. */
+function selectedOrganization(ctx: HttpContext) {
+  const id = ctx.request.header('x-organization-id')?.trim()
+  return id && UUID.test(id) ? id : null
+}
+
 /**
  * `/api/v1/me/*` (06-api-reference §2). Every action targets the authenticated
  * user only, so no other authorization than authentication applies.
@@ -18,7 +26,8 @@ import { confirmedBody } from '#shared/utils/openapi'
 export default class MeController {
   @ApiOperation({ summary: 'Current user, memberships and roles' })
   async show(ctx: HttpContext) {
-    return ctx.serialize(meDto(await meService.snapshot(ctx.auth.getUserOrFail())))
+    const snapshot = await meService.snapshot(ctx.auth.getUserOrFail(), selectedOrganization(ctx))
+    return ctx.serialize(meDto(snapshot))
   }
 
   @ApiOperation({ summary: 'Update the profile' })

@@ -8,6 +8,18 @@ export type { Route, Path } from './schema.d.ts'
 const placeholder: any = {}
 
 const routes = {
+  'health.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/health',
+    tokens: [[0,"health"]],
+    types: placeholder as Registry['health.show']['types'],
+  },
+  'health.ready': {
+    methods: ["GET","HEAD"],
+    pattern: '/health/ready',
+    tokens: [[0,"health"],[0,"ready"]],
+    types: placeholder as Registry['health.ready']['types'],
+  },
   'openapi.html': {
     methods: ["GET","HEAD"],
     pattern: '/docs',
@@ -133,6 +145,12 @@ const routes = {
     pattern: '/api/v1/organizations',
     tokens: [[0,"api"],[0,"v1"],[0,"organizations"]],
     types: placeholder as Registry['organizations.store']['types'],
+  },
+  'org.entitlements.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/entitlements',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"entitlements"]],
+    types: placeholder as Registry['org.entitlements.show']['types'],
   },
   'org.invitations.index': {
     methods: ["GET","HEAD"],

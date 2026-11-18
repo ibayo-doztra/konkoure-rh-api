@@ -5,6 +5,8 @@ import { throttleUser } from '#start/limiter'
 const InvitationsController = () =>
   import('#modules/invitations/controllers/invitations_controller')
 
+const EntitlementsController = () => import('#modules/billing/controllers/entitlements_controller')
+
 /**
  * `/api/v1/org/*` — 06-api-reference §3 onwards. Every route runs behind
  * `auth` then `tenant` (X-Organization-Id, docs/backend/01 §4).
@@ -12,6 +14,8 @@ const InvitationsController = () =>
 export function registerOrgRoutes() {
   router
     .group(() => {
+      router.get('entitlements', [EntitlementsController, 'show']).as('entitlements.show')
+
       router
         .group(() => {
           router.get('/', [InvitationsController, 'index']).as('index')

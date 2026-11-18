@@ -8,6 +8,32 @@ import type { routes } from './index.ts'
 export type ParamValue = string | number | bigint | boolean
 
 export interface Registry {
+  'health.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/health'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['show']>>>
+    }
+  }
+  'health.ready': {
+    methods: ["GET","HEAD"]
+    pattern: '/health/ready'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['ready']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['ready']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/health/controllers/health_controller').default['ready']>>>
+    }
+  }
   'openapi.html': {
     methods: ["GET","HEAD"]
     pattern: '/docs'
@@ -279,6 +305,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/organizations/controllers/organizations_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.entitlements.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/entitlements'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
     }
   }
   'org.invitations.index': {

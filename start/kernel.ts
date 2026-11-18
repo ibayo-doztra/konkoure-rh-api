@@ -48,5 +48,6 @@ router.use([
 export const middleware = router.named({
   auth: () => import('#middleware/auth_middleware'),
   tenant: () => import('#middleware/tenant_middleware'),
+  entitlement: () => import('#middleware/entitlement_middleware'),
   idempotency: () => import('#middleware/idempotency_middleware'),
 })

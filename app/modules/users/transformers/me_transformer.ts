@@ -1,6 +1,8 @@
 import type User from '#models/user'
 import type { MembershipRow } from '#modules/users/repositories/membership_repository'
 import type { SessionRow } from '#modules/auth/repositories/refresh_token_repository'
+import type { Entitlements } from '#modules/billing/services/entitlement_service'
+import { subscriptionDto } from '#modules/billing/transformers/entitlement_transformer'
 
 /**
  * Explicit output shapes: only the listed fields leave the API, so password
@@ -31,8 +33,7 @@ export function organizationDto(row: MembershipRow) {
     logoUrl: row.logoUrl,
     defaultLanguage: row.defaultLanguage,
     defaultCurrency: row.defaultCurrency,
-    // Filled from `subscriptions` by the billing module.
-    plan: null as string | null,
+    plan: row.plan ?? null,
     performanceModel: row.performanceModel,
     roles: row.roles,
   }
@@ -43,14 +44,15 @@ export function meDto(snapshot: {
   user: User
   isPlatformAdmin: boolean
   organizations: MembershipRow[]
+  entitlements: Entitlements | null
 }) {
   return {
     user: userDto(snapshot.user),
     isPlatformAdmin: snapshot.isPlatformAdmin,
     organizations: snapshot.organizations.map(organizationDto),
     employee: null,
-    subscription: null,
-    modules: [] as string[],
+    subscription: snapshot.entitlements ? subscriptionDto(snapshot.entitlements) : null,
+    modules: snapshot.entitlements?.modules ?? [],
   }
 }
 

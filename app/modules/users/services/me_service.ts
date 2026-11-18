@@ -5,6 +5,9 @@ import users from '#modules/users/repositories/user_repository'
 import memberships, { type MembershipRow } from '#modules/users/repositories/membership_repository'
 import platformAdmins from '#modules/users/repositories/platform_admin_repository'
 import refreshTokens, { type SessionRow } from '#modules/auth/repositories/refresh_token_repository'
+import entitlementService, {
+  type Entitlements,
+} from '#modules/billing/services/entitlement_service'
 
 export interface ProfileUpdate {
   fullName?: string
@@ -13,24 +16,41 @@ export interface ProfileUpdate {
 }
 
 /**
- * Current-user data (docs/backend/06 §2). `employee`, `subscription` and
- * `modules` are filled once the HR and billing modules exist.
+ * Current-user data (docs/backend/06 §2). The server never picks the active
+ * organization: rights are returned for the one the client names, if the user
+ * belongs to it. `employee` is filled by the HR module.
  */
 export class MeService {
-  async snapshot(user: User): Promise<{
+  async snapshot(
+    user: User,
+    selectedOrganizationId?: string | null
+  ): Promise<{
     user: User
     isPlatformAdmin: boolean
     organizations: MembershipRow[]
+    entitlements: Entitlements | null
   }> {
-    const [organizations, isPlatformAdmin] = await Promise.all([
+    const [rows, isPlatformAdmin] = await Promise.all([
       memberships.forUser(user.id),
       platformAdmins.isActive(user.id),
     ])
-    return { user, isPlatformAdmin, organizations }
+    const resolved = await Promise.all(rows.map((row) => entitlementService.resolve(row.id)))
+    const organizations = rows.map((row, index) => ({
+      ...row,
+      plan: resolved[index]?.planCode ?? null,
+    }))
+    const selected = rows.findIndex((row) => row.id === selectedOrganizationId)
+    return {
+      user,
+      isPlatformAdmin,
+      organizations,
+      entitlements: selected >= 0 ? resolved[selected] : null,
+    }
   }
 
-  organizations(user: User) {
-    return memberships.forUser(user.id)
+  async organizations(user: User) {
+    const { organizations } = await this.snapshot(user)
+    return organizations
   }
 
   async updateProfile(user: User, changes: ProfileUpdate) {

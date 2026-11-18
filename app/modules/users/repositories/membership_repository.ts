@@ -10,6 +10,8 @@ export interface MembershipRow {
   defaultCurrency: string
   performanceModel: 'classic' | 'sap'
   roles: AppRole[]
+  /** Current plan code, filled from the subscription by the caller. */
+  plan?: string | null
 }
 
 /**

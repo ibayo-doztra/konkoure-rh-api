@@ -29,6 +29,18 @@ export default {
         status: { tsType: `'pending' | 'accepted' | 'revoked' | 'expired'` },
       },
     },
+    plans: {
+      columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
+    },
+    subscriptions: {
+      columns: {
+        status: {
+          tsType: `'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'`,
+        },
+        cycle: { tsType: `'monthly' | 'yearly'` },
+        modules_override: { tsType: 'string[] | null' },
+      },
+    },
     platform_admins: {
       columns: { level: { tsType: `'root' | 'support'` } },
     },

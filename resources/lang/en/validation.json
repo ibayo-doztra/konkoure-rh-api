@@ -17,6 +17,10 @@
     "ownerRole": "Only an owner can invite another owner.",
     "notPending": "This invitation is no longer pending."
   },
+  "entitlement": {
+    "requiredModule": "Required module.",
+    "currentPlan": "Current plan."
+  },
   "idempotencyKey": {
     "uuid": "The Idempotency-Key header must be a uuid."
   }

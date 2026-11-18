@@ -17,6 +17,10 @@
     "ownerRole": "Seul un propriétaire peut inviter un autre propriétaire.",
     "notPending": "Cette invitation n'est plus en attente."
   },
+  "entitlement": {
+    "requiredModule": "Module requis.",
+    "currentPlan": "Offre actuelle."
+  },
   "idempotencyKey": {
     "uuid": "L'en-tête Idempotency-Key doit être un uuid."
   }

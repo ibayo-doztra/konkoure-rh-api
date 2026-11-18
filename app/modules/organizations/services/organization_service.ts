@@ -1,3 +1,4 @@
+import { DateTime } from 'luxon'
 import type User from '#models/user'
 import type Organization from '#models/organization'
 import { AppException } from '#shared/exceptions/app_exception'
@@ -6,12 +7,20 @@ import { newId } from '#shared/utils/crypto'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import { slugCandidate, slugify } from '#modules/organizations/slug'
+import {
+  findPlanByCode,
+  subscriptionsIn,
+} from '#modules/billing/repositories/subscription_repository'
 
 export interface CreateOrganizationInput {
   name: string
   defaultLanguage?: 'fr' | 'en'
   performanceModel?: 'classic' | 'sap'
 }
+
+/** Every new organization starts on this plan, for 30 days (docs/backend/07 §6.2). */
+export const TRIAL_PLAN_CODE = 'free'
+const TRIAL_DAYS = 30
 
 /** Candidates checked per round before falling back to a random suffix. */
 const SLUG_CANDIDATES = 20
@@ -26,9 +35,8 @@ function isSlugConflict(error: unknown): boolean {
 export class OrganizationService {
   /**
    * Creates an organization whose creator becomes `owner`, in one audited
-   * transaction. The linked employee record and the trial subscription are
-   * added by the HR and billing modules (06 §2: until then `employee` and
-   * `subscription` are null).
+   * transaction, with its trial subscription. The linked employee record is
+   * added by the HR module (06 §2: until then `employee` is null).
    */
   async create(user: User, input: CreateOrganizationInput, audit: AuditContext) {
     if (!user.emailVerifiedAt) throw new AppException('E_EMAIL_NOT_VERIFIED')
@@ -83,6 +91,21 @@ export class OrganizationService {
         targetType: 'user',
         targetId: user.id,
         after: { role: 'owner' },
+      })
+
+      const plan = await findPlanByCode(TRIAL_PLAN_CODE, trx)
+      if (!plan) throw new AppException('E_INTERNAL')
+      const startsAt = DateTime.now()
+      const subscription = await subscriptionsIn(organization.id, trx).createTrial(
+        plan.id,
+        startsAt,
+        startsAt.plus({ days: TRIAL_DAYS })
+      )
+      await auditService.record(trx, context, {
+        action: 'subscription.changed',
+        targetType: 'subscription',
+        targetId: subscription.id,
+        after: { plan: plan.code, status: subscription.status },
       })
 
       await organization.refresh()

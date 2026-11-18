@@ -4,6 +4,8 @@ type ParamValue = string | number | bigint | boolean
 
 export type ScannedRoutes = {
   ALL: {
+    'health.show': { paramsTuple?: []; params?: {} }
+    'health.ready': { paramsTuple?: []; params?: {} }
     'openapi.html': { paramsTuple?: []; params?: {} }
     'openapi.json': { paramsTuple?: []; params?: {} }
     'openapi.yaml': { paramsTuple?: []; params?: {} }
@@ -25,12 +27,15 @@ export type ScannedRoutes = {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'me.organizations': { paramsTuple?: []; params?: {} }
     'organizations.store': { paramsTuple?: []; params?: {} }
+    'org.entitlements.show': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
     'org.invitations.store': { paramsTuple?: []; params?: {} }
     'org.invitations.resend': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.invitations.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
+    'health.show': { paramsTuple?: []; params?: {} }
+    'health.ready': { paramsTuple?: []; params?: {} }
     'openapi.html': { paramsTuple?: []; params?: {} }
     'openapi.json': { paramsTuple?: []; params?: {} }
     'openapi.yaml': { paramsTuple?: []; params?: {} }
@@ -38,9 +43,12 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'org.entitlements.show': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
+    'health.show': { paramsTuple?: []; params?: {} }
+    'health.ready': { paramsTuple?: []; params?: {} }
     'openapi.html': { paramsTuple?: []; params?: {} }
     'openapi.json': { paramsTuple?: []; params?: {} }
     'openapi.yaml': { paramsTuple?: []; params?: {} }
@@ -48,6 +56,7 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'org.entitlements.show': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
