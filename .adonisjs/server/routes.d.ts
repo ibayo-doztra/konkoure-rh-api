@@ -27,7 +27,15 @@ export type ScannedRoutes = {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'me.organizations': { paramsTuple?: []; params?: {} }
     'organizations.store': { paramsTuple?: []; params?: {} }
+    'org.show': { paramsTuple?: []; params?: {} }
+    'org.update': { paramsTuple?: []; params?: {} }
+    'org.destroy': { paramsTuple?: []; params?: {} }
+    'org.settings.update': { paramsTuple?: []; params?: {} }
+    'org.logo.store': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.members.index': { paramsTuple?: []; params?: {} }
+    'org.members.roles.update': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
+    'org.members.destroy': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
     'org.invitations.store': { paramsTuple?: []; params?: {} }
     'org.invitations.resend': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -43,7 +51,9 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.members.index': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -56,7 +66,9 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.members.index': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -72,15 +84,23 @@ export type ScannedRoutes = {
     'auth.resendVerification': { paramsTuple?: []; params?: {} }
     'me.changePassword': { paramsTuple?: []; params?: {} }
     'organizations.store': { paramsTuple?: []; params?: {} }
+    'org.logo.store': { paramsTuple?: []; params?: {} }
     'org.invitations.store': { paramsTuple?: []; params?: {} }
     'org.invitations.resend': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
+    'org.update': { paramsTuple?: []; params?: {} }
+    'org.members.roles.update': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
   }
   DELETE: {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.destroy': { paramsTuple?: []; params?: {} }
+    'org.members.destroy': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'org.invitations.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+  }
+  PUT: {
+    'org.settings.update': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {

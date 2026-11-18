@@ -179,7 +179,7 @@ sessions, conserve la session courante.
 | GET | `/org` | tous | Détail de l'organisation courante |
 | PATCH | `/org` | O H | Nom, langue, devise, fuseau, modèle de performance |
 | PUT | `/org/settings` | O H | Bloc `settings` complet (schéma 02 §11) |
-| POST | `/org/logo` | O H | Upload logo (2 Mo, png/jpg/webp/svg) |
+| POST | `/org/logo` | O H | Upload logo (2 Mo, png/jpg/webp) |
 | DELETE | `/org` | O | Suppression (confirmation par nom, purge différée 30 j) |
 | GET | `/org/members` | O H | Utilisateurs et rôles |
 | PATCH | `/org/members/:userId/roles` | O H* | Modifie les rôles (*`hr_admin` ne peut pas toucher `owner`) |
@@ -218,6 +218,40 @@ Erreurs : `401`, `403 E_EMAIL_NOT_VERIFIED`, `422`, `429`.
 En-tête `X-Organization-Id` absent ou non uuid ⇒ `400 E_BAD_REQUEST`
 (`details[0].field = "X-Organization-Id"`) ; e-mail non vérifié ⇒
 `403 E_EMAIL_NOT_VERIFIED` ; aucun rôle dans cette organisation ⇒ `403 E_FORBIDDEN`.
+
+### Organisation courante `/org`
+`GET`, `PATCH`, `PUT /settings` et `POST /logo` renvoient :
+```json
+{ "data": { "id":"0192…", "name":"Doztra", "slug":"doztra", "logoUrl":null,
+  "countryCode":"GN", "timezone":"Africa/Conakry", "defaultLanguage":"fr",
+  "defaultCurrency":"GNF", "performanceModel":"sap", "settings":{ },
+  "createdAt":"…", "updatedAt":"…" }}
+```
+`settings` est complété par les valeurs par défaut (02 §11).
+- `PATCH` : `name`, `defaultLanguage`, `defaultCurrency` (`GNF` uniquement),
+  `timezone` (IANA), `performanceModel`, tous facultatifs. Le `slug` ne change pas.
+- `PUT /settings` : le corps est le bloc complet et remplace le précédent.
+- `POST /logo` : `multipart/form-data`, champ `logo`. Type réel vérifié par
+  signature ; SVG refusé (05 §3). Plus de 2 Mo ⇒ `413 E_PAYLOAD_TOO_LARGE`.
+- `DELETE` `{ confirmName }` → `204`. Nom différent ⇒ `422`,
+  `details[0].rule = "mismatch"`. L'accès cesse immédiatement.
+- Journaux `organization.updated`, `organization.settings_updated`,
+  `organization.logo_updated`, `organization.deleted`.
+
+### Membres `/org/members`
+Élément renvoyé :
+```json
+{ "userId":"0192…", "email":"a@b.com", "fullName":"…", "avatarUrl":null,
+  "roles":["manager"], "joinedAt":"…" }
+```
+- `GET` : pagination offset (`?page`, `?perPage` ≤ 100). `{ data, meta }`.
+- `PATCH /:userId/roles` `{ roles: [...] }` (liste complète, au moins un rôle) → `200`.
+  Modifier ses propres rôles ⇒ `403`.
+- `DELETE /:userId` → `204`. Un membre peut se retirer lui-même.
+- `hr_admin` ne peut ni attribuer `owner`, ni modifier ou retirer un `owner` (`403`).
+- Dernier `owner` actif ⇒ `409`, `details[0].rule = "lastOwner"`.
+- Utilisateur non membre de l'organisation ⇒ `404`. Journaux `role.granted`,
+  `role.revoked`.
 
 ### Invitations `/org/invitations`
 Élément renvoyé (jamais le jeton ni son hash) :

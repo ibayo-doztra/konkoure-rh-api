@@ -11,7 +11,17 @@
       "confirmed": "The confirmation does not match.",
       "enum": "The {field} value is not allowed.",
       "accepted": "You must accept the terms of use.",
-      "boolean": "The {field} field must be true or false."
+      "boolean": "The {field} field must be true or false.",
+      "number": "The {field} field must be a number.",
+      "withoutDecimals": "The {field} field must be a whole number.",
+      "min": "The {field} field must be at least {min}.",
+      "max": "The {field} field must be at most {max}.",
+      "regex": "The {field} field format is invalid.",
+      "array": "The {field} field must be a list.",
+      "array.minLength": "The {field} field must contain at least {min} item(s).",
+      "array.maxLength": "The {field} field must contain at most {max} items.",
+      "distinct": "The {field} field contains duplicates.",
+      "file": "The {field} field must be a file."
     },
     "fields": {
       "email": "e-mail",

@@ -12,6 +12,20 @@ export class OrganizationRepository {
     return Organization.query({ client: trx }).where('id', id).whereNull('deleted_at').first()
   }
 
+  /** Locks the tenant root: serializes the changes of its settings and members. */
+  findActiveForUpdate(id: string, trx: TransactionClientContract) {
+    return Organization.query({ client: trx })
+      .where('id', id)
+      .whereNull('deleted_at')
+      .forUpdate()
+      .first()
+  }
+
+  save(organization: Organization, trx: TransactionClientContract) {
+    organization.useTransaction(trx)
+    return organization.save()
+  }
+
   /** Taken slugs among `candidates`, deleted organizations included (slug is UNIQUE). */
   async takenSlugs(candidates: string[], trx: TransactionClientContract): Promise<Set<string>> {
     const rows = await Organization.query({ client: trx })

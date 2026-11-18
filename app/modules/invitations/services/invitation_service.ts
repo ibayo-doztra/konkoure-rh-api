@@ -163,9 +163,7 @@ export class InvitationService {
 
   /** Public preview of a usable invitation; anything else is 404. */
   async preview(token: string): Promise<InvitationPreview> {
-    const { invitation } = await this.findByToken(sha256(token))
-    const organization = await organizations.findActive(invitation.organizationId)
-    if (!organization) throw notFound()
+    const { invitation, organization } = await this.findByToken(sha256(token))
 
     return {
       organizationName: organization.name,
@@ -266,7 +264,10 @@ export class InvitationService {
     return { user, tokens: await tokenService.issue(user, client) }
   }
 
-  /** Usable invitation behind a token; unknown, used or expired tokens are 404. */
+  /**
+   * Usable invitation behind a token; unknown, used or expired tokens are 404,
+   * like those of a deleted organization.
+   */
   private async findByToken(tokenHash: string) {
     const organizationId = await organizationIdForInvitationToken(tokenHash)
     if (!organizationId) throw notFound()
@@ -274,7 +275,9 @@ export class InvitationService {
       invitationsIn(organizationId, trx).findByTokenHash(tokenHash)
     )
     if (!invitation?.isUsable) throw notFound()
-    return { invitation, organizationId }
+    const organization = await organizations.findActive(organizationId)
+    if (!organization) throw notFound()
+    return { invitation, organizationId, organization }
   }
 
   private context(tenant: TenantContext, audit: AuditContext): AuditContext {

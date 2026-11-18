@@ -17,6 +17,14 @@
     "ownerRole": "Only an owner can invite another owner.",
     "notPending": "This invitation is no longer pending."
   },
+  "organization": {
+    "timezone": "This time zone is not recognized.",
+    "logo": "The logo must be a PNG, JPEG or WebP image.",
+    "confirmName": "The name entered does not match the organization's name."
+  },
+  "member": {
+    "lastOwner": "The organization must keep at least one active owner."
+  },
   "entitlement": {
     "requiredModule": "Required module.",
     "currentPlan": "Current plan."

@@ -38,8 +38,24 @@ export interface ApiDefinition {
     store: typeof routes['organizations.store']
   }
   org: {
+    show: typeof routes['org.show']
+    update: typeof routes['org.update']
+    destroy: typeof routes['org.destroy']
+    settings: {
+      update: typeof routes['org.settings.update']
+    }
+    logo: {
+      store: typeof routes['org.logo.store']
+    }
     entitlements: {
       show: typeof routes['org.entitlements.show']
+    }
+    members: {
+      index: typeof routes['org.members.index']
+      roles: {
+        update: typeof routes['org.members.roles.update']
+      }
+      destroy: typeof routes['org.members.destroy']
     }
     invitations: {
       index: typeof routes['org.invitations.index']
