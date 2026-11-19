@@ -51,6 +51,11 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Rate limit : `memory` réservé aux tests (store non partagé entre réplicas)
   LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const),
+  /**
+   * Global budget per IP and minute (default 300, docs/backend/05 §8). Test and
+   * e2e environments only: refused at boot when NODE_ENV=production.
+   */
+  RATE_LIMIT_GLOBAL_IP_PER_MINUTE: Env.schema.number.optional(),
 
   // Authentification (docs/backend/04, 11 §1)
   ACCESS_TOKEN_TTL: Env.schema.string.optional(),

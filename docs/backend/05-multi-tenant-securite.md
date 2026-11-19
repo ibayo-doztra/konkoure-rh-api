@@ -152,7 +152,7 @@ Le journal est en **insertion seule** (droits SQL révoqués, §03 8).
 
 | Portée | Limite |
 |---|---|
-| Global par IP | 300 req / min |
+| Global par IP | 300 req / min (relevable en test/e2e seulement par `RATE_LIMIT_GLOBAL_IP_PER_MINUTE`, refusée en production) |
 | Authentifié par utilisateur | 600 req / min |
 | Par organisation | 3 000 req / min (plan `pro`/`enterprise` : 10 000) |
 | `POST /auth/login` | 10 / 15 min / IP, 5 / 15 min / e-mail |

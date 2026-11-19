@@ -17,7 +17,14 @@ const corsConfig = defineConfig({
   origin: allowed.length > 0 ? allowed : app.inDev,
   methods: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
   headers: true,
-  exposeHeaders: ['X-Request-Id', 'Retry-After', 'Idempotent-Replay'],
+  // Rate-limit headers let a browser client wait the right delay after a 429.
+  exposeHeaders: [
+    'X-Request-Id',
+    'Retry-After',
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+    'Idempotent-Replay',
+  ],
   credentials: true,
   maxAge: 90,
 })
