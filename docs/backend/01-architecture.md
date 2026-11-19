@@ -176,9 +176,11 @@ Erreur (toujours cette forme, produite par l'exception handler) :
 | 403 | `E_QUOTA_EXCEEDED` | Nombre maximal d'employés du plan atteint |
 | 404 | `E_NOT_FOUND` | Ressource inexistante **ou hors tenant** |
 | 409 | `E_CONFLICT` | Conflit métier (doublon, état incompatible) |
+| 409 | `E_LEAVE_OVERLAP` | Congé chevauchant une demande en attente ou approuvée (07 §3.2) |
 | 413 | `E_PAYLOAD_TOO_LARGE` | Fichier ou corps trop volumineux |
 | 422 | `E_VALIDATION` | Échec de validation VineJS |
 | 422 | `E_HIERARCHY_CYCLE` | Rattachement créant une boucle hiérarchique |
+| 422 | `E_INSUFFICIENT_BALANCE` | Solde de congés insuffisant (07 §3.4) |
 | 423 | `E_ACCOUNT_LOCKED` | Compte verrouillé après tentatives échouées |
 | 429 | `E_RATE_LIMITED` | Quota dépassé (en-tête `Retry-After`) |
 | 500 | `E_INTERNAL` | Erreur inattendue (message générique, jamais de stack) |

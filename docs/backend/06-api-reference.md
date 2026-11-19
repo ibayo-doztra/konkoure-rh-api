@@ -551,6 +551,60 @@ Erreurs : `409 E_LEAVE_OVERLAP`, `422 E_INSUFFICIENT_BALANCE`
 
 `POST /:id/reject` : `{ decisionComment: string (5..1000) }` — obligatoire.
 
+Les dates `startDate`/`endDate` d'une même demande appartiennent à la même année
+(sinon `422 E_VALIDATION`, règle `sameYear` : faire deux demandes). `endDate` avant
+`startDate` ⇒ `422` (règle `afterOrEqual`).
+
+#### Réponse d'une demande
+Liste (`GET /org/leaves`, offset, filtres `filter[employeeId|status|type|from|to]`,
+`from`/`to` = congés chevauchant la période) :
+```json
+{ "id": "…", "employeeId": "…", "type": "annual", "status": "pending",
+  "startDate": "2027-03-01", "endDate": "2027-03-05", "halfDayStart": false,
+  "halfDayEnd": true, "requestedDays": 4.5, "reason": null, "decisionComment": null,
+  "decidedBy": null, "decidedAt": null, "hasAttachment": false,
+  "createdAt": "…", "updatedAt": "…" }
+```
+Détail, création, `PATCH`, `approve`, `reject`, `cancel` ajoutent `approverId`
+(manager direct de l'employé, `null` ⇒ RH/owner, 07 §3.7) et `balanceAfter` (solde
+prévisionnel du type pour l'année, `null` pour les types sans solde).
+
+`PATCH /:id` (auteur = l'employé ou le créateur de la demande, `pending` uniquement,
+sinon `409 E_CONFLICT` règle `notPending`) : mêmes champs que la création, sans
+`employeeId`, tous optionnels ; jours et solde recalculés.
+
+`POST /:id/cancel` : `pending` ⇒ auteur, manager (équipe), O, H ; `approved` ⇒ O et H
+uniquement, tant que `startDate` est postérieure à aujourd'hui (fuseau de
+l'organisation), sinon `409 E_CONFLICT` règle `locked`. Autres statuts ⇒ `409`
+règle `notCancellable`.
+
+#### Soldes
+`GET /org/leaves/balances?employeeId=&year=` (année courante par défaut) ⇒
+`{ data: [{ employeeId, year, leaveType, entitledDays, carriedOverDays, takenDays,
+pendingDays, balance }] }`. Périmètre : O H tous, M équipe + soi, sinon soi ;
+`employeeId` hors périmètre ⇒ `403`.
+
+`POST /org/leaves/balances/adjust` (O H) :
+```ts
+vine.object({
+  employeeId: vine.string().uuid(),
+  leaveType: vine.enum([...types]),
+  year: vine.number().optional(),                 // année courante par défaut
+  deltaDays: vine.number().min(-365).max(365),    // ≠ 0, 2 décimales
+  reason: vine.string().trim().minLength(5).maxLength(500),
+})
+```
+Modifie `entitled_days`, écrit au ledger (motif = `reason`), audité
+`leave_balance.adjusted`. Réponse : le solde au format ci-dessus.
+
+#### Jours fériés
+`GET /org/holidays?year=` (année courante par défaut) ⇒
+`{ data: [{ id, name, date, isMovable, isRecurring }] }`.
+`POST` `{ name (2..120), date, isMovable?, isRecurring? }` ⇒ `201` ; date déjà prise
+⇒ `409 E_CONFLICT` (champ `date`). `PATCH` mêmes champs optionnels, `DELETE` ⇒ `204`.
+`POST /org/holidays/import` `{ year }` : ajoute les 8 jours fixes de 07 §9 absents,
+conserve les dates déjà saisies, renvoie les jours fériés de l'année.
+
 ---
 
 ## 8. Recrutement `/org/recruitment`

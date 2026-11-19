@@ -7,6 +7,8 @@ import { type SchemaRules } from '@adonisjs/lucid/types/schema_generator'
  */
 const APP_ROLE = `'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'`
 const JSON_OBJECT = { tsType: 'Record<string, unknown>' }
+const LEAVE_TYPE = `'annual' | 'sick' | 'maternity' | 'paternity' | 'unpaid' | 'special'`
+const LEAVE_STATUS = `'pending' | 'approved' | 'rejected' | 'cancelled'`
 
 export default {
   // citext columns are reported as USER-DEFINED by the driver.
@@ -42,6 +44,15 @@ export default {
         type: { tsType: `'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'` },
         status: { tsType: `'draft' | 'active' | 'suspended' | 'terminated'` },
       },
+    },
+    leave_requests: {
+      columns: { type: { tsType: LEAVE_TYPE }, status: { tsType: LEAVE_STATUS } },
+    },
+    leave_balances: {
+      columns: { leave_type: { tsType: LEAVE_TYPE } },
+    },
+    leave_balance_ledger: {
+      columns: { leave_type: { tsType: LEAVE_TYPE } },
     },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },

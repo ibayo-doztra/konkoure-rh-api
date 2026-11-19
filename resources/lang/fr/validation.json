@@ -61,5 +61,19 @@
   },
   "idempotencyKey": {
     "uuid": "L'en-tête Idempotency-Key doit être un uuid."
+  },
+  "leave": {
+    "employee": "Cet employé n'existe pas dans l'organisation.",
+    "employeeTerminated": "Cet employé a quitté l'organisation.",
+    "endDate": "La date de fin doit être postérieure ou égale à la date de début.",
+    "sameYear": "Un congé ne peut pas couvrir deux années : faites deux demandes.",
+    "noWorkingDay": "Cette période ne contient aucun jour décompté.",
+    "notPending": "Seule une demande en attente peut être modifiée ou décidée.",
+    "locked": "Ce congé approuvé a commencé : il ne peut plus être annulé.",
+    "notCancellable": "Cette demande ne peut plus être annulée.",
+    "deltaDays": "L'ajustement ne peut pas être nul."
+  },
+  "holiday": {
+    "dateTaken": "Un jour férié existe déjà à cette date."
   }
 }

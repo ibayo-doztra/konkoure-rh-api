@@ -16,6 +16,10 @@ const DepartmentsController = () => import('#modules/hr/controllers/departments_
 const EmployeesController = () => import('#modules/hr/controllers/employees_controller')
 const ContractsController = () => import('#modules/hr/controllers/contracts_controller')
 const SkillsController = () => import('#modules/hr/controllers/skills_controller')
+const LeavesController = () => import('#modules/leaves/controllers/leaves_controller')
+const LeaveBalancesController = () =>
+  import('#modules/leaves/controllers/leave_balances_controller')
+const HolidaysController = () => import('#modules/leaves/controllers/holidays_controller')
 
 /**
  * `/api/v1/org/*` — 06-api-reference §3 onwards. Every route runs behind
@@ -112,6 +116,41 @@ export function registerOrgRoutes() {
             .as('skills')
         })
         .use(middleware.entitlement({ module: 'hr' }))
+
+      router
+        .group(() => {
+          router
+            .group(() => {
+              router.get('/', [LeavesController, 'index']).as('index')
+              router
+                .post('/', [LeavesController, 'store'])
+                .as('store')
+                .use(middleware.idempotency())
+              router.get('balances', [LeaveBalancesController, 'index']).as('balances.index')
+              router
+                .post('balances/adjust', [LeaveBalancesController, 'adjust'])
+                .as('balances.adjust')
+              router.get(':id', [LeavesController, 'show']).as('show')
+              router.patch(':id', [LeavesController, 'update']).as('update')
+              router.post(':id/approve', [LeavesController, 'approve']).as('approve')
+              router.post(':id/reject', [LeavesController, 'reject']).as('reject')
+              router.post(':id/cancel', [LeavesController, 'cancel']).as('cancel')
+            })
+            .prefix('leaves')
+            .as('leaves')
+
+          router
+            .group(() => {
+              router.get('/', [HolidaysController, 'index']).as('index')
+              router.post('/', [HolidaysController, 'store']).as('store')
+              router.post('import', [HolidaysController, 'import']).as('import')
+              router.patch(':id', [HolidaysController, 'update']).as('update')
+              router.delete(':id', [HolidaysController, 'destroy']).as('destroy')
+            })
+            .prefix('holidays')
+            .as('holidays')
+        })
+        .use(middleware.entitlement({ module: 'leaves' }))
     })
     .prefix('org')
     .as('org')

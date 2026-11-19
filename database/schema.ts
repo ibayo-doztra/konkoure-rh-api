@@ -287,6 +287,101 @@ export class InvitationSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class LeaveBalanceLedgerSchema extends BaseModel {
+  static $columns = ['actorUserId', 'createdAt', 'deltaDays', 'employeeId', 'id', 'leaveRequestId', 'leaveType', 'organizationId', 'reason', 'year'] as const
+  $columns = LeaveBalanceLedgerSchema.$columns
+  @column()
+  declare actorUserId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare deltaDays: string
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare leaveRequestId: string | null
+  @column()
+  declare leaveType: 'annual' | 'sick' | 'maternity' | 'paternity' | 'unpaid' | 'special'
+  @column()
+  declare organizationId: string
+  @column()
+  declare reason: string
+  @column()
+  declare year: number
+}
+
+export class LeaveBalanceSchema extends BaseModel {
+  static $columns = ['carriedOverDays', 'createdAt', 'employeeId', 'entitledDays', 'id', 'leaveType', 'organizationId', 'pendingDays', 'takenDays', 'updatedAt', 'year'] as const
+  $columns = LeaveBalanceSchema.$columns
+  @column()
+  declare carriedOverDays: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: string
+  @column()
+  declare entitledDays: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare leaveType: 'annual' | 'sick' | 'maternity' | 'paternity' | 'unpaid' | 'special'
+  @column()
+  declare organizationId: string
+  @column()
+  declare pendingDays: string
+  @column()
+  declare takenDays: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare year: number
+}
+
+export class LeaveRequestSchema extends BaseModel {
+  static $columns = ['attachmentPath', 'balanceApplied', 'createdAt', 'createdBy', 'decidedAt', 'decidedBy', 'decisionComment', 'employeeId', 'endDate', 'halfDayEnd', 'halfDayStart', 'id', 'organizationId', 'reason', 'requestedDays', 'startDate', 'status', 'type', 'updatedAt'] as const
+  $columns = LeaveRequestSchema.$columns
+  @column()
+  declare attachmentPath: string | null
+  @column()
+  declare balanceApplied: boolean
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare decidedAt: DateTime | null
+  @column()
+  declare decidedBy: string | null
+  @column()
+  declare decisionComment: string | null
+  @column()
+  declare employeeId: string
+  @column.date()
+  declare endDate: DateTime
+  @column()
+  declare halfDayEnd: boolean
+  @column()
+  declare halfDayStart: boolean
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare reason: string | null
+  @column()
+  declare requestedDays: string
+  @column.date()
+  declare startDate: DateTime
+  @column()
+  declare status: 'pending' | 'approved' | 'rejected' | 'cancelled'
+  @column()
+  declare type: 'annual' | 'sick' | 'maternity' | 'paternity' | 'unpaid' | 'special'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns
@@ -389,6 +484,27 @@ export class PlatformAdminSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare userId: string
+}
+
+export class PublicHolidaySchema extends BaseModel {
+  static $columns = ['createdAt', 'date', 'id', 'isMovable', 'isRecurring', 'name', 'organizationId', 'updatedAt'] as const
+  $columns = PublicHolidaySchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.date()
+  declare date: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isMovable: boolean
+  @column()
+  declare isRecurring: boolean
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class SkillSchema extends BaseModel {

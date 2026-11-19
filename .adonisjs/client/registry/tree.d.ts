@@ -101,5 +101,25 @@ export interface ApiDefinition {
       update: typeof routes['org.skills.update']
       destroy: typeof routes['org.skills.destroy']
     }
+    leaves: {
+      index: typeof routes['org.leaves.index']
+      store: typeof routes['org.leaves.store']
+      balances: {
+        index: typeof routes['org.leaves.balances.index']
+        adjust: typeof routes['org.leaves.balances.adjust']
+      }
+      show: typeof routes['org.leaves.show']
+      update: typeof routes['org.leaves.update']
+      approve: typeof routes['org.leaves.approve']
+      reject: typeof routes['org.leaves.reject']
+      cancel: typeof routes['org.leaves.cancel']
+    }
+    holidays: {
+      index: typeof routes['org.holidays.index']
+      store: typeof routes['org.holidays.store']
+      import: typeof routes['org.holidays.import']
+      update: typeof routes['org.holidays.update']
+      destroy: typeof routes['org.holidays.destroy']
+    }
   }
 }
