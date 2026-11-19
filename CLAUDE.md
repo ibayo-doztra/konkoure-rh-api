@@ -23,6 +23,10 @@ Livré : auth complète, `/me` (profil, sessions, organisations, droits par orga
 
 Ajouter une dépendance externe, changer un contrat d'endpoint existant ou écrire une migration destructive : **demander d'abord** (docs/backend/13 §8).
 
+## Branches
+
+Toute branche (`feat/…`, `fix/…`, `chore/…`) part de `develop` à jour (`git fetch && git checkout -b feat/x origin/develop`) et sa PR vise **`develop`**. Seule `develop` est fusionnée dans `main`, par une PR `develop` → `main`. `main` est protégée (PR obligatoire, CI verte) et le workflow `Branch policy` (`.github/workflows/branch-policy.yml`) fait échouer toute PR vers `main` qui ne vient pas de `develop`.
+
 ## Commandes
 
 Gestionnaire de paquets : **pnpm** (pas npm).
