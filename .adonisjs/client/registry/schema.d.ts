@@ -593,6 +593,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['managers']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.employees.import.preview': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/import/preview'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').importPreviewValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').importPreviewValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['preview']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['preview']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['preview']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.import.commit': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/import/commit'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').importCommitValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').importCommitValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['commit']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['commit']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['commit']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.export': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/export'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').exportEmployeesValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').exportEmployeesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employee_transfers_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.employees.show': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/employees/:id'

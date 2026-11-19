@@ -214,3 +214,8 @@ Exports volumineux (employés, pointages, journaux) traités en asynchrone :
 `POST …/export` renvoie `202` + `jobId` ; le fichier est déposé dans
 `private-docs`, une notification et un e-mail contiennent une URL signée
 valable 24 h. Formats CSV (UTF-8 BOM) et XLSX. Limite : 5 exports/h/utilisateur.
+Employés : job `employees.export` (file `maintenance`), fichier enregistré dans
+`files` (`owner_type = 'employee_export'`), e-mail au demandeur ; aucune
+notification in-app tant que la table `notifications` n'existe pas.
+XLSX lu et écrit avec `exceljs` (dépendance validée le 2026-11-19 ; `uuid` forcé
+en 11.x par `pnpm-workspace.yaml`, GHSA-w5hq-g745-h8pq).

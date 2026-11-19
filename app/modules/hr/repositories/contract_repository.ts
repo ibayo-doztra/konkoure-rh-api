@@ -68,6 +68,16 @@ export class ContractRepository extends TenantRepository<typeof Contract> {
     }))
   }
 
+  /** Type of the active contract of each listed employee (export). */
+  async activeTypesOf(employeeIds: string[]) {
+    if (employeeIds.length === 0) return new Map<string, ContractType>()
+    const rows = await this.query()
+      .whereIn('employee_id', employeeIds)
+      .where('status', 'active')
+      .select('employee_id', 'type')
+    return new Map(rows.map((row) => [row.employeeId, row.type]))
+  }
+
   paginate(filters: ContractListFilters) {
     const query = this.query()
     if (filters.employeeIds) query.whereIn('employee_id', filters.employeeIds)
