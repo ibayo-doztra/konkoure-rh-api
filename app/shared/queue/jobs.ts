@@ -3,6 +3,8 @@ import type { MailerMessenger } from '@adonisjs/mail/types'
 
 export type QueueName = 'critical' | 'default' | 'ai' | 'outbound' | 'maintenance'
 
+import type { ExportJob } from '#modules/hr/services/employee_export_service'
+
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
 
 export interface SendMailPayload {
@@ -44,6 +46,13 @@ export const jobs = {
   'leaves.apply-started': leaveTask('apply-started'),
   'leaves.end': leaveTask('end'),
   'leaves.annual-rollover': leaveTask('annual-rollover'),
+  'employees.export': defineJob<ExportJob>({
+    queue: 'maintenance',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/hr/services/employee_export_service')
+      return service.build(payload)
+    },
+  }),
   'contracts.expiring': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {

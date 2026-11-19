@@ -54,5 +54,10 @@
   "contractExpiring": {
     "subject": "Contract ending soon: {employee}",
     "body": "The contract of {employee} ends on {end}. Remember to renew it or to prepare the end of employment."
+  },
+  "employeesExport": {
+    "subject": "Your employee export is ready — Konkouré",
+    "body": "The export of {rows} employee(s) is ready. The download link is valid for 24 hours.",
+    "action": "Download the export"
   }
 }

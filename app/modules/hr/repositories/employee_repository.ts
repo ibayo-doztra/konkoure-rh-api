@@ -83,6 +83,26 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
   }
 
   /** Records counted against the plan quota (07 §1.1). */
+  /** Every live record with what the import matches on (07 §1.7). */
+  importIndex() {
+    return this.query()
+      .select(
+        'id',
+        'first_name',
+        'last_name',
+        'email',
+        'employee_number',
+        'manager_id',
+        'department_id',
+        'job_title',
+        'phone',
+        'hire_date',
+        'birth_date',
+        'status'
+      )
+      .orderBy('id')
+  }
+
   async headcount() {
     const row = await this.query().whereNot('status', 'terminated').count('* as total').first()
     return Number(row?.$extras.total ?? 0)

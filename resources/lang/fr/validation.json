@@ -80,5 +80,22 @@
   },
   "holiday": {
     "dateTaken": "Un jour férié existe déjà à cette date."
+  },
+  "import": {
+    "format": "Le fichier doit être un classeur XLSX ou un CSV en UTF-8.",
+    "tooManyRows": "Le fichier dépasse 2 000 lignes.",
+    "missingColumn": "Les colonnes Prénom et Nom sont obligatoires.",
+    "tokenExpired": "Cet aperçu a expiré : relancez l'analyse du fichier.",
+    "required": "Ce champ est obligatoire.",
+    "length": "La longueur de ce champ est invalide.",
+    "email": "Adresse e-mail invalide.",
+    "date": "Date invalide (AAAA-MM-JJ ou JJ/MM/AAAA).",
+    "duplicateInFile": "Cette valeur apparaît déjà sur une autre ligne du fichier.",
+    "emailTaken": "Cette adresse e-mail appartient à un autre employé.",
+    "unknownDepartment": "Département introuvable.",
+    "unknownManager": "Manager introuvable (Prénom Nom).",
+    "ambiguousManager": "Plusieurs employés portent ce nom : précisez le manager.",
+    "cycle": "Ce rattachement créerait une boucle dans la hiérarchie.",
+    "quotaExceeded": "L'import dépasse le nombre maximal d'employés de votre offre."
   }
 }

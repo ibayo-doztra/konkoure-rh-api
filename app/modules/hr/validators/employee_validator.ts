@@ -115,3 +115,26 @@ export const documentIdValidator = vine.create({
 
 /** POST /org/employees/:id/photo: PNG, JPEG or WebP, 2 MB. */
 export const photoValidator = vine.create({ params: params(), file: vine.file() })
+
+/** POST /org/employees/import/preview: XLSX or CSV, 5 MB, 2,000 lines (07 §1.7). */
+export const importPreviewValidator = vine.create({ file: vine.file() })
+
+/** POST /org/employees/import/commit */
+export const importCommitValidator = vine.create({
+  importToken: vine.string().trim().minLength(10).maxLength(100),
+})
+
+/** POST /org/employees/export (08 §9): asynchronous, the salary is never exported. */
+export const exportEmployeesValidator = vine.create({
+  format: vine.enum(['csv', 'xlsx'] as const),
+  filter: vine
+    .object({
+      status: vine.enum(STATUSES).optional(),
+      departmentId: vine.string().uuid().optional(),
+      managerId: vine.string().uuid().optional(),
+      contractType: vine
+        .enum(['cdi', 'cdd', 'stage', 'freelance', 'apprenticeship', 'daily'] as const)
+        .optional(),
+    })
+    .optional(),
+})

@@ -325,7 +325,7 @@ Sources : `attendance_days`, `leave_balances`, agrégats précalculés. Cache Re
 | GET | `/org/employees/managers` | O H M | Liste des responsables éligibles N+1 |
 | POST | `/org/employees/import/preview` | O H | Analyse d'un fichier Excel/CSV |
 | POST | `/org/employees/import/commit` ⚡ | O H | Import effectif |
-| GET | `/org/employees/export` | O H | CSV/XLSX (5/h) |
+| POST | `/org/employees/export` | O H | CSV/XLSX asynchrone, `202 { jobId }` (5/h, 08 §9) |
 
 #### Documents et photo (décisions du 2026-11-19)
 Les documents sont des lignes du registre `files` (02 §10) avec
@@ -342,6 +342,42 @@ Les documents sont des lignes du registre `files` (02 §10) avec
 - `POST /:id/photo` (multipart `file`, PNG, JPEG ou WebP, ≤ 2 Mo) : bucket public
   comme le logo, `photoUrl` mis à jour, l'ancienne photo supprimée ; réponse : la
   fiche (champs selon le lecteur), audité `employee.photo_updated`.
+
+#### Import et export (décisions du 2026-11-19)
+Colonnes communes (en-têtes français à l'export ; à l'import, en-tête français ou
+anglais, casse et accents ignorés, colonnes inconnues ignorées) : `Matricule`,
+`Nom`*, `Prénom`*, `E-mail`, `Téléphone`, `Poste`, `Département` (par nom),
+`Manager` (« Prénom Nom »), `Date d'embauche`, `Date de naissance`
+(`AAAA-MM-JJ` ou `JJ/MM/AAAA`). L'export ajoute `Statut`, `Date de fin`,
+`Type de contrat` ; jamais le salaire. CSV : UTF-8 avec BOM, séparateur `;`
+(l'import accepte `;` ou `,`) ; une cellule commençant par `= + - @` est préfixée
+d'une apostrophe (injection de formule).
+
+`POST /org/employees/import/preview` (multipart `file`, XLSX ou CSV détecté par
+le contenu, ≤ 5 Mo, ≤ 2 000 lignes) ⇒
+```json
+{ "data": { "importToken": "imp_…", "expiresIn": 1800,
+  "summary": { "total": 5, "create": 1, "update": 1, "skip": 1, "error": 2 },
+  "rows": [{ "line": 2, "action": "update", "name": "Mamadou Diallo", "employeeId": "…" }],
+  "errors": [{ "line": 5, "field": "email", "rule": "email", "message": "Adresse e-mail invalide." }] } }
+```
+Une ligne existante (même matricule, sinon même e-mail) est mise à jour avec ses
+seules cellules non vides (`update`, ou `skip` si rien ne change). Règles :
+`required`, `length`, `email`, `date`, `duplicateInFile`, `emailTaken`,
+`unknownDepartment`, `unknownManager`, `ambiguousManager`, `cycle`,
+`quotaExceeded` (ligne 0). Format, en-têtes ou taille invalides ⇒ `422`
+(`format`, `missingColumn`, `tooManyRows`).
+
+`POST /org/employees/import/commit` ⚡ `{ importToken }` (même utilisateur, 30 min) :
+replanifie sur les données courantes ; la moindre erreur ⇒ `422 E_VALIDATION`
+(détails `line:<n>.<champ>`) et rien n'est écrit ; sinon
+`{ created, updated, skipped, errors: [] }`, audité `employee.imported`.
+Jeton expiré ou déjà utilisé ⇒ `422` règle `expired`.
+
+`POST /org/employees/export` `{ format: 'csv'|'xlsx', filter?: { status,
+departmentId, managerId, contractType } }` ⇒ `202 { jobId }` ; 5 par heure et par
+utilisateur (`429`). Le fichier est déposé dans `private-docs` et un e-mail
+envoie un lien signé valable 24 h (08 §9), audité `employee.exported`.
 
 Filtres `GET /org/employees` : `q` (nom, e-mail, matricule),
 `filter[status]`, `filter[departmentId]`, `filter[managerId]`,

@@ -278,6 +278,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[0,"managers"]],
     types: placeholder as Registry['org.employees.managers']['types'],
   },
+  'org.employees.import.preview': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/import/preview',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[0,"import"],[0,"preview"]],
+    types: placeholder as Registry['org.employees.import.preview']['types'],
+  },
+  'org.employees.import.commit': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/import/commit',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[0,"import"],[0,"commit"]],
+    types: placeholder as Registry['org.employees.import.commit']['types'],
+  },
+  'org.employees.export': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/export',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[0,"export"]],
+    types: placeholder as Registry['org.employees.export']['types'],
+  },
   'org.employees.show': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/org/employees/:id',

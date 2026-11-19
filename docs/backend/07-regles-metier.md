@@ -35,6 +35,11 @@ une phase `preview` : validation ligne à ligne, détection des doublons
 (matricule, e-mail), résolution des départements et managers par nom.
 Le `commit` est **transactionnel et tout ou rien** ; il renvoie un rapport
 `{ created, updated, skipped, errors[{ line, field, message }] }`.
+Précisions (2026-11-19) : le `preview` conserve les lignes 30 min derrière un
+`importToken` ; le `commit` les revalide puis écrit tout ou rien ; correspondance
+par matricule puis e-mail, mise à jour des seules cellules non vides ; manager
+résolu par « Prénom Nom » parmi les employés existants et les lignes du fichier.
+Format détaillé : 06 §4.
 
 ## 2. Pointage
 
