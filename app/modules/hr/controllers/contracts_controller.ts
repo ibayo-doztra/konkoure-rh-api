@@ -4,6 +4,7 @@ import ContractPolicy from '#policies/contract_policy'
 import contractService from '#modules/hr/services/contract_service'
 import { contractDto, pageMetaDto } from '#modules/hr/transformers/hr_transformer'
 import {
+  contractDocumentValidator,
   contractIdValidator,
   createContractValidator,
   listContractsValidator,
@@ -81,6 +82,20 @@ export default class ContractsController {
       ctx.auth.getUserOrFail(),
       params.id,
       input,
+      auditContext(ctx)
+    )
+    return ctx.serialize(contractDto(contract, 'full'))
+  }
+
+  @ApiOperation({ summary: 'Upload the contract document (PDF or image, 10 MB)' })
+  async uploadDocument(ctx: HttpContext) {
+    const { params, file } = await ctx.request.validateUsing(contractDocumentValidator)
+    await ctx.bouncer.with(ContractPolicy).authorize('manage')
+    const contract = await contractService.uploadDocument(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      params.id,
+      file,
       auditContext(ctx)
     )
     return ctx.serialize(contractDto(contract, 'full'))

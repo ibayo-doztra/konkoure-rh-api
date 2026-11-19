@@ -7,6 +7,8 @@ import type { ContractType } from '#models/contract'
 import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
+import teamCache from '#modules/hr/team_cache'
+import leaveService from '#modules/leaves/services/leave_service'
 import type { TenantContext } from '#shared/tenant/tenant_context'
 import entitlementService from '#modules/billing/services/entitlement_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
@@ -166,7 +168,7 @@ export class EmployeeService {
   ): Promise<Employee> {
     const { organizationId } = tenant
     const limit = await this.maxEmployees(organizationId)
-    return withTenant(organizationId, async (trx) => {
+    const result = await withTenant(organizationId, async (trx) => {
       const employees = employeesIn(organizationId, trx)
       await employees.lockHierarchy()
       if (input.status !== 'terminated') await this.assertQuota(employees, limit)
@@ -187,6 +189,8 @@ export class EmployeeService {
       await employee.refresh()
       return employee
     })
+    await teamCache.invalidate(organizationId)
+    return result
   }
 
   async update(
@@ -198,7 +202,7 @@ export class EmployeeService {
   ): Promise<Employee> {
     const { organizationId } = tenant
     const limit = await this.maxEmployees(organizationId)
-    return withTenant(organizationId, async (trx) => {
+    const result = await withTenant(organizationId, async (trx) => {
       const employees = employeesIn(organizationId, trx)
       await employees.lockHierarchy()
       const employee = await employees.findForUpdate(id)
@@ -238,6 +242,8 @@ export class EmployeeService {
       await employee.refresh()
       return employee
     })
+    await teamCache.invalidate(organizationId)
+    return result
   }
 
   /** Soft delete (07 §1.6): the record stays referenced by journals and history. */
@@ -258,6 +264,7 @@ export class EmployeeService {
         targetId: id,
       })
     })
+    await teamCache.invalidate(organizationId)
   }
 
   async restore(
@@ -268,7 +275,7 @@ export class EmployeeService {
   ): Promise<Employee> {
     const { organizationId } = tenant
     const limit = await this.maxEmployees(organizationId)
-    return withTenant(organizationId, async (trx) => {
+    const result = await withTenant(organizationId, async (trx) => {
       const employees = employeesIn(organizationId, trx)
       await employees.lockHierarchy()
       const employee = await employees.findDeletedForUpdate(id)
@@ -298,12 +305,14 @@ export class EmployeeService {
       await employee.refresh()
       return employee
     })
+    await teamCache.invalidate(organizationId)
+    return result
   }
 
   /**
-   * End of employment (07 §1.5) for what exists today: end date, active
-   * contract, application roles and reports. Badges and pending leaves join
-   * this transaction with their modules.
+   * End of employment (07 §1.5): end date, active contract, pending leaves,
+   * application roles and reports. NFC badges join this transaction with the
+   * timeclock module.
    */
   private async terminate(
     tenant: TenantContext,
@@ -321,6 +330,7 @@ export class EmployeeService {
     const endDate = employee.endDate ?? DateTime.now().setZone(organization.timezone).startOf('day')
     employee.endDate = endDate
     await contractService.closeActiveOf(trx, tenant, actor, employee.id, endDate, audit)
+    await leaveService.cancelPendingOf(trx, tenant, actor, employee.id, audit)
     await this.detachFromHierarchy(employeesIn(tenant.organizationId, trx), employee, trx)
   }
 

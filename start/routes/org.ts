@@ -86,6 +86,17 @@ export function registerOrgRoutes() {
               router.post(':id/restore', [EmployeesController, 'restore']).as('restore')
               router.get(':id/salary', [EmployeesController, 'salary']).as('salary')
               router.get(':id/team', [EmployeesController, 'team']).as('team')
+              router.get(':id/documents', [EmployeesController, 'documents']).as('documents.index')
+              router
+                .post(':id/documents', [EmployeesController, 'storeDocument'])
+                .as('documents.store')
+              router
+                .get(':id/documents/:docId/url', [EmployeesController, 'documentUrl'])
+                .as('documents.url')
+              router
+                .delete(':id/documents/:docId', [EmployeesController, 'destroyDocument'])
+                .as('documents.destroy')
+              router.post(':id/photo', [EmployeesController, 'photo']).as('photo')
               router.get(':id/skills', [SkillsController, 'ofEmployee']).as('skills.index')
               router.put(':id/skills', [SkillsController, 'replaceOfEmployee']).as('skills.replace')
               router
@@ -105,6 +116,9 @@ export function registerOrgRoutes() {
               router.delete(':id', [ContractsController, 'destroy']).as('destroy')
               router.post(':id/terminate', [ContractsController, 'terminate']).as('terminate')
               router.get(':id/document', [ContractsController, 'document']).as('document')
+              router
+                .post(':id/document', [ContractsController, 'uploadDocument'])
+                .as('document.store')
             })
             .prefix('contracts')
             .as('contracts')

@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type LeaveBalance from '#models/leave_balance'
 import type LeaveRequest from '#models/leave_request'
@@ -263,6 +264,47 @@ export class LeaveService {
   /** pending → rejected, with the mandatory comment (07 §3.5). */
   reject(tenant: TenantContext, actor: User, id: string, comment: string, audit: AuditContext) {
     return this.decide(tenant, actor, id, 'rejected', comment, audit)
+  }
+
+  /**
+   * End of employment (07 §1.5), inside the transaction of the employee update:
+   * every pending request is cancelled and its days released. Approved leaves
+   * stay as history.
+   */
+  async cancelPendingOf(
+    trx: TransactionClientContract,
+    tenant: TenantContext,
+    actor: User,
+    employeeId: string,
+    audit: AuditContext
+  ) {
+    const scope = await leaveBalanceService.scope(trx, tenant.organizationId)
+    const leaves = leaveRequestsIn(tenant.organizationId, trx)
+    await leaves.lockEmployee(employeeId)
+    for (const leave of await leaves.pendingOfForUpdate(employeeId)) {
+      const balance = await leaveBalanceService.open(
+        scope,
+        employeeId,
+        leave.startDate.year,
+        leave.type,
+        actor.id
+      )
+      await leaveBalanceService.move(
+        scope,
+        balance,
+        { pendingDays: -Number(leave.requestedDays) },
+        { reason: 'leave_cancelled', actorUserId: actor.id, leaveRequestId: leave.id }
+      )
+      leave.merge({ status: 'cancelled' })
+      await leaves.save(leave)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'leave.cancelled',
+        targetType: 'leave_request',
+        targetId: leave.id,
+        before: { status: 'pending' },
+        after: { status: 'cancelled', reason: 'employment_ended' },
+      })
+    }
   }
 
   /**

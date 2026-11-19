@@ -32,7 +32,9 @@
     "emailTaken": "This e-mail address is already used by an employee.",
     "numberTaken": "This employee number is already used.",
     "alreadyLinked": "This record or account is already linked.",
-    "notFound": "This employee record does not exist."
+    "notFound": "This employee record does not exist.",
+    "documentType": "The file must be a PDF, PNG, JPEG or WebP.",
+    "photoType": "The photo must be a PNG, JPEG or WebP image."
   },
   "department": {
     "nameTaken": "A department already has this name.",
@@ -49,7 +51,8 @@
     "activeExists": "This employee already has an active contract.",
     "employeeTerminated": "A former employee cannot have an active contract.",
     "terminated": "A terminated contract can no longer be changed.",
-    "notTerminable": "Only an active or suspended contract can be terminated."
+    "notTerminable": "Only an active or suspended contract can be terminated.",
+    "documentType": "The file must be a PDF, PNG, JPEG or WebP."
   },
   "skill": {
     "nameTaken": "A skill already has this name.",

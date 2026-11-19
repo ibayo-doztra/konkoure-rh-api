@@ -81,6 +81,13 @@ export interface ApiDefinition {
       restore: typeof routes['org.employees.restore']
       salary: typeof routes['org.employees.salary']
       team: typeof routes['org.employees.team']
+      documents: {
+        index: typeof routes['org.employees.documents.index']
+        store: typeof routes['org.employees.documents.store']
+        url: typeof routes['org.employees.documents.url']
+        destroy: typeof routes['org.employees.documents.destroy']
+      }
+      photo: typeof routes['org.employees.photo']
       skills: {
         index: typeof routes['org.employees.skills.index']
         replace: typeof routes['org.employees.skills.replace']
@@ -94,7 +101,9 @@ export interface ApiDefinition {
       update: typeof routes['org.contracts.update']
       destroy: typeof routes['org.contracts.destroy']
       terminate: typeof routes['org.contracts.terminate']
-      document: typeof routes['org.contracts.document']
+      document: typeof routes['org.contracts.document'] & {
+        store: typeof routes['org.contracts.document.store']
+      }
     }
     skills: {
       index: typeof routes['org.skills.index']

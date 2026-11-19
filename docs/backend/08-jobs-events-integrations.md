@@ -50,7 +50,12 @@ Ordonnancement via `@adonisjs/scheduler` ou BullMQ repeatable jobs, avec
 fuseau `Africa/Conakry`), déclarés au démarrage de `node ace queue:work` ; Redis
 n'enfile qu'une occurrence par échéance, quel que soit le nombre de workers.
 Chaque tâche parcourt les organisations, chacune dans sa transaction et son fuseau.
-Exécution manuelle (développement, rattrapage) : `node ace leaves:run <apply-started|end|annual-rollover>`.
+Exécution manuelle (développement, rattrapage) : `node ace schedule:run <job>`
+(ex. `leaves.end`, `contracts.expiring`).
+`contracts:expiring` couvre tous les contrats `active` finissant dans les 30 jours
+(fuseau de l'organisation), pour rattraper une nuit manquée ; un marqueur Redis par
+contrat et date de fin garantit un seul e-mail `contract_expiring`, envoyé aux
+`hr_admin`, à défaut aux `owner`.
 
 ## 3. Événements applicatifs
 

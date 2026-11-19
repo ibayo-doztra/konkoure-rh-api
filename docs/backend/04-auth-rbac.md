@@ -256,6 +256,10 @@ export default class EmployeePolicy extends BasePolicy {
 `ctx.managesEmployee(id)` s'appuie sur une **CTE récursive** sur `manager_id`,
 mise en cache Redis 5 min par manager (clé `mgr:<orgId>:<employeeId>`),
 invalidée à chaque changement de `manager_id` ou de département.
+Mise en œuvre : `EmployeeRepository.teamIds` lit le cache ; après le commit de toute
+mutation d'employé ou de département, toutes les clés `mgr:<orgId>:*` de
+l'organisation sont supprimées (une chaîne modifiée change l'équipe de tous les
+ancêtres). Redis indisponible ⇒ requête PostgreSQL directe.
 
 ```sql
 WITH RECURSIVE team AS (

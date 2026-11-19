@@ -314,6 +314,36 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"team"]],
     types: placeholder as Registry['org.employees.team']['types'],
   },
+  'org.employees.documents.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/documents',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"documents"]],
+    types: placeholder as Registry['org.employees.documents.index']['types'],
+  },
+  'org.employees.documents.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/:id/documents',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"documents"]],
+    types: placeholder as Registry['org.employees.documents.store']['types'],
+  },
+  'org.employees.documents.url': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/documents/:docId/url',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"documents"],[1,"docId"],[0,"url"]],
+    types: placeholder as Registry['org.employees.documents.url']['types'],
+  },
+  'org.employees.documents.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/employees/:id/documents/:docId',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"documents"],[1,"docId"]],
+    types: placeholder as Registry['org.employees.documents.destroy']['types'],
+  },
+  'org.employees.photo': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/employees/:id/photo',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"photo"]],
+    types: placeholder as Registry['org.employees.photo']['types'],
+  },
   'org.employees.skills.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/org/employees/:id/skills',
@@ -373,6 +403,12 @@ const routes = {
     pattern: '/api/v1/org/contracts/:id/document',
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"],[0,"document"]],
     types: placeholder as Registry['org.contracts.document']['types'],
+  },
+  'org.contracts.document.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/contracts/:id/document',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"],[0,"document"]],
+    types: placeholder as Registry['org.contracts.document.store']['types'],
   },
   'org.skills.index': {
     methods: ["GET","HEAD"],

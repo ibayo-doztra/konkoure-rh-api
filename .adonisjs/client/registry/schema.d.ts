@@ -671,6 +671,71 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['team']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.employees.documents.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/documents'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documents']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documents']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.documents.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/:id/documents'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').addDocumentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').addDocumentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['storeDocument']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['storeDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['storeDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.documents.url': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/documents/:docId/url'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; docId: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').documentIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documentUrl']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documentUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['documentUrl']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.documents.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/employees/:id/documents/:docId'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').documentIdValidator)>>
+      paramsTuple: [ParamValue, ParamValue]
+      params: { id: ParamValue; docId: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').documentIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroyDocument']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroyDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['destroyDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.photo': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/:id/photo'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/employee_validator').photoValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/employee_validator').photoValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['photo']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['photo']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['photo']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.employees.skills.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/employees/:id/skills'
@@ -799,6 +864,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.document.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/contracts/:id/document'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractDocumentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractDocumentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['uploadDocument']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['uploadDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['uploadDocument']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'org.skills.index': {

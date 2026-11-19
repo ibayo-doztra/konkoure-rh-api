@@ -50,5 +50,9 @@
       "body": "Votre demande de {type} du {start} au {end} ({days} jour(s)) a été refusée."
     },
     "comment": "Motif : {comment}"
+  },
+  "contractExpiring": {
+    "subject": "Fin de contrat prochaine : {employee}",
+    "body": "Le contrat de {employee} arrive à son terme le {end}. Pensez à le renouveler ou à préparer la fin de collaboration."
   }
 }

@@ -4,7 +4,11 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type Contract from '#models/contract'
 import type { ContractStatus, ContractType } from '#models/contract'
+import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import { AppException } from '#shared/exceptions/app_exception'
+import { filesIn } from '#shared/files/file_repository'
+import fileStorage from '#shared/files/file_storage'
+import { detectDocumentType } from '#shared/utils/document_signature'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import type { TenantContext } from '#shared/tenant/tenant_context'
@@ -29,6 +33,9 @@ export interface ContractListQuery {
   perPage?: number
   filter?: { employeeId?: string; status?: ContractStatus; type?: ContractType }
 }
+
+/** Contract documents up to 10 MB (docs/backend/05 §3). */
+const MAX_DOCUMENT_BYTES = 10 * 1024 * 1024
 
 /** Signed links to private documents last 15 minutes (docs/backend/08 §6). */
 const DOCUMENT_URL_TTL_SECONDS = 15 * 60
@@ -264,6 +271,54 @@ export class ContractService {
         before,
       })
     })
+  }
+
+  /**
+   * Stores the contract document (PDF or image, 10 MB, private) and replaces
+   * the previous one, which is deleted after the commit.
+   */
+  async uploadDocument(
+    tenant: TenantContext,
+    actor: User,
+    id: string,
+    file: MultipartFile,
+    audit: AuditContext
+  ): Promise<Contract> {
+    const { organizationId } = tenant
+    const upload = await fileStorage.check(file, MAX_DOCUMENT_BYTES, detectDocumentType, () =>
+      AppException.validation('file', 'documentType', 'validation.contract.documentType')
+    )
+    const key = fileStorage.key(organizationId, 'contract', id, upload.type.extension)
+    const stored = await fileStorage.put('private', key, upload)
+
+    let previous: string | null = null
+    let contract: Contract
+    try {
+      contract = await withTenant(organizationId, async (trx) => {
+        const contracts = contractsIn(organizationId, trx)
+        const files = filesIn(organizationId, trx)
+        const locked = await contracts.findForUpdate(id)
+        if (!locked) throw new AppException('E_NOT_FOUND')
+        previous = locked.documentPath
+        if (previous) await files.forgetPaths([previous])
+        await files.create({ ...stored, ownerType: 'contract', ownerId: id, uploadedBy: actor.id })
+        locked.merge({ documentPath: key, updatedBy: actor.id })
+        await contracts.save(locked)
+        await auditService.record(trx, this.context(tenant, audit), {
+          action: 'contract.document_uploaded',
+          targetType: 'contract',
+          targetId: id,
+          after: { mime: stored.mime, bytes: stored.sizeBytes, replaced: previous !== null },
+        })
+        await locked.refresh()
+        return locked
+      })
+    } catch (error) {
+      await fileStorage.deleteQuietly('private', key)
+      throw error
+    }
+    if (previous) await fileStorage.deleteQuietly('private', previous)
+    return contract
   }
 
   /** Short-lived link to the private file; the storage call stays out of the transaction. */
