@@ -671,6 +671,175 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/employees_controller').default['team']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.employees.skills.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/skills'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').employeeIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['ofEmployee']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['ofEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['ofEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.skills.replace': {
+    methods: ["PUT"]
+    pattern: '/api/v1/org/employees/:id/skills'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/skill_validator').replaceEmployeeSkillsValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/skill_validator').replaceEmployeeSkillsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['replaceOfEmployee']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['replaceOfEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['replaceOfEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/contracts'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/contract_validator').listContractsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/contracts'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/contract_validator').createContractValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/contract_validator').createContractValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/contracts/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/contracts/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/contract_validator').updateContractValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/contract_validator').updateContractValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/contracts/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.terminate': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/contracts/:id/terminate'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/contract_validator').terminateContractValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/contract_validator').terminateContractValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['terminate']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['terminate']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['terminate']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.contracts.document': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/contracts/:id/document'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/contract_validator').contractIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/contracts_controller').default['document']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.skills.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/skills'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/hr/validators/employee_validator').paginationValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.skills.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/skills'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/skill_validator').createSkillValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/skill_validator').createSkillValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.skills.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/skills/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/skill_validator').updateSkillValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/skill_validator').updateSkillValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.skills.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/skills/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/hr/validators/skill_validator').skillIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/hr/validators/skill_validator').skillIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
 }
 
 export namespace Route {

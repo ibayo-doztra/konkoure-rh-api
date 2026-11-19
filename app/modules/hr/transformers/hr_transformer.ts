@@ -1,6 +1,9 @@
+import type Contract from '#models/contract'
 import type Department from '#models/department'
 import type Employee from '#models/employee'
+import type Skill from '#models/skill'
 import type { EmployeeVisibility } from '#modules/hr/employee_visibility'
+import type { EmployeeSkillRow } from '#modules/hr/repositories/skill_repository'
 
 export function departmentDto(department: Department) {
   return {
@@ -62,6 +65,53 @@ export function employeeSalaryDto(employee: Employee) {
   return {
     baseSalary: employee.baseSalary === null ? null : Number(employee.baseSalary),
     salaryCurrency: employee.salaryCurrency,
+  }
+}
+
+/**
+ * `team` is what a manager reads: no salary (04 §5), and no free-text notes,
+ * which may mention it. The storage path of the document is never returned.
+ */
+export function contractDto(contract: Contract, visibility: 'full' | 'team') {
+  const base = {
+    id: contract.id,
+    employeeId: contract.employeeId,
+    type: contract.type,
+    status: contract.status,
+    startDate: contract.startDate.toISODate(),
+    endDate: contract.endDate?.toISODate() ?? null,
+    trialPeriodEnd: contract.trialPeriodEnd?.toISODate() ?? null,
+    weeklyHours: contract.weeklyHours === null ? null : Number(contract.weeklyHours),
+    hasDocument: contract.documentPath !== null,
+    createdAt: contract.createdAt.toISO(),
+    updatedAt: contract.updatedAt.toISO(),
+  }
+  if (visibility === 'team') return base
+  return {
+    ...base,
+    salary: contract.salary === null ? null : Number(contract.salary),
+    currency: contract.currency,
+    notes: contract.notes,
+  }
+}
+
+export function skillDto(skill: Skill) {
+  return {
+    id: skill.id,
+    name: skill.name,
+    category: skill.category,
+    createdAt: skill.createdAt.toISO(),
+    updatedAt: skill.updatedAt.toISO(),
+  }
+}
+
+export function employeeSkillDto(row: EmployeeSkillRow) {
+  return {
+    skillId: row.skillId,
+    name: row.name,
+    category: row.category,
+    level: row.level,
+    assessedAt: row.assessedAt?.toISODate() ?? null,
   }
 }
 

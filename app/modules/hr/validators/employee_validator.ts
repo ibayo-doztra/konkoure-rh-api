@@ -1,6 +1,7 @@
 import vine from '@vinejs/vine'
 
 const STATUSES = ['active', 'on_leave', 'suspended', 'terminated'] as const
+const CONTRACT_TYPES = ['cdi', 'cdd', 'stage', 'freelance', 'apprenticeship', 'daily'] as const
 const SORTS = [
   'last_name',
   '-last_name',
@@ -78,6 +79,7 @@ const listFields = {
       status: vine.enum(STATUSES).optional(),
       departmentId: vine.string().uuid().optional(),
       managerId: vine.string().uuid().optional(),
+      contractType: vine.enum(CONTRACT_TYPES).optional(),
     })
     .optional(),
 }

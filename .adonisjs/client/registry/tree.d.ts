@@ -81,6 +81,25 @@ export interface ApiDefinition {
       restore: typeof routes['org.employees.restore']
       salary: typeof routes['org.employees.salary']
       team: typeof routes['org.employees.team']
+      skills: {
+        index: typeof routes['org.employees.skills.index']
+        replace: typeof routes['org.employees.skills.replace']
+      }
+    }
+    contracts: {
+      index: typeof routes['org.contracts.index']
+      store: typeof routes['org.contracts.store']
+      show: typeof routes['org.contracts.show']
+      update: typeof routes['org.contracts.update']
+      destroy: typeof routes['org.contracts.destroy']
+      terminate: typeof routes['org.contracts.terminate']
+      document: typeof routes['org.contracts.document']
+    }
+    skills: {
+      index: typeof routes['org.skills.index']
+      store: typeof routes['org.skills.store']
+      update: typeof routes['org.skills.update']
+      destroy: typeof routes['org.skills.destroy']
     }
   }
 }

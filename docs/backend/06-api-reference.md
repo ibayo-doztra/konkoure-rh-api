@@ -377,10 +377,12 @@ Le salaire n'apparaît que dans `GET /:id/salary` : `{ baseSalary, salaryCurrenc
 journal `salary.viewed`. Un `employee` voit sa seule fiche dans la liste (04 §5).
 Les recruteurs et agents ne cherchent que sur le nom, sans filtre `status` ou
 `managerId` ni tri. `PATCH` accepte les champs de `POST`, `null` vidant un champ
-facultatif. `filter[contractType]` arrivera avec les contrats.
+facultatif. `filter[contractType]` porte sur le contrat `active` de l'employé et
+n'est appliqué que pour `owner`, `hr_admin` et `manager`.
 
-Passage à `terminated` (07 §1.5) : `endDate` posée, rôles retirés, subordonnés
-rattachés au manager de l'employé, responsabilité de département retirée. Mettre
+Passage à `terminated` (07 §1.5) : `endDate` posée, contrat actif clôturé, rôles
+retirés, subordonnés rattachés au manager de l'employé, responsabilité de
+département retirée. Mettre
 fin à sa propre fiche, ou à celle d'un `owner` sans être `owner` ⇒ `403` ; dernier
 `owner` actif ⇒ `409`, `rule = "lastOwner"`. La suppression logique rattache de même
 les subordonnés et retire la responsabilité de département. `POST /:id/restore`
@@ -412,6 +414,45 @@ Corps de `POST` et `PATCH /org/departments` : `name` (2 à 120 caractères, uniq
 sans tenir compte de la casse), `description`, `managerId`, `parentDepartmentId`.
 Élément renvoyé : ces champs + `id`, `createdAt`, `updatedAt`. Référence hors
 organisation ⇒ `422` ; boucle de parents ⇒ `422 E_HIERARCHY_CYCLE`.
+
+### Contrats
+
+Corps de `POST /org/contracts` : `employeeId`, `type` (`cdi`, `cdd`, `stage`,
+`freelance`, `apprenticeship`, `daily`), `startDate`, et en option `status`
+(`draft` par défaut, `active`, `suspended`), `endDate`, `trialPeriodEnd`, `salary`
+(0 à 1 000 000 000), `currency` (`GNF` uniquement), `weeklyHours` (0 à 168), `notes`
+(5 000 caractères). `PATCH` accepte ces champs sauf `employeeId`, `null` vidant un
+champ facultatif. `POST /:id/terminate` accepte `endDate`, par défaut la date du
+jour dans le fuseau de l'organisation.
+
+`GET /org/contracts` : `page`, `perPage`, `filter[employeeId]`, `filter[status]`,
+`filter[type]`, tri par date de début décroissante.
+
+Élément renvoyé : `id`, `employeeId`, `type`, `status`, `startDate`, `endDate`,
+`trialPeriodEnd`, `weeklyHours`, `hasDocument`, `createdAt`, `updatedAt`, plus
+`salary`, `currency` et `notes` pour `owner`, `hr_admin` et l'employé lui-même.
+Chaque réponse de lecture contenant un salaire écrit `salary.viewed`.
+
+Règles : fin avant le début, ou essai hors du contrat ⇒ `422` ; employé hors
+organisation ⇒ `422`. `409 E_CONFLICT` avec `rule` : `activeExists` (un seul contrat
+actif par employé), `employeeTerminated` (activation pour un employé parti),
+`terminated` (contrat clôturé non modifiable), `notTerminable` (seuls `active` et
+`suspended` se clôturent). Les contrats d'une fiche supprimée sont masqués.
+
+`GET /:id/document` renvoie `{ url, expiresIn }` (lien signé de 15 min, journal
+`sensitive_document.viewed`), ou `404` sans document. Aucun endpoint de dépôt n'est
+spécifié à ce jour : seuls les documents repris de l'existant sont accessibles.
+
+### Compétences
+
+Corps de `POST` et `PATCH /org/skills` : `name` (2 à 120 caractères, unique sans
+tenir compte de la casse), `category` (80 caractères). `GET` est paginé. La
+suppression retire aussi les évaluations de cette compétence.
+
+`PUT /org/employees/:id/skills` remplace tout l'ensemble :
+`{ skills: [{ skillId, level, assessedAt? }] }`, `level` de 1 à 5, 200 éléments au
+plus, sans doublon, liste vide acceptée. Compétence inconnue ⇒ `422`. `GET` et `PUT`
+renvoient `{ data: [{ skillId, name, category, level, assessedAt }] }`.
 
 ---
 

@@ -94,6 +94,47 @@ export class AuthRefreshTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class ContractSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'currency', 'deletedAt', 'documentPath', 'employeeId', 'endDate', 'id', 'notes', 'organizationId', 'salary', 'startDate', 'status', 'trialPeriodEnd', 'type', 'updatedAt', 'updatedBy', 'weeklyHours'] as const
+  $columns = ContractSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare currency: string
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare documentPath: string | null
+  @column()
+  declare employeeId: string
+  @column.date()
+  declare endDate: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare salary: string | null
+  @column.date()
+  declare startDate: DateTime
+  @column()
+  declare status: 'draft' | 'active' | 'suspended' | 'terminated'
+  @column.date()
+  declare trialPeriodEnd: DateTime | null
+  @column()
+  declare type: 'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare weeklyHours: string | null
+}
+
 export class DepartmentSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'deletedAt', 'description', 'id', 'managerId', 'name', 'organizationId', 'parentDepartmentId', 'updatedAt', 'updatedBy'] as const
   $columns = DepartmentSchema.$columns
@@ -115,6 +156,31 @@ export class DepartmentSchema extends BaseModel {
   declare organizationId: string
   @column()
   declare parentDepartmentId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class EmployeeSkillSchema extends BaseModel {
+  static $columns = ['assessedAt', 'createdAt', 'createdBy', 'employeeId', 'id', 'level', 'organizationId', 'skillId', 'updatedAt', 'updatedBy'] as const
+  $columns = EmployeeSkillSchema.$columns
+  @column.date()
+  declare assessedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare level: number
+  @column()
+  declare organizationId: string
+  @column()
+  declare skillId: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
   @column()
@@ -323,6 +389,27 @@ export class PlatformAdminSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare userId: string
+}
+
+export class SkillSchema extends BaseModel {
+  static $columns = ['category', 'createdAt', 'createdBy', 'id', 'name', 'organizationId', 'updatedAt', 'updatedBy'] as const
+  $columns = SkillSchema.$columns
+  @column()
+  declare category: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
 }
 
 export class SubscriptionSchema extends BaseModel {

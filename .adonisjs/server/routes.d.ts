@@ -55,6 +55,19 @@ export type ScannedRoutes = {
     'org.employees.restore': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.skills.replace': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.index': { paramsTuple?: []; params?: {} }
+    'org.contracts.store': { paramsTuple?: []; params?: {} }
+    'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.terminate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.index': { paramsTuple?: []; params?: {} }
+    'org.skills.store': { paramsTuple?: []; params?: {} }
+    'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -78,6 +91,11 @@ export type ScannedRoutes = {
     'org.employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.index': { paramsTuple?: []; params?: {} }
+    'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -101,6 +119,11 @@ export type ScannedRoutes = {
     'org.employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.index': { paramsTuple?: []; params?: {} }
+    'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -121,6 +144,9 @@ export type ScannedRoutes = {
     'org.departments.store': { paramsTuple?: []; params?: {} }
     'org.employees.store': { paramsTuple?: []; params?: {} }
     'org.employees.restore': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.store': { paramsTuple?: []; params?: {} }
+    'org.contracts.terminate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.store': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
@@ -128,6 +154,8 @@ export type ScannedRoutes = {
     'org.members.roles.update': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'org.departments.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -136,9 +164,12 @@ export type ScannedRoutes = {
     'org.invitations.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.departments.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.contracts.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'org.settings.update': { paramsTuple?: []; params?: {} }
+    'org.employees.skills.replace': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {
