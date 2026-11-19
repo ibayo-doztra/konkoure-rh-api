@@ -2,6 +2,7 @@ import type Contract from '#models/contract'
 import type Department from '#models/department'
 import type Employee from '#models/employee'
 import type Skill from '#models/skill'
+import type StoredFile from '#models/stored_file'
 import type { EmployeeVisibility } from '#modules/hr/employee_visibility'
 import type { EmployeeSkillRow } from '#modules/hr/repositories/skill_repository'
 
@@ -126,5 +127,18 @@ export function pageMetaDto(meta: {
     perPage: meta.perPage,
     currentPage: meta.currentPage,
     lastPage: meta.lastPage,
+  }
+}
+
+/** The storage path is never returned: links come from `GET …/documents/:docId/url`. */
+export function employeeDocumentDto(document: StoredFile) {
+  return {
+    id: document.id,
+    category: document.category,
+    name: document.name,
+    mime: document.mime,
+    sizeBytes: Number(document.sizeBytes),
+    uploadedBy: document.uploadedBy,
+    createdAt: document.createdAt.toISO(),
   }
 }

@@ -51,3 +51,6 @@ export const listContractsValidator = vine.create({
     })
     .optional(),
 })
+
+/** POST /org/contracts/:id/document: size and real type are checked by the service. */
+export const contractDocumentValidator = vine.create({ params: params(), file: vine.file() })

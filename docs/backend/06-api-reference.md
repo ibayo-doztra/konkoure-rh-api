@@ -327,6 +327,22 @@ Sources : `attendance_days`, `leave_balances`, agrégats précalculés. Cache Re
 | POST | `/org/employees/import/commit` ⚡ | O H | Import effectif |
 | GET | `/org/employees/export` | O H | CSV/XLSX (5/h) |
 
+#### Documents et photo (décisions du 2026-11-19)
+Les documents sont des lignes du registre `files` (02 §10) avec
+`owner_type = 'employee'`, une `category` et un `name`.
+- `POST /:id/documents` (multipart) : `file` (≤ 10 Mo, PDF, PNG, JPEG ou WebP vérifiés
+  par signature), `category` ∈ `passport`, `national_id`, `diploma`, `certificate`,
+  `medical`, `other`, `name` (2..120, défaut : nom d'origine assaini) ⇒ `201`
+  `{ id, category, name, mime, sizeBytes, uploadedBy, createdAt }`, audité
+  `employee.document_added`. Le chemin de stockage n'est jamais renvoyé.
+- `GET /:id/documents` ⇒ `{ data: [ … ] }`, plus récent d'abord.
+- `GET /:id/documents/:docId/url` ⇒ `{ url, expiresIn: 900 }`, audité
+  `sensitive_document.viewed`.
+- `DELETE /:id/documents/:docId` (O H) ⇒ `204`, audité `employee.document_deleted`.
+- `POST /:id/photo` (multipart `file`, PNG, JPEG ou WebP, ≤ 2 Mo) : bucket public
+  comme le logo, `photoUrl` mis à jour, l'ancienne photo supprimée ; réponse : la
+  fiche (champs selon le lecteur), audité `employee.photo_updated`.
+
 Filtres `GET /org/employees` : `q` (nom, e-mail, matricule),
 `filter[status]`, `filter[departmentId]`, `filter[managerId]`,
 `filter[contractType]`, `sort` ∈ `last_name`, `hire_date`, `created_at`.
@@ -402,6 +418,7 @@ contrôle le quota et l'unicité de l'e-mail.
 | GET/PATCH/DELETE | `/org/contracts/:id` | O H |
 | POST | `/org/contracts/:id/terminate` | O H |
 | GET | `/org/contracts/:id/document` | O H · self |
+| POST | `/org/contracts/:id/document` | O H (multipart `file`, PDF/PNG/JPEG/WebP ≤ 10 Mo, remplace le précédent, audité `contract.document_uploaded`) |
 | GET/POST | `/org/skills` | lecture : O H M · écriture : O H |
 | PATCH/DELETE | `/org/skills/:id` | O H |
 | GET | `/org/employees/:id/skills` | O H · M(team) · self |

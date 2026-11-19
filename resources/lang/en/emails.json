@@ -50,5 +50,9 @@
       "body": "Your {type} request from {start} to {end} ({days} day(s)) has been declined."
     },
     "comment": "Reason: {comment}"
+  },
+  "contractExpiring": {
+    "subject": "Contract ending soon: {employee}",
+    "body": "The contract of {employee} ends on {end}. Remember to renew it or to prepare the end of employment."
   }
 }

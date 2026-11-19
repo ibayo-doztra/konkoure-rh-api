@@ -4,6 +4,7 @@ import type Department from '#models/department'
 import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
+import teamCache from '#modules/hr/team_cache'
 import type { TenantContext } from '#shared/tenant/tenant_context'
 import {
   departmentsIn,
@@ -36,14 +37,14 @@ export class DepartmentService {
     return withTenant(organizationId, (trx) => departmentsIn(organizationId, trx).findOrFail(id))
   }
 
-  create(
+  async create(
     tenant: TenantContext,
     actor: User,
     input: DepartmentInput & { name: string },
     audit: AuditContext
   ): Promise<Department> {
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const result = await withTenant(organizationId, async (trx) => {
       const employees = employeesIn(organizationId, trx)
       const departments = departmentsIn(organizationId, trx)
       await employees.lockHierarchy()
@@ -63,9 +64,11 @@ export class DepartmentService {
       await department.refresh()
       return department
     })
+    await teamCache.invalidate(organizationId)
+    return result
   }
 
-  update(
+  async update(
     tenant: TenantContext,
     actor: User,
     id: string,
@@ -73,7 +76,7 @@ export class DepartmentService {
     audit: AuditContext
   ): Promise<Department> {
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const result = await withTenant(organizationId, async (trx) => {
       const employees = employeesIn(organizationId, trx)
       const departments = departmentsIn(organizationId, trx)
       await employees.lockHierarchy()
@@ -97,6 +100,8 @@ export class DepartmentService {
       await department.refresh()
       return department
     })
+    await teamCache.invalidate(organizationId)
+    return result
   }
 
   /** Soft delete; employees must move first, sub-departments go up one level. */
@@ -138,6 +143,7 @@ export class DepartmentService {
         after: { reassignTo: reassignTo ?? null },
       })
     })
+    await teamCache.invalidate(organizationId)
   }
 
   /** Client-supplied ids are re-read inside the organization (05 §2). */

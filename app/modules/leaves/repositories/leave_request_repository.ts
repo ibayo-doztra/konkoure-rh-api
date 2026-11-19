@@ -55,6 +55,15 @@ export class LeaveRequestRepository extends TenantRepository<typeof LeaveRequest
     ])
   }
 
+  /** Pending requests of an employee, locked (end of employment, 07 §1.5). */
+  pendingOfForUpdate(employeeId: string) {
+    return this.query()
+      .where('employee_id', employeeId)
+      .where('status', 'pending')
+      .orderBy('start_date', 'asc')
+      .forUpdate()
+  }
+
   /** A pending or approved leave of the employee sharing at least one day (07 §3.2). */
   async overlaps(employeeId: string, startDate: string, endDate: string, exceptId?: string) {
     const query = this.query()

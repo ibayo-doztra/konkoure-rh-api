@@ -46,6 +46,28 @@ export class ContractRepository extends TenantRepository<typeof Contract> {
       .first()
   }
 
+  /** Active contracts ending in `[from, to]`, with the employee's name (`contracts:expiring`). */
+  async endingBetween(from: string, to: string) {
+    const rows = await this.query()
+      .where('status', 'active')
+      .whereBetween('end_date', [from, to])
+      .orderBy('end_date', 'asc')
+    if (rows.length === 0) return []
+    const employees: Array<{ id: string; first_name: string; last_name: string }> = await this.trx
+      .from('employees')
+      .where('organization_id', this.organizationId)
+      .whereIn(
+        'id',
+        rows.map((row) => row.employeeId)
+      )
+      .select('id', 'first_name', 'last_name')
+    const names = new Map(employees.map((row) => [row.id, `${row.first_name} ${row.last_name}`]))
+    return rows.map((contract) => ({
+      contract,
+      employeeName: names.get(contract.employeeId) ?? '',
+    }))
+  }
+
   paginate(filters: ContractListFilters) {
     const query = this.query()
     if (filters.employeeIds) query.whereIn('employee_id', filters.employeeIds)

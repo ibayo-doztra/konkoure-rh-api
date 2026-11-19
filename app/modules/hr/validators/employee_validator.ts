@@ -91,3 +91,27 @@ export const listEmployeesValidator = vine.create(listFields)
 export const nestedEmployeesValidator = vine.create({ params: params(), ...listFields })
 
 export const paginationValidator = vine.create({ page: page(), perPage: perPage() })
+
+const DOCUMENT_CATEGORIES = [
+  'passport',
+  'national_id',
+  'diploma',
+  'certificate',
+  'medical',
+  'other',
+] as const
+
+/** POST /org/employees/:id/documents: size and real type are checked by the service. */
+export const addDocumentValidator = vine.create({
+  params: params(),
+  file: vine.file(),
+  category: vine.enum(DOCUMENT_CATEGORIES),
+  name: vine.string().trim().minLength(2).maxLength(120).optional(),
+})
+
+export const documentIdValidator = vine.create({
+  params: vine.object({ id: vine.string().uuid(), docId: vine.string().uuid() }),
+})
+
+/** POST /org/employees/:id/photo: PNG, JPEG or WebP, 2 MB. */
+export const photoValidator = vine.create({ params: params(), file: vine.file() })

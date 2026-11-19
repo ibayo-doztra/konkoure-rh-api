@@ -32,6 +32,13 @@ export default class EmployeePolicy extends BasePolicy {
     return tenant.hasRole('manager') && (inTeam || tenant.employeeId === employee.id)
   }
 
+  /** Documents and photo: owner, hr_admin and the employee (06 §4). */
+  manageOwnFiles(_user: User, employee: Employee) {
+    return (
+      this.ctx.tenant.hasRole('owner', 'hr_admin') || this.ctx.tenant.employeeId === employee.id
+    )
+  }
+
   listManagers(_user: User) {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager')
   }

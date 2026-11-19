@@ -4,6 +4,7 @@ import type { ContractType } from '#models/contract'
 import Employee, { type EmployeeStatus } from '#models/employee'
 import { TenantRepository } from '#shared/base/tenant_repository'
 import { withTenant } from '#shared/tenant/with_tenant'
+import teamCache from '#modules/hr/team_cache'
 
 /** Guard against cycles and runaway chains (docs/backend/04 §6, 07 §1.3). */
 const MAX_HIERARCHY_DEPTH = 10
@@ -152,8 +153,19 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
       .paginate(filters.page, filters.perPage)
   }
 
-  /** Direct and indirect reports of a manager. */
+  /**
+   * Direct and indirect reports of a manager, cached 5 min (04 §6). Read paths
+   * only: services clear the cache after committing a hierarchy change.
+   */
   async teamIds(managerId: string): Promise<string[]> {
+    const cached = await teamCache.get(this.organizationId, managerId)
+    if (cached) return cached
+    const ids = await this.queryTeamIds(managerId)
+    await teamCache.set(this.organizationId, managerId, ids)
+    return ids
+  }
+
+  private async queryTeamIds(managerId: string): Promise<string[]> {
     const { rows } = await this.trx.rawQuery(
       `WITH RECURSIVE team AS (
          SELECT id, 1 AS depth FROM employees

@@ -44,6 +44,13 @@ export const jobs = {
   'leaves.apply-started': leaveTask('apply-started'),
   'leaves.end': leaveTask('end'),
   'leaves.annual-rollover': leaveTask('annual-rollover'),
+  'contracts.expiring': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#modules/hr/services/contract_expiry_service')
+      return service.run()
+    },
+  }),
 }
 
 export type JobName = keyof typeof jobs
@@ -56,6 +63,7 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
   { job: 'leaves.end', pattern: '10 0 * * *' },
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
+  { job: 'contracts.expiring', pattern: '0 2 * * *' },
 ]
 
 export const SCHEDULE_TIMEZONE = 'Africa/Conakry'

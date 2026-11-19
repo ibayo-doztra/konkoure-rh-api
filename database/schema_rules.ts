@@ -54,6 +54,14 @@ export default {
     leave_balance_ledger: {
       columns: { leave_type: { tsType: LEAVE_TYPE } },
     },
+    files: {
+      columns: {
+        visibility: { tsType: `'private' | 'public'` },
+        category: {
+          tsType: `'passport' | 'national_id' | 'diploma' | 'certificate' | 'medical' | 'other'`,
+        },
+      },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

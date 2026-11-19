@@ -252,6 +252,43 @@ export class EmployeeSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class FileSchema extends BaseModel {
+  static $columns = ['bucket', 'category', 'checksumSha256', 'createdAt', 'id', 'mime', 'name', 'organizationId', 'ownerId', 'ownerType', 'path', 'scanResult', 'scannedAt', 'sizeBytes', 'uploadedBy', 'visibility'] as const
+  $columns = FileSchema.$columns
+  @column()
+  declare bucket: string
+  @column()
+  declare category: 'passport' | 'national_id' | 'diploma' | 'certificate' | 'medical' | 'other' | null
+  @column()
+  declare checksumSha256: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare mime: string
+  @column()
+  declare name: string | null
+  @column()
+  declare organizationId: string | null
+  @column()
+  declare ownerId: string | null
+  @column()
+  declare ownerType: string
+  @column()
+  declare path: string
+  @column()
+  declare scanResult: string | null
+  @column.dateTime()
+  declare scannedAt: DateTime | null
+  @column()
+  declare sizeBytes: bigint | number
+  @column()
+  declare uploadedBy: string | null
+  @column()
+  declare visibility: 'private' | 'public'
+}
+
 export class InvitationSchema extends BaseModel {
   static $columns = ['acceptedAt', 'acceptedUserId', 'createdAt', 'email', 'employeeId', 'expiresAt', 'id', 'invitedBy', 'lastSentAt', 'organizationId', 'role', 'sendCount', 'status', 'tokenHash', 'updatedAt'] as const
   $columns = InvitationSchema.$columns

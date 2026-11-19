@@ -32,7 +32,9 @@
     "emailTaken": "Cette adresse e-mail est déjà utilisée par un employé.",
     "numberTaken": "Ce matricule est déjà utilisé.",
     "alreadyLinked": "Cette fiche ou ce compte est déjà lié.",
-    "notFound": "Cette fiche employé n'existe pas."
+    "notFound": "Cette fiche employé n'existe pas.",
+    "documentType": "Le fichier doit être un PDF, PNG, JPEG ou WebP.",
+    "photoType": "La photo doit être une image PNG, JPEG ou WebP."
   },
   "department": {
     "nameTaken": "Un département porte déjà ce nom.",
@@ -49,7 +51,8 @@
     "activeExists": "Cet employé a déjà un contrat actif.",
     "employeeTerminated": "Un employé parti ne peut pas avoir de contrat actif.",
     "terminated": "Un contrat clôturé ne peut plus être modifié.",
-    "notTerminable": "Seul un contrat actif ou suspendu peut être clôturé."
+    "notTerminable": "Seul un contrat actif ou suspendu peut être clôturé.",
+    "documentType": "Le fichier doit être un PDF, PNG, JPEG ou WebP."
   },
   "skill": {
     "nameTaken": "Une compétence porte déjà ce nom.",
