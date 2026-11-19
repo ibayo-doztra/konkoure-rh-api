@@ -22,6 +22,9 @@ const LeavesController = () => import('#modules/leaves/controllers/leaves_contro
 const LeaveBalancesController = () =>
   import('#modules/leaves/controllers/leave_balances_controller')
 const HolidaysController = () => import('#modules/leaves/controllers/holidays_controller')
+const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
+const TimeclockSetupController = () =>
+  import('#modules/timeclock/controllers/timeclock_setup_controller')
 
 /**
  * `/api/v1/org/*` — 06-api-reference §3 onwards. Every route runs behind
@@ -182,8 +185,62 @@ export function registerOrgRoutes() {
             .as('holidays')
         })
         .use(middleware.entitlement({ module: 'leaves' }))
+
+      router
+        .group(() => {
+          router.get('zones', [TimeclockSetupController, 'zones']).as('zones.index')
+          router.post('zones', [TimeclockSetupController, 'storeZone']).as('zones.store')
+          router.patch('zones/:id', [TimeclockSetupController, 'updateZone']).as('zones.update')
+          router.delete('zones/:id', [TimeclockSetupController, 'destroyZone']).as('zones.destroy')
+          router
+            .post('punch', [TimeclockController, 'punch'])
+            .as('punch')
+            .use(middleware.idempotency())
+          router.get('logs', [TimeclockController, 'logs']).as('logs.index')
+          router.patch('logs/:id', [TimeclockController, 'correct']).as('logs.update')
+          router.delete('logs/:id', [TimeclockController, 'destroy']).as('logs.destroy')
+          router.get('badge-events', [TimeclockSetupController, 'badgeEvents']).as('badgeEvents')
+          router.get('device-tokens', [TimeclockSetupController, 'devices']).as('devices.index')
+          router
+            .post('device-tokens', [TimeclockSetupController, 'storeDevice'])
+            .as('devices.store')
+          router.get('device-tokens/:id', [TimeclockSetupController, 'device']).as('devices.show')
+          router
+            .delete('device-tokens/:id', [TimeclockSetupController, 'revokeDevice'])
+            .as('devices.destroy')
+        })
+        .prefix('timeclock')
+        .as('timeclock')
+        .use(middleware.entitlement({ module: 'timeclock' }))
+
+      router
+        .group(() => {
+          router.get(':id/badge', [TimeclockSetupController, 'badge']).as('show')
+          router
+            .post(':id/badge', [TimeclockSetupController, 'assignBadge'])
+            .as('store')
+            .use(middleware.idempotency())
+          router.delete(':id/badge', [TimeclockSetupController, 'revokeBadge']).as('destroy')
+        })
+        .prefix('employees')
+        .as('employees.badge')
+        .use(middleware.entitlement({ module: 'timeclock' }))
     })
     .prefix('org')
     .as('org')
     .use([middleware.auth(), throttleUser, middleware.tenant()])
+
+  // Badge readers: a member session or a kiosk token (05 §6), see TimeclockActorMiddleware.
+  router
+    .group(() => {
+      router.post('scan', [TimeclockController, 'scan']).as('scan').use(middleware.idempotency())
+      router.post('sync', [TimeclockController, 'sync']).as('sync')
+    })
+    .prefix('org/timeclock')
+    .as('org.timeclock')
+    .use([
+      middleware.timeclockActor(),
+      throttleUser,
+      middleware.entitlement({ module: 'timeclock' }),
+    ])
 }

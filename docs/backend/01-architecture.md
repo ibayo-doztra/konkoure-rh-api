@@ -172,14 +172,19 @@ Erreur (toujours cette forme, produite par l'exception handler) :
 | 401 | `E_TOKEN_EXPIRED` | Access token expiré — le client doit rafraîchir |
 | 403 | `E_FORBIDDEN` | Authentifié mais non autorisé |
 | 403 | `E_MODULE_NOT_INCLUDED` | Module absent du plan d'abonnement |
+| 403 | `E_MANUAL_PUNCH_DISABLED` | Pointage manuel désactivé (`timeclock.allowManualPunch`) |
 | 403 | `E_SUBSCRIPTION_INACTIVE` | Abonnement expiré ou suspendu |
 | 403 | `E_QUOTA_EXCEEDED` | Nombre maximal d'employés du plan atteint |
 | 404 | `E_NOT_FOUND` | Ressource inexistante **ou hors tenant** |
+| 404 | `E_BADGE_UNKNOWN` | Badge inconnu, mal formé ou d'une autre organisation |
 | 409 | `E_CONFLICT` | Conflit métier (doublon, état incompatible) |
+| 409 | `E_BADGE_INACTIVE` | Badge désactivé ou employé suspendu |
+| 409 | `E_DUPLICATE_PUNCH` | Même type de pointage dans la fenêtre anti-doublon |
 | 409 | `E_LEAVE_OVERLAP` | Congé chevauchant une demande en attente ou approuvée (07 §3.2) |
 | 413 | `E_PAYLOAD_TOO_LARGE` | Fichier ou corps trop volumineux |
 | 422 | `E_VALIDATION` | Échec de validation VineJS |
 | 422 | `E_HIERARCHY_CYCLE` | Rattachement créant une boucle hiérarchique |
+| 422 | `E_OUT_OF_ZONE` | Hors de toute zone active avec `requireZone` |
 | 422 | `E_INSUFFICIENT_BALANCE` | Solde de congés insuffisant (07 §3.4) |
 | 423 | `E_ACCOUNT_LOCKED` | Compte verrouillé après tentatives échouées |
 | 429 | `E_RATE_LIMITED` | Quota dépassé (en-tête `Retry-After`) |

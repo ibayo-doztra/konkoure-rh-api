@@ -53,6 +53,13 @@ export const jobs = {
       return service.build(payload)
     },
   }),
+  'partitions.ensure': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#shared/maintenance/partition_service')
+      return service.ensure()
+    },
+  }),
   'contracts.expiring': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -73,6 +80,7 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.end', pattern: '10 0 * * *' },
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
   { job: 'contracts.expiring', pattern: '0 2 * * *' },
+  { job: 'partitions.ensure', pattern: '30 3 * * *' },
 ]
 
 export const SCHEDULE_TIMEZONE = 'Africa/Conakry'

@@ -98,6 +98,11 @@ export interface ApiDefinition {
         replace: typeof routes['org.employees.skills.replace']
       }
       leaveBalance: typeof routes['org.employees.leaveBalance']
+      badge: {
+        show: typeof routes['org.employees.badge.show']
+        store: typeof routes['org.employees.badge.store']
+        destroy: typeof routes['org.employees.badge.destroy']
+      }
     }
     contracts: {
       index: typeof routes['org.contracts.index']
@@ -140,6 +145,29 @@ export interface ApiDefinition {
       import: typeof routes['org.holidays.import']
       update: typeof routes['org.holidays.update']
       destroy: typeof routes['org.holidays.destroy']
+    }
+    timeclock: {
+      zones: {
+        index: typeof routes['org.timeclock.zones.index']
+        store: typeof routes['org.timeclock.zones.store']
+        update: typeof routes['org.timeclock.zones.update']
+        destroy: typeof routes['org.timeclock.zones.destroy']
+      }
+      punch: typeof routes['org.timeclock.punch']
+      logs: {
+        index: typeof routes['org.timeclock.logs.index']
+        update: typeof routes['org.timeclock.logs.update']
+        destroy: typeof routes['org.timeclock.logs.destroy']
+      }
+      badgeEvents: typeof routes['org.timeclock.badgeEvents']
+      devices: {
+        index: typeof routes['org.timeclock.devices.index']
+        store: typeof routes['org.timeclock.devices.store']
+        show: typeof routes['org.timeclock.devices.show']
+        destroy: typeof routes['org.timeclock.devices.destroy']
+      }
+      scan: typeof routes['org.timeclock.scan']
+      sync: typeof routes['org.timeclock.sync']
     }
   }
 }

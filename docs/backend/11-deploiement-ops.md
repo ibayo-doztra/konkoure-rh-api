@@ -12,6 +12,7 @@ variable manquante ou invalide échoue immédiatement.
 | `PORT` | number | `3333` | |
 | `HOST` | string | `0.0.0.0` | |
 | `APP_KEY` | string ≥ 32 | — | chiffrement et signature |
+| `NFC_UID_PEPPER` | secret | — | pepper des empreintes d'UID NFC (05 §6) ; ne jamais le changer en service |
 | `APP_URL` | url | — | URL publique de l'API |
 | `WEB_APP_URL` | url | — | front, pour les liens des e-mails |
 | `LOG_LEVEL` | enum | `info` | |

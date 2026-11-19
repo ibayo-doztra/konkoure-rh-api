@@ -60,7 +60,9 @@ ray-casting (polygone).
 5. supprimer les zéros de tête au-delà de 8 caractères
 6. résultat = uid_normalized ; uid_hash = sha256(uid_normalized + NFC_UID_PEPPER)
 ```
-Exemple : `0c:9c:6b:3e` → `0C9C6B3E`. `210872894` → `0C9C6B3E`.
+Exemple : `0c:9c:6b:3e` → `0C9C6B3E`. `211577662` → `0C9C6B3E` (l'exemple initial
+`210872894` était faux : il vaut `0C91AA3E`, corrigé le 2026-11-19). Des chiffres
+écrits avec des séparateurs d'octets (`04:12:34:56`) restent de l'hexadécimal.
 
 2.3 **Recherche de badge** — par `uid_hash`, badge actif et non révoqué,
 **dans l'organisation courante**. Un UID actif dans une autre organisation
@@ -92,6 +94,10 @@ remplacé par `recorded_at` et marqué `anomaly = 'clock_drift'`.
 `anomaly` (`missing_out` si `in` sans `out` à la clôture du jour).
 Recalcul déclenché à chaque écriture de `time_logs` (débounce 60 s) et par un
 job nocturne de consolidation à 23h59 heure locale.
+
+2.8 bis **Anomalie unique** — `time_logs.anomaly` garde la première qui
+s'applique : `clock_drift`, puis `low_accuracy`, puis `out_of_zone`. Une faible
+précision n'entraîne jamais de refus, même avec `requireZone`.
 
 2.9 **Correction** — seuls `owner`/`hr_admin` corrigent ou suppriment un
 pointage ; l'ancienne valeur est enregistrée dans `audit_logs.before_data`.
