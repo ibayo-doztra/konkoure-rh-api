@@ -30,7 +30,7 @@ Redis : `docker compose up -d redis` (Docker Desktop doit tourner). **Les tests 
 
 Files : `QUEUE_DRIVER=sync` (défaut hors production) exécute les jobs dans le processus ; avec `bullmq`, lancer `node ace queue:work`.
 
-Base : **PostgreSQL** (serveur local, PostgreSQL 18 en dev) configuré via les variables `DB_*` de `.env`. Bases `konkoure` (dev) et `konkoure_test` (sélectionnée par `.env.test`). Pour migrer la base de test : `NODE_ENV=test node ace migration:run`. Tout script qui lit `.env` doit passer par le parseur d'AdonisJS (`EnvParser`) : `$` y est interpolé et les échappements sont interprétés, un parsing naïf donne de mauvaises valeurs.
+Base : **PostgreSQL** (serveur local, PostgreSQL 18 en dev) configuré via les variables `DB_*` de `.env`. Bases `konkoure` (dev) et `konkoure_test` (sélectionnée par `.env.test`). Pour migrer la base de test : `NODE_ENV=test node ace migration:run`. Sur la machine de dev Windows, Smart App Control bloque aussi `citext.dll` du PostgreSQL natif : les tests tournent sur le PostgreSQL 18 de Docker (`docker compose up -d postgres`, port 5433, bases `konkoure` et `konkoure_test`), sélectionné par `.env.test.local` (ignoré par git : `DB_PORT=5433`, `DB_PASSWORD=postgres`). Tout script qui lit `.env` doit passer par le parseur d'AdonisJS (`EnvParser`) : `$` y est interpolé et les échappements sont interprétés, un parsing naïf donne de mauvaises valeurs.
 
 ```bash
 pnpm dev                     # node ace serve --hmr → http://localhost:3333

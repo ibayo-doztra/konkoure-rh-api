@@ -1,6 +1,27 @@
-# Services de développement local. PostgreSQL tourne déjà sur la machine ;
-# seul Redis est fourni ici (cache, rate limit, files — docs/backend/00 §3).
+# Services de développement local (docs/backend/00 §3).
+# PostgreSQL est exposé sur 5433 pour cohabiter avec un serveur local : sur la machine
+# de dev Windows, Smart App Control bloque `citext.dll` du PostgreSQL natif. Pointer
+# `.env.test.local` (ignoré par git) dessus : DB_PORT=5433, DB_PASSWORD=postgres.
 services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: konkoure-postgres
+    ports:
+      - '127.0.0.1:5433:5432'
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: konkoure
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'postgres']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
   redis:
     image: redis:7.4-alpine
     container_name: konkoure-redis
@@ -17,4 +38,5 @@ services:
     restart: unless-stopped
 
 volumes:
+  postgres-data:
   redis-data:
