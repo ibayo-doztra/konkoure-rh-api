@@ -190,6 +190,13 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
     return chain.includes(managerId)
   }
 
+  /** Cache of the current-year annual leave balance (docs/backend/07 §3.6). */
+  async setLeaveBalance(employeeId: string, days: number) {
+    await this.query()
+      .where('id', employeeId)
+      .update({ leave_balance: days.toFixed(2) })
+  }
+
   /** Attaches the direct reports of a departing manager to `managerId`. */
   async reassignReports(fromId: string, managerId: string | null) {
     await this.query().where('manager_id', fromId).update({ manager_id: managerId })

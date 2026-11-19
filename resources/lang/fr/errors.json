@@ -16,5 +16,7 @@
   "E_ACCOUNT_LOCKED": "Compte temporairement verrouillé après plusieurs échecs. Réessayez plus tard.",
   "E_RATE_LIMITED": "Trop de tentatives. Patientez avant de réessayer.",
   "E_INTERNAL": "Une erreur inattendue est survenue.",
-  "E_DEPENDENCY_UNAVAILABLE": "Un service externe est momentanément indisponible."
+  "E_DEPENDENCY_UNAVAILABLE": "Un service externe est momentanément indisponible.",
+  "E_LEAVE_OVERLAP": "Ce congé chevauche une autre demande en attente ou approuvée.",
+  "E_INSUFFICIENT_BALANCE": "Le solde de congés est insuffisant pour cette demande."
 }

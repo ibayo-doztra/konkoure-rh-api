@@ -840,6 +840,188 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.leaves.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/leaves'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').listLeavesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').createLeaveValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').createLeaveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.balances.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/leaves/balances'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').listBalancesValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.balances.adjust': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves/balances/adjust'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').adjustBalanceValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').adjustBalanceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['adjust']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['adjust']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['adjust']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/leaves/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/leaves/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').updateLeaveValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').updateLeaveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.approve': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves/:id/approve'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['approve']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['approve']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['approve']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.reject': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves/:id/reject'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').rejectLeaveValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').rejectLeaveValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['reject']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['reject']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.cancel': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves/:id/cancel'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.holidays.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/holidays'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').listHolidaysValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.holidays.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/holidays'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').createHolidayValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').createHolidayValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['store']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.holidays.import': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/holidays/import'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').importHolidaysValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').importHolidaysValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['import']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['import']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['import']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.holidays.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/holidays/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').updateHolidayValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').updateHolidayValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['update']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['update']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.holidays.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/holidays/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').holidayIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').holidayIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
 }
 
 export namespace Route {

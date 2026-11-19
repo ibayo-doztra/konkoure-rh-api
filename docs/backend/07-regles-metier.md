@@ -136,6 +136,29 @@ Le solde n'est jamais modifié en dehors du ledger.
 manager) un `hr_admin`, à défaut l'`owner`. Un employé ne peut jamais approuver
 sa propre demande, quel que soit son rôle.
 
+3.7 bis **Décisions d'implémentation (validées le 2026-11-19)**
+- `annual` **et** `special` consomment chacun leur propre solde et sont soumis à la
+  limite de solde négatif (3.3 prime sur la mention « seul le type annuel » des
+  règles complémentaires). Le droit initial de `special` est 0 : sans ajustement RH
+  (`/leaves/balances/adjust`), une demande `special` passe en négatif dans la limite
+  de `maxNegativeDays`.
+- Un solde absent pour une année est ouvert à la première utilisation avec
+  `entitled_days = settings.leave.annualEntitlementDays` (`annual`) ou 0, sans prorata,
+  et une ligne de ledger `entitlement`.
+- Une demande est rattachée à l'année de `start_date` ; une demande à cheval sur deux
+  années est refusée.
+- Demi-journée : elle ne retire 0,5 que si le jour concerné est lui-même décompté.
+- Ledger : une ligne à chaque mouvement (`entitlement`, `leave_requested`,
+  `leave_updated`, `leave_approved` (delta 0), `leave_rejected`, `leave_cancelled`,
+  ajustement) ; la somme du ledger d'un employé, d'une année et d'un type égale
+  toujours le solde affiché.
+- `employees.leave_balance` est un cache du solde `annual` de l'année courante,
+  mis à jour dans la transaction de chaque mouvement.
+- Approbateurs : tout manager ayant l'employé dans son sous-arbre, owner et
+  hr_admin ; jamais l'employé lui-même.
+- Annulation d'un congé approuvé : owner et hr_admin uniquement, avant son premier
+  jour (fuseau de l'organisation) ; le ledger est inversé.
+
 3.8 **Reprise annuelle** — job au 1er janvier : `carried_over_days` =
 min(solde restant, `settings.leave.maxCarryOverDays`, défaut 10),
 `entitled_days` réinitialisé, `taken_days` remis à 0, ligne de ledger par

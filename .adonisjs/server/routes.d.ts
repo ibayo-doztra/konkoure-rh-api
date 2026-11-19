@@ -68,6 +68,20 @@ export type ScannedRoutes = {
     'org.skills.store': { paramsTuple?: []; params?: {} }
     'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.store': { paramsTuple?: []; params?: {} }
+    'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.balances.adjust': { paramsTuple?: []; params?: {} }
+    'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.index': { paramsTuple?: []; params?: {} }
+    'org.holidays.store': { paramsTuple?: []; params?: {} }
+    'org.holidays.import': { paramsTuple?: []; params?: {} }
+    'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   GET: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -96,6 +110,10 @@ export type ScannedRoutes = {
     'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -124,6 +142,10 @@ export type ScannedRoutes = {
     'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -147,6 +169,13 @@ export type ScannedRoutes = {
     'org.contracts.store': { paramsTuple?: []; params?: {} }
     'org.contracts.terminate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.store': { paramsTuple?: []; params?: {} }
+    'org.leaves.store': { paramsTuple?: []; params?: {} }
+    'org.leaves.balances.adjust': { paramsTuple?: []; params?: {} }
+    'org.leaves.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.store': { paramsTuple?: []; params?: {} }
+    'org.holidays.import': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
@@ -156,6 +185,8 @@ export type ScannedRoutes = {
     'org.employees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -166,6 +197,7 @@ export type ScannedRoutes = {
     'org.employees.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'org.settings.update': { paramsTuple?: []; params?: {} }

@@ -392,6 +392,90 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"skills"],[1,"id"]],
     types: placeholder as Registry['org.skills.destroy']['types'],
   },
+  'org.leaves.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/leaves',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"]],
+    types: placeholder as Registry['org.leaves.index']['types'],
+  },
+  'org.leaves.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"]],
+    types: placeholder as Registry['org.leaves.store']['types'],
+  },
+  'org.leaves.balances.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/leaves/balances',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[0,"balances"]],
+    types: placeholder as Registry['org.leaves.balances.index']['types'],
+  },
+  'org.leaves.balances.adjust': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves/balances/adjust',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[0,"balances"],[0,"adjust"]],
+    types: placeholder as Registry['org.leaves.balances.adjust']['types'],
+  },
+  'org.leaves.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/leaves/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"]],
+    types: placeholder as Registry['org.leaves.show']['types'],
+  },
+  'org.leaves.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/leaves/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"]],
+    types: placeholder as Registry['org.leaves.update']['types'],
+  },
+  'org.leaves.approve': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves/:id/approve',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"approve"]],
+    types: placeholder as Registry['org.leaves.approve']['types'],
+  },
+  'org.leaves.reject': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves/:id/reject',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"reject"]],
+    types: placeholder as Registry['org.leaves.reject']['types'],
+  },
+  'org.leaves.cancel': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves/:id/cancel',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"cancel"]],
+    types: placeholder as Registry['org.leaves.cancel']['types'],
+  },
+  'org.holidays.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/holidays',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"holidays"]],
+    types: placeholder as Registry['org.holidays.index']['types'],
+  },
+  'org.holidays.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/holidays',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"holidays"]],
+    types: placeholder as Registry['org.holidays.store']['types'],
+  },
+  'org.holidays.import': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/holidays/import',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"holidays"],[0,"import"]],
+    types: placeholder as Registry['org.holidays.import']['types'],
+  },
+  'org.holidays.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/holidays/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"holidays"],[1,"id"]],
+    types: placeholder as Registry['org.holidays.update']['types'],
+  },
+  'org.holidays.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/holidays/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"holidays"],[1,"id"]],
+    types: placeholder as Registry['org.holidays.destroy']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }
