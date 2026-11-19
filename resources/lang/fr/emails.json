@@ -26,5 +26,29 @@
     "employee": "Employé",
     "recruiter": "Recruteur",
     "security_agent": "Agent de sécurité"
+  },
+  "leaveTypes": {
+    "annual": "congé annuel",
+    "sick": "congé maladie",
+    "maternity": "congé maternité",
+    "paternity": "congé paternité",
+    "unpaid": "congé sans solde",
+    "special": "congé exceptionnel"
+  },
+  "leaveRequested": {
+    "subject": "Demande de {type} de {employee}",
+    "body": "{employee} demande un {type} du {start} au {end}, soit {days} jour(s). La demande attend votre décision dans Konkouré.",
+    "balance": "Solde prévisionnel après approbation : {balance} jour(s)."
+  },
+  "leaveDecided": {
+    "approved": {
+      "subject": "Votre {type} est approuvé",
+      "body": "Votre demande de {type} du {start} au {end} ({days} jour(s)) a été approuvée."
+    },
+    "rejected": {
+      "subject": "Votre {type} est refusé",
+      "body": "Votre demande de {type} du {start} au {end} ({days} jour(s)) a été refusée."
+    },
+    "comment": "Motif : {comment}"
   }
 }

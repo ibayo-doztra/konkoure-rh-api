@@ -71,7 +71,9 @@
     "notPending": "Seule une demande en attente peut être modifiée ou décidée.",
     "locked": "Ce congé approuvé a commencé : il ne peut plus être annulé.",
     "notCancellable": "Cette demande ne peut plus être annulée.",
-    "deltaDays": "L'ajustement ne peut pas être nul."
+    "deltaDays": "L'ajustement ne peut pas être nul.",
+    "calendarRange": "La période doit aller du début à la fin, sur 92 jours au plus.",
+    "attachmentType": "Le fichier doit être un PDF, PNG, JPEG ou WebP."
   },
   "holiday": {
     "dateTaken": "Un jour férié existe déjà à cette date."

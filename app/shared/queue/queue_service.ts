@@ -2,7 +2,14 @@ import { Queue, Worker, type ConnectionOptions, type JobsOptions } from 'bullmq'
 import app from '@adonisjs/core/services/app'
 import logger from '@adonisjs/core/services/logger'
 import env from '#start/env'
-import { jobs, type JobName, type JobPayload, type QueueName } from '#shared/queue/jobs'
+import {
+  jobs,
+  SCHEDULES,
+  SCHEDULE_TIMEZONE,
+  type JobName,
+  type JobPayload,
+  type QueueName,
+} from '#shared/queue/jobs'
 
 export type QueueDriver = 'bullmq' | 'sync'
 
@@ -111,6 +118,20 @@ export class QueueService {
     })
   }
 
+  /**
+   * Declares the recurring jobs of 08 §2 (idempotent: an existing scheduler is
+   * updated in place). Called by the worker process; never with the sync driver.
+   */
+  async registerSchedules() {
+    for (const { job, pattern } of SCHEDULES) {
+      await this.queue(jobs[job].queue).upsertJobScheduler(
+        job,
+        { pattern, tz: SCHEDULE_TIMEZONE },
+        { name: job, data: {}, opts: jobOptions(job) }
+      )
+    }
+  }
+
   async close() {
     await Promise.all([...this.queues.values()].map((queue) => queue.close()))
     this.queues.clear()
@@ -119,7 +140,9 @@ export class QueueService {
   private run<Name extends JobName>(name: Name, payload: JobPayload<Name>) {
     const definition = jobs[name]
     if (!definition) throw new Error(`Unknown job ${name}`)
-    return definition.handle(payload)
+    // `name` and `payload` are tied by JobPayload<Name>; TypeScript cannot narrow the union.
+    const handle = definition.handle as (data: JobPayload<Name>) => Promise<unknown>
+    return handle(payload)
   }
 }
 

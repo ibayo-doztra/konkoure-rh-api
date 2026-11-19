@@ -88,6 +88,10 @@ export function registerOrgRoutes() {
               router.get(':id/team', [EmployeesController, 'team']).as('team')
               router.get(':id/skills', [SkillsController, 'ofEmployee']).as('skills.index')
               router.put(':id/skills', [SkillsController, 'replaceOfEmployee']).as('skills.replace')
+              router
+                .get(':id/leave-balance', [LeaveBalancesController, 'ofEmployee'])
+                .as('leaveBalance')
+                .use(middleware.entitlement({ module: 'leaves' }))
             })
             .prefix('employees')
             .as('employees')
@@ -126,6 +130,7 @@ export function registerOrgRoutes() {
                 .post('/', [LeavesController, 'store'])
                 .as('store')
                 .use(middleware.idempotency())
+              router.get('calendar', [LeavesController, 'calendar']).as('calendar')
               router.get('balances', [LeaveBalancesController, 'index']).as('balances.index')
               router
                 .post('balances/adjust', [LeaveBalancesController, 'adjust'])
@@ -135,6 +140,8 @@ export function registerOrgRoutes() {
               router.post(':id/approve', [LeavesController, 'approve']).as('approve')
               router.post(':id/reject', [LeavesController, 'reject']).as('reject')
               router.post(':id/cancel', [LeavesController, 'cancel']).as('cancel')
+              router.post(':id/attachment', [LeavesController, 'attach']).as('attachment.store')
+              router.get(':id/attachment', [LeavesController, 'attachment']).as('attachment.show')
             })
             .prefix('leaves')
             .as('leaves')

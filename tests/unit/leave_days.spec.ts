@@ -62,6 +62,7 @@ test.group('leave settings and holidays', () => {
       maxNegativeDays: 5,
       countWeekends: false,
       countHolidays: false,
+      maxCarryOverDays: 10,
     })
     const custom = leaveSettings({ leave: { maxNegativeDays: 0, countWeekends: 'yes' } })
     assert.equal(custom.maxNegativeDays, 0)

@@ -33,6 +33,28 @@ function toMember(row: RawMember): MemberRow {
   }
 }
 
+/** What an e-mail needs of a recipient. */
+export interface MailAccount {
+  id: string
+  email: string
+  fullName: string | null
+  preferredLanguage: string
+}
+
+interface RawAccount {
+  id: string
+  email: string
+  full_name: string | null
+  preferred_language: string
+}
+
+const toAccount = (row: RawAccount): MailAccount => ({
+  id: row.id,
+  email: row.email,
+  fullName: row.full_name,
+  preferredLanguage: row.preferred_language,
+})
+
 /** Members of an organization: users holding at least one role (02 §3). */
 export class MemberRepository extends TenantRepository<typeof UserRole> {
   constructor(organizationId: string, trx: TransactionClientContract) {
@@ -62,6 +84,35 @@ export class MemberRepository extends TenantRepository<typeof UserRole> {
       .orderBy('u.id', 'asc')
       .paginate(filters.page, filters.perPage)
     return { rows: (page.all() as RawMember[]).map(toMember), meta: page.getMeta() }
+  }
+
+  /** Active accounts holding `role`, to notify them (e-mail recipients). */
+  async accountsWithRole(role: AppRole): Promise<MailAccount[]> {
+    const rows: RawAccount[] = await this.trx
+      .from('user_roles as ur')
+      .join('users as u', 'u.id', 'ur.user_id')
+      .where('ur.organization_id', this.organizationId)
+      .where('ur.role', role)
+      .whereNull('u.deleted_at')
+      .where('u.is_active', true)
+      .orderBy('u.id', 'asc')
+      .select('u.id', 'u.email', 'u.full_name', 'u.preferred_language')
+    return rows.map(toAccount)
+  }
+
+  /** Active account linked to an employee record, if any. */
+  async accountOfEmployee(employeeId: string): Promise<MailAccount | null> {
+    const row: RawAccount | null = await this.trx
+      .from('employees as e')
+      .join('users as u', 'u.id', 'e.user_id')
+      .where('e.organization_id', this.organizationId)
+      .where('e.id', employeeId)
+      .whereNull('e.deleted_at')
+      .whereNull('u.deleted_at')
+      .where('u.is_active', true)
+      .select('u.id', 'u.email', 'u.full_name', 'u.preferred_language')
+      .first()
+    return row ? toAccount(row) : null
   }
 
   async findMember(userId: string): Promise<MemberRow | null> {

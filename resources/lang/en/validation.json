@@ -71,7 +71,9 @@
     "notPending": "Only a pending request can be changed or decided.",
     "locked": "This approved leave has started: it can no longer be cancelled.",
     "notCancellable": "This request can no longer be cancelled.",
-    "deltaDays": "The adjustment cannot be zero."
+    "deltaDays": "The adjustment cannot be zero.",
+    "calendarRange": "The period must run forward and last 92 days at most.",
+    "attachmentType": "The file must be a PDF, PNG, JPEG or WebP."
   },
   "holiday": {
     "dateTaken": "A public holiday already exists on this date."

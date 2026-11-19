@@ -26,5 +26,29 @@
     "employee": "Employee",
     "recruiter": "Recruiter",
     "security_agent": "Security agent"
+  },
+  "leaveTypes": {
+    "annual": "annual leave",
+    "sick": "sick leave",
+    "maternity": "maternity leave",
+    "paternity": "paternity leave",
+    "unpaid": "unpaid leave",
+    "special": "special leave"
+  },
+  "leaveRequested": {
+    "subject": "{employee} requests {type}",
+    "body": "{employee} requests {type} from {start} to {end}, {days} day(s). The request awaits your decision in Konkouré.",
+    "balance": "Projected balance after approval: {balance} day(s)."
+  },
+  "leaveDecided": {
+    "approved": {
+      "subject": "Your {type} is approved",
+      "body": "Your {type} request from {start} to {end} ({days} day(s)) has been approved."
+    },
+    "rejected": {
+      "subject": "Your {type} is declined",
+      "body": "Your {type} request from {start} to {end} ({days} day(s)) has been declined."
+    },
+    "comment": "Reason: {comment}"
   }
 }

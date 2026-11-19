@@ -22,6 +22,7 @@ export default class QueueWork extends BaseCommand {
       return
     }
 
+    await queueService.registerSchedules()
     const workers = queueService.startWorkers(names as QueueName[])
     this.app.terminating(async () => {
       await Promise.all(workers.map((worker) => worker.close()))

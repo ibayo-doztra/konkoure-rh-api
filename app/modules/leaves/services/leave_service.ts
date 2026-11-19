@@ -12,6 +12,8 @@ import { holidaysIn } from '#modules/leaves/repositories/holiday_repository'
 import { leaveBalancesIn } from '#modules/leaves/repositories/leave_balance_repository'
 import { leaveRequestsIn } from '#modules/leaves/repositories/leave_request_repository'
 import { consumesBalance, countLeaveDays } from '#modules/leaves/leave_rules'
+import { visibleEmployeeIds } from '#modules/leaves/leave_visibility'
+import leaveNotifier from '#modules/leaves/services/leave_notifier'
 import leaveBalanceService, {
   displayedBalance,
   type LeaveScope,
@@ -47,6 +49,9 @@ export interface LeaveView {
 
 const day = (value: DateTime) => value.toISODate()!
 
+/** Widest calendar window (06 §7). */
+const CALENDAR_MAX_DAYS = 92
+
 const conflict = (rule: string, message: string) =>
   new AppException('E_CONFLICT', { details: [{ field: 'status', rule, message }] })
 
@@ -58,15 +63,7 @@ export class LeaveService {
   list(tenant: TenantContext, query: LeaveListQuery) {
     const { organizationId } = tenant
     return withTenant(organizationId, async (trx) => {
-      let employeeIds: string[] | undefined
-      if (!tenant.hasRole('owner', 'hr_admin')) {
-        const self = tenant.employeeId
-        const team =
-          tenant.hasRole('manager') && self
-            ? await employeesIn(organizationId, trx).teamIds(self)
-            : []
-        employeeIds = [...team, ...(self ? [self] : [])]
-      }
+      const employeeIds = await visibleEmployeeIds(tenant, trx)
       const page = await leaveRequestsIn(organizationId, trx).paginate({
         page: query.page ?? 1,
         perPage: query.perPage ?? 25,
@@ -78,6 +75,41 @@ export class LeaveService {
         employeeIds,
       })
       return { rows: page.all(), meta: page.getMeta() }
+    })
+  }
+
+  /**
+   * Pending and approved leaves overlapping `[from, to]` (the current month of
+   * the organization by default, 92 days at most), with the holidays of the period.
+   */
+  calendar(tenant: TenantContext, query: { from?: DateTime; to?: DateTime }) {
+    const { organizationId } = tenant
+    return withTenant(organizationId, async (trx) => {
+      const scope = await leaveBalanceService.scope(trx, organizationId)
+      // A single bound extends to the end or start of its own month.
+      const anchor = DateTime.fromISO(day(query.from ?? query.to ?? DateTime.fromISO(scope.today)))
+      const from = query.from ? day(query.from) : day(anchor.startOf('month'))
+      const to = query.to ? day(query.to) : day(anchor.endOf('month'))
+      if (to < from) {
+        throw AppException.validation('to', 'afterOrEqual', 'validation.leave.calendarRange')
+      }
+      const span = DateTime.fromISO(to).diff(DateTime.fromISO(from), 'days').days + 1
+      if (span > CALENDAR_MAX_DAYS) {
+        throw AppException.validation('to', 'maxRange', 'validation.leave.calendarRange')
+      }
+
+      const employeeIds = await visibleEmployeeIds(tenant, trx)
+      const leaves = await leaveRequestsIn(organizationId, trx).calendar(from, to, employeeIds)
+      const names = await employeesIn(organizationId, trx).namesOf([
+        ...new Set(leaves.map((leave) => leave.employeeId)),
+      ])
+      const holidays = await holidaysIn(organizationId, trx).occurrences(from, to)
+      return {
+        from,
+        to,
+        leaves: leaves.map((leave) => ({ leave, employeeName: names.get(leave.employeeId) ?? '' })),
+        holidays,
+      }
     })
   }
 
@@ -112,7 +144,7 @@ export class LeaveService {
     })
   }
 
-  create(
+  async create(
     tenant: TenantContext,
     actor: User,
     employeeId: string,
@@ -120,7 +152,7 @@ export class LeaveService {
     audit: AuditContext
   ): Promise<LeaveView> {
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const view = await withTenant(organizationId, async (trx) => {
       const scope = await leaveBalanceService.scope(trx, organizationId)
       const employee = await employeesIn(organizationId, trx).find(employeeId)
       if (!employee) {
@@ -156,6 +188,9 @@ export class LeaveService {
       await leave.refresh()
       return this.result(leave, employee.managerId, balance)
     })
+    // After the commit (01 §1).
+    await leaveNotifier.requested(view.leave, actor.id, view.balanceAfter)
+    return view
   }
 
   /** PATCH by the author while pending: dates, type and days are recomputed. */
@@ -275,7 +310,7 @@ export class LeaveService {
     })
   }
 
-  private decide(
+  private async decide(
     tenant: TenantContext,
     actor: User,
     id: string,
@@ -284,7 +319,7 @@ export class LeaveService {
     audit: AuditContext
   ): Promise<LeaveView> {
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const view = await withTenant(organizationId, async (trx) => {
       const scope = await leaveBalanceService.scope(trx, organizationId)
       const leave = await this.lock(scope, id)
       if (leave.status !== 'pending') throw conflict('notPending', 'validation.leave.notPending')
@@ -321,6 +356,8 @@ export class LeaveService {
       const employee = await employeesIn(organizationId, trx).find(leave.employeeId)
       return this.result(leave, employee?.managerId ?? null, balance)
     })
+    await leaveNotifier.decided(view.leave, actor.id)
+    return view
   }
 
   /** Locks the employee's leaves, then the request itself. */
@@ -346,7 +383,7 @@ export class LeaveService {
     }
     const holidays = scope.settings.countHolidays
       ? new Set<string>()
-      : await holidaysIn(scope.organizationId, scope.trx).datesWithin(startDate, endDate, year)
+      : await holidaysIn(scope.organizationId, scope.trx).datesWithin(startDate, endDate)
     const halfDayStart = input.halfDayStart ?? false
     const halfDayEnd = input.halfDayEnd ?? false
     const requested = countLeaveDays({

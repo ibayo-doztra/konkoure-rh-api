@@ -90,3 +90,21 @@ export const holidayIdValidator = vine.create({ params: params() })
 export const listHolidaysValidator = vine.create({ year: year().optional() })
 
 export const importHolidaysValidator = vine.create({ year: year() })
+
+/** GET /org/leaves/calendar: the current month by default, 92 days at most. */
+export const calendarValidator = vine.create({
+  from: vine.date().optional(),
+  to: vine.date().optional(),
+})
+
+/** POST /org/leaves/:id/attachment: size and real type are checked by the service. */
+export const attachmentValidator = vine.create({
+  params: params(),
+  file: vine.file(),
+})
+
+/** GET /org/employees/:id/leave-balance */
+export const employeeBalanceValidator = vine.create({
+  params: params(),
+  year: year().optional(),
+})

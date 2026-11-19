@@ -530,6 +530,7 @@ Refusé si `settings.timeclock.allowManualPunch = false`
 | GET | `/org/leaves/balances` | O H · M(team) · E(self) |
 | POST | `/org/leaves/balances/adjust` | O H (audité, écrit au ledger) |
 | GET | `/org/leaves/:id/attachment` | O H · M(team) · self |
+| POST | `/org/leaves/:id/attachment` | auteur si `pending` · O H (toujours) |
 | GET/POST | `/org/holidays` | lecture : tous · écriture : O H |
 | PATCH/DELETE | `/org/holidays/:id` | O H |
 | POST | `/org/holidays/import` | O H | jours fériés guinéens de l'année |
@@ -596,6 +597,31 @@ vine.object({
 ```
 Modifie `entitled_days`, écrit au ledger (motif = `reason`), audité
 `leave_balance.adjusted`. Réponse : le solde au format ci-dessus.
+
+#### Calendrier
+`GET /org/leaves/calendar?from=&to=` (≤ 92 jours ; sans borne, le mois courant ;
+une seule borne s'étend jusqu'à la fin ou au début de son mois) ⇒
+```json
+{ "data": { "from": "2027-03-01", "to": "2027-03-31",
+  "leaves": [{ "id": "…", "employeeId": "…", "employeeName": "Aïssatou Bah",
+    "type": "annual", "status": "approved", "startDate": "…", "endDate": "…",
+    "halfDayStart": false, "halfDayEnd": false }],
+  "holidays": [{ "id": "…", "name": "…", "date": "…", "isMovable": false,
+    "isRecurring": false }] } }
+```
+Demandes `pending` et `approved` chevauchant la période ; périmètre O H tous,
+M équipe + soi, sinon soi. Plage invalide ⇒ `422` (règles `afterOrEqual`, `maxRange`).
+
+#### Pièce jointe
+`POST /org/leaves/:id/attachment` (multipart, champ `file`) : ≤ 10 Mo, PDF, PNG,
+JPEG ou WebP vérifiés par signature (05 §3), bucket privé ; remplace le fichier
+précédent, audité `leave.attachment_uploaded`. Réponse : la demande (`hasAttachment`).
+`GET /org/leaves/:id/attachment` ⇒ `{ url, expiresIn: 900 }`, lien signé audité
+`sensitive_document.viewed` ; `404` sans fichier.
+
+#### Solde d'un employé
+`GET /org/employees/:id/leave-balance?year=` (soi, manager du sous-arbre, O H ;
+module `leaves`) ⇒ `{ data: [ lignes au format de /leaves/balances ] }`.
 
 #### Jours fériés
 `GET /org/holidays?year=` (année courante par défaut) ⇒

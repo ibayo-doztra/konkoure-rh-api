@@ -57,6 +57,7 @@ export type ScannedRoutes = {
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.skills.replace': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.leaveBalance': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.index': { paramsTuple?: []; params?: {} }
     'org.contracts.store': { paramsTuple?: []; params?: {} }
     'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -70,6 +71,7 @@ export type ScannedRoutes = {
     'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.index': { paramsTuple?: []; params?: {} }
     'org.leaves.store': { paramsTuple?: []; params?: {} }
+    'org.leaves.calendar': { paramsTuple?: []; params?: {} }
     'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
     'org.leaves.balances.adjust': { paramsTuple?: []; params?: {} }
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -77,6 +79,8 @@ export type ScannedRoutes = {
     'org.leaves.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.attachment.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
     'org.holidays.store': { paramsTuple?: []; params?: {} }
     'org.holidays.import': { paramsTuple?: []; params?: {} }
@@ -106,13 +110,16 @@ export type ScannedRoutes = {
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.leaveBalance': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.index': { paramsTuple?: []; params?: {} }
     'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.index': { paramsTuple?: []; params?: {} }
     'org.leaves.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.calendar': { paramsTuple?: []; params?: {} }
     'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
   }
   HEAD: {
@@ -138,13 +145,16 @@ export type ScannedRoutes = {
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.skills.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.leaveBalance': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.index': { paramsTuple?: []; params?: {} }
     'org.contracts.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.contracts.document': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.index': { paramsTuple?: []; params?: {} }
     'org.leaves.index': { paramsTuple?: []; params?: {} }
+    'org.leaves.calendar': { paramsTuple?: []; params?: {} }
     'org.leaves.balances.index': { paramsTuple?: []; params?: {} }
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
   }
   POST: {
@@ -174,6 +184,7 @@ export type ScannedRoutes = {
     'org.leaves.approve': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.reject': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.cancel': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.leaves.attachment.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.store': { paramsTuple?: []; params?: {} }
     'org.holidays.import': { paramsTuple?: []; params?: {} }
   }

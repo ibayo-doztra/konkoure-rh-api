@@ -47,6 +47,17 @@ export default class LeavePolicy extends BasePolicy {
     return this.isSelf(leave) || leave.createdBy === user.id || this.isTeamManager(inTeam)
   }
 
+  /** Balance of one employee: self, team manager, O/H (06 "Endpoints complémentaires"). */
+  viewBalanceOf(_user: User, employeeId: string, inTeam: boolean) {
+    return this.isHr() || this.ctx.tenant.employeeId === employeeId || this.isTeamManager(inTeam)
+  }
+
+  /** Attachment: the author while pending, O/H at any time. */
+  attach(user: User, leave: LeaveRequest) {
+    if (this.isHr()) return true
+    return leave.status === 'pending' && (this.isSelf(leave) || leave.createdBy === user.id)
+  }
+
   adjustBalance(_user: User) {
     return this.isHr()
   }

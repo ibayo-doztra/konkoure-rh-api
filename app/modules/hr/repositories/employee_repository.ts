@@ -190,6 +190,23 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
     return chain.includes(managerId)
   }
 
+  /** First and last names of live employee records, by id. */
+  async namesOf(ids: string[]) {
+    if (ids.length === 0) return new Map<string, string>()
+    const rows = await this.query().whereIn('id', ids).select('id', 'first_name', 'last_name')
+    return new Map(rows.map((row) => [row.id, `${row.firstName} ${row.lastName}`]))
+  }
+
+  /** Moves the listed employees from `from` to `to`, leaving any other status alone. */
+  async switchStatus(ids: string[], from: EmployeeStatus, to: EmployeeStatus) {
+    if (ids.length === 0) return 0
+    const changed = await this.query()
+      .whereIn('id', ids)
+      .where('status', from)
+      .update({ status: to })
+    return Array.isArray(changed) ? Number(changed[0] ?? 0) : Number(changed)
+  }
+
   /** Cache of the current-year annual leave balance (docs/backend/07 §3.6). */
   async setLeaveBalance(employeeId: string, days: number) {
     await this.query()

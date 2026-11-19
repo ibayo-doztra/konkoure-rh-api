@@ -30,6 +30,7 @@ export const updateOrganizationSettingsValidator = vine.create({
       maxNegativeDays: days(),
       countWeekends: vine.boolean().optional(),
       countHolidays: vine.boolean().optional(),
+      maxCarryOverDays: days(),
     })
     .optional(),
   timeclock: vine

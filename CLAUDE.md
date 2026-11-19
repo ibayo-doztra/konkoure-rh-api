@@ -10,12 +10,12 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements, employés, contrats et compétences (module RH), congés (demandes, décisions, soldes et ledger, ajustement) et jours fériés, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
+Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements, employés, contrats et compétences (module RH), congés (demandes, décisions, soldes et ledger, ajustement, calendrier, pièce jointe, e-mails, tâches planifiées `leaves:*`) et jours fériés, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
 
 | Sujet | Reste à faire |
 |---|---|
 | Tables | tout le reste de 03 §1 (pointage, `work_schedules`, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
-| Congés | calendrier, pièce jointe (dépôt non spécifié), `GET /org/employees/:id/leave-balance`, jobs `leaves:apply-started` / `leaves:end` / `leaves:annual-rollover`, e-mails et notifications `leave_requested` / `leave_decided` |
+| Congés | notifications in-app `leave.requested` / `leave.decided` (avec la table `notifications`) |
 | RH | documents, photo, import, export ; dépôt du document de contrat (endpoint non spécifié) ; job `contracts:expiring` ; cache Redis de la descendance manager (04 §6) ; à la fin d'emploi, badges et congés en attente |
 | `/me` | notifications, export, suppression du compte |
 | `/org` | tableau de bord ; purge à 30 jours des organisations supprimées (avant le lancement) ; entrée `files` des logos (table 0104) |
@@ -29,7 +29,7 @@ Gestionnaire de paquets : **pnpm** (pas npm).
 
 Redis : `docker compose up -d redis` (Docker Desktop doit tourner). **Les tests en ont besoin** (idempotence, cache des droits, BullMQ), même si le limiteur y est en mémoire. Sans `RESEND_API_KEY`, les e-mails échouent et sont seulement journalisés.
 
-Files : `QUEUE_DRIVER=sync` (défaut hors production) exécute les jobs dans le processus ; avec `bullmq`, lancer `node ace queue:work`.
+Files : `QUEUE_DRIVER=sync` (défaut hors production) exécute les jobs dans le processus ; avec `bullmq`, lancer `node ace queue:work`, qui déclare aussi les tâches planifiées (job schedulers BullMQ, `SCHEDULES` de `app/shared/queue/jobs.ts`). En `sync`, rien n'est planifié : `node ace leaves:run <tâche>` lance une tâche à la main.
 
 Base : **PostgreSQL** (serveur local, PostgreSQL 18 en dev) configuré via les variables `DB_*` de `.env`. Bases `konkoure` (dev) et `konkoure_test` (sélectionnée par `.env.test`). Pour migrer la base de test : `NODE_ENV=test node ace migration:run`. Sur la machine de dev Windows, Smart App Control bloque aussi `citext.dll` du PostgreSQL natif : les tests tournent sur le PostgreSQL 18 de Docker (`docker compose up -d postgres`, port 5433, bases `konkoure` et `konkoure_test`), sélectionné par `.env.test.local` (ignoré par git : `DB_PORT=5433`, `DB_PASSWORD=postgres`). Tout script qui lit `.env` doit passer par le parseur d'AdonisJS (`EnvParser`) : `$` y est interpolé et les échappements sont interprétés, un parsing naïf donne de mauvaises valeurs.
 
