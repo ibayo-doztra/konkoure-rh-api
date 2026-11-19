@@ -25,6 +25,11 @@ export class DepartmentRepository extends TenantRepository<typeof Department> {
       .paginate(filters.page, filters.perPage)
   }
 
+  /** Every live department, for name resolution (import, export). */
+  all() {
+    return this.query().select('id', 'name').orderBy('name')
+  }
+
   async nameTaken(name: string, exceptId?: string) {
     const query = this.query().whereRaw('lower(name) = lower(?)', [name])
     if (exceptId) query.whereNot('id', exceptId)

@@ -75,6 +75,11 @@ export interface ApiDefinition {
       index: typeof routes['org.employees.index']
       store: typeof routes['org.employees.store']
       managers: typeof routes['org.employees.managers']
+      import: {
+        preview: typeof routes['org.employees.import.preview']
+        commit: typeof routes['org.employees.import.commit']
+      }
+      export: typeof routes['org.employees.export']
       show: typeof routes['org.employees.show']
       update: typeof routes['org.employees.update']
       destroy: typeof routes['org.employees.destroy']

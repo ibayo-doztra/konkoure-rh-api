@@ -15,6 +15,8 @@ const MembersController = () => import('#modules/organizations/controllers/membe
 const DepartmentsController = () => import('#modules/hr/controllers/departments_controller')
 const EmployeesController = () => import('#modules/hr/controllers/employees_controller')
 const ContractsController = () => import('#modules/hr/controllers/contracts_controller')
+const EmployeeTransfersController = () =>
+  import('#modules/hr/controllers/employee_transfers_controller')
 const SkillsController = () => import('#modules/hr/controllers/skills_controller')
 const LeavesController = () => import('#modules/leaves/controllers/leaves_controller')
 const LeaveBalancesController = () =>
@@ -80,6 +82,14 @@ export function registerOrgRoutes() {
               router.post('/', [EmployeesController, 'store']).as('store')
               // Before `:id`, which would otherwise capture it.
               router.get('managers', [EmployeesController, 'managers']).as('managers')
+              router
+                .post('import/preview', [EmployeeTransfersController, 'preview'])
+                .as('import.preview')
+              router
+                .post('import/commit', [EmployeeTransfersController, 'commit'])
+                .as('import.commit')
+                .use(middleware.idempotency())
+              router.post('export', [EmployeeTransfersController, 'export']).as('export')
               router.get(':id', [EmployeesController, 'show']).as('show')
               router.patch(':id', [EmployeesController, 'update']).as('update')
               router.delete(':id', [EmployeesController, 'destroy']).as('destroy')

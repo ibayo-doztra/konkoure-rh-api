@@ -49,6 +49,9 @@ export type ScannedRoutes = {
     'org.employees.index': { paramsTuple?: []; params?: {} }
     'org.employees.store': { paramsTuple?: []; params?: {} }
     'org.employees.managers': { paramsTuple?: []; params?: {} }
+    'org.employees.import.preview': { paramsTuple?: []; params?: {} }
+    'org.employees.import.commit': { paramsTuple?: []; params?: {} }
+    'org.employees.export': { paramsTuple?: []; params?: {} }
     'org.employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -185,6 +188,9 @@ export type ScannedRoutes = {
     'org.invitations.resend': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.departments.store': { paramsTuple?: []; params?: {} }
     'org.employees.store': { paramsTuple?: []; params?: {} }
+    'org.employees.import.preview': { paramsTuple?: []; params?: {} }
+    'org.employees.import.commit': { paramsTuple?: []; params?: {} }
+    'org.employees.export': { paramsTuple?: []; params?: {} }
     'org.employees.restore': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.documents.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.photo': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
