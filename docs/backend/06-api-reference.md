@@ -561,10 +561,49 @@ Pointage manuel/GPS pour soi-même. Mêmes champs, sans `badgeUid`.
 Refusé si `settings.timeclock.allowManualPunch = false`
 (`403 E_MANUAL_PUNCH_DISABLED`).
 
+### Décisions du 2026-11-19 (lot 1)
+- **Réponse du scan** : ajoute `source` (`nfc`, `kiosk`, `manual`, `mobile_gps`).
+  Un `clientPunchId` déjà connu renvoie le pointage existant en `200`.
+- **Zones** : `POST /zones` `{ name (2..120, unique sans casse), shape?:
+  'circle'|'polygon', latitude, longitude, radiusMeters (20..5000) | polygon
+  ([lon, lat][], fermé, 4..100 points), isActive?, timezone? }` ⇒ `201` ; réponse
+  `{ id, name, shape, latitude, longitude, radiusMeters, polygon, isActive,
+  timezone, createdAt, updatedAt }`. `DELETE` = suppression logique.
+- **Badges** : `GET /employees/:id/badge` ⇒ `{ data: { id, employeeId, uid:
+  '••••6B3E', isActive, assignedAt, revokedAt } | null }`. `POST` `{ badgeUid }` ⇒
+  `201` ; un badge existant de l'employé est révoqué (`reassigned`) ; UID actif
+  ailleurs, même dans une autre organisation ⇒ `409 E_CONFLICT` règle
+  `badgeTaken` ; employé `terminated` ⇒ `409`. `DELETE` ⇒ `204`.
+  `GET /badge-events?employeeId&page&perPage` ⇒ `{ id, employeeId, badgeId, uid,
+  event, reason, actorUserId, createdAt }`.
+- **Scan** : UID mal formé, inconnu ou d'une autre organisation ⇒ `404
+  E_BADGE_UNKNOWN` (journalisé `scan_rejected`) ; employé `suspended` ⇒ `409
+  E_BADGE_INACTIVE`. Rate limit : 30/min par jeton kiosque, sinon par `deviceId`,
+  sinon par utilisateur ; 300/min par organisation (`429`).
+- **Zone sans coordonnées** : un lecteur de badge est fixe, son scan sans GPS est
+  accepté sans contrôle de zone ; un pointage pour soi sans coordonnées, avec
+  `requireZone`, ⇒ `422 E_OUT_OF_ZONE`. Une seule anomalie est gardée, dans
+  l'ordre `clock_drift`, `low_accuracy`, `out_of_zone`.
+- **Historique** : `GET /logs?page&perPage (≤ 200)&filter[employeeId|from|to|source|anomaly]`
+  ⇒ `{ id, employeeId, type, punchedAt, recordedAt, source, workZoneId, latitude,
+  longitude, accuracyMeters, distanceMeters, isWithinZone, anomaly, deviceId,
+  notes, updatedAt }`, périmètre O H S tous, M équipe + soi, E soi. `PATCH`
+  `{ type?, punchedAt?, workZoneId?, notes? }` (au moins un champ), audité
+  `time_log.corrected` avec les anciennes valeurs ; `DELETE` audité.
+- **Tokens kiosque** : `POST /device-tokens` `{ name (2..80), expiresInDays? (1..365,
+  défaut 90) }` ⇒ `201 { id, name, expiresAt, revokedAt, lastUsedAt, createdAt,
+  token }` ; `token` (`kd_…`) n'est montré qu'à la création. `GET` liste et détail
+  sans `token`, `DELETE` révoque. Le kiosque appelle `POST /scan` et `/sync` avec
+  `Authorization: Bearer kd_…`, sans `X-Organization-Id` (l'organisation vient du
+  jeton) ; toute autre route le refuse en `401`. Source enregistrée : `kiosk`.
+
 ### Synchronisation hors-ligne (mobile)
 `POST /org/timeclock/sync` accepte un tableau de 1 à 200 pointages avec
 `clientPunchId` obligatoire, et renvoie par élément
-`{ clientPunchId, status: 'created'|'duplicate'|'rejected', reason? }`.
+`{ clientPunchId, status: 'created'|'duplicate'|'rejected', reason?, id? }`.
+Corps : `{ punches: [ … ] }`. Un élément avec `badgeUid` est un scan (droits de
+scan ou jeton kiosque), sinon un pointage pour soi (session membre). Chaque
+élément a sa propre transaction ; `reason` est le code d'erreur (`E_…`).
 
 ---
 

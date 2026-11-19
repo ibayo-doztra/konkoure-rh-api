@@ -1191,6 +1191,240 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/holidays_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.timeclock.zones.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/zones'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['zones']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['zones']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['zones']>>>
+    }
+  }
+  'org.timeclock.zones.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/zones'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').createZoneValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').createZoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeZone']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.zones.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/timeclock/zones/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').updateZoneValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').updateZoneValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['updateZone']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['updateZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['updateZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.zones.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/timeclock/zones/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['destroyZone']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['destroyZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['destroyZone']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.punch': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/punch'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').punchValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').punchValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['punch']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['punch']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['punch']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.logs.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/logs'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').listLogsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['logs']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['logs']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['logs']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.logs.update': {
+    methods: ["PATCH"]
+    pattern: '/api/v1/org/timeclock/logs/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').correctLogValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').correctLogValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['correct']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['correct']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['correct']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.logs.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/timeclock/logs/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['destroy']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['destroy']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.badgeEvents': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/badge-events'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').badgeEventsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badgeEvents']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badgeEvents']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badgeEvents']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.devices.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/device-tokens'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['devices']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['devices']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['devices']>>>
+    }
+  }
+  'org.timeclock.devices.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/device-tokens'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').createDeviceTokenValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').createDeviceTokenValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeDevice']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeDevice']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['storeDevice']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.devices.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/device-tokens/:id'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['device']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['device']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['device']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.devices.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/timeclock/device-tokens/:id'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeDevice']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeDevice']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeDevice']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.badge.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/badge'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badge']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badge']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['badge']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.badge.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/employees/:id/badge'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').assignBadgeValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').assignBadgeValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['assignBadge']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['assignBadge']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['assignBadge']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.employees.badge.destroy': {
+    methods: ["DELETE"]
+    pattern: '/api/v1/org/employees/:id/badge'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').idValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeBadge']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeBadge']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_setup_controller').default['revokeBadge']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.scan': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/scan'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').scanValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').scanValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['scan']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['scan']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['scan']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.sync': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/sync'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').syncValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').syncValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['sync']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['sync']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['sync']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
 }
 
 export namespace Route {

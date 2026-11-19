@@ -6,5 +6,6 @@ export const policies = {
   LeavePolicy: () => import('#policies/leave_policy'),
   OrganizationPolicy: () => import('#policies/organization_policy'),
   SkillPolicy: () => import('#policies/skill_policy'),
+  TimeclockPolicy: () => import('#policies/timeclock_policy'),
 }
 

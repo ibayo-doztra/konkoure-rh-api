@@ -264,18 +264,22 @@ Contrainte : `shape='circle'` ⇒ lat/lng/radius non nuls ; `shape='polygon'` �
 |---|---|---|
 | `id`, `organization_id` | uuid | |
 | `employee_id` | uuid NOT NULL | FK employees CASCADE |
-| `uid_normalized` | `text NOT NULL` | UID canonique (voir 07 §2.2) |
+| `uid_masked` | `text NOT NULL` | `••••` + 4 derniers caractères de l'UID canonique (07 §2.2) |
 | `uid_hash` | `text NOT NULL` | SHA-256(uid + pepper), sert aux recherches |
 | `is_active` | `bool NOT NULL DEFAULT true` | |
 | `assigned_at` | `timestamptz NOT NULL DEFAULT now()` | |
 | `revoked_at` | `timestamptz NULL` | |
+
+Décision du 2026-11-19 (05 §6 l'emporte sur la colonne `uid_normalized` d'origine) :
+aucun UID lisible n'est stocké, seulement `uid_hash` et `uid_masked`. Colonnes
+ajoutées : `assigned_by`, `created_at`, `updated_at`.
 
 `UNIQUE(uid_hash) WHERE revoked_at IS NULL` — **unicité globale** : un badge
 physique ne peut être actif que dans une seule organisation.
 Index : `(organization_id, employee_id)`.
 
 ### `nfc_badge_events`
-`id`, `organization_id`, `employee_id`, `badge_id uuid NULL`,
+`id`, `organization_id`, `employee_id uuid NULL` (nul pour un scan rejeté), `badge_id uuid NULL`,
 `uid_masked text NOT NULL` (4 derniers caractères seulement),
 `event text NOT NULL CHECK (event IN ('assigned','revoked','reassigned','scan_rejected'))`,
 `reason text`, `actor_user_id uuid NULL`, `ip inet NULL`.
@@ -297,9 +301,21 @@ Index : `(organization_id, employee_id)`.
 | `client_punch_id` | `uuid NULL` | idempotence hors-ligne |
 | `notes` | `text NULL` | |
 
-`UNIQUE(employee_id, client_punch_id) WHERE client_punch_id IS NOT NULL`.
+Ajouts du 2026-11-19 : `anomaly text NULL` (`out_of_zone`, `low_accuracy`,
+`clock_drift`, 07 §2.6–2.7), `created_by`, `updated_at`. Clé primaire
+`(id, punched_at)`.
 Index : `(organization_id, punched_at DESC)`, `(employee_id, punched_at DESC)`.
-**Table partitionnée par mois** sur `punched_at` (voir 09 §4).
+**Table partitionnée par mois** sur `punched_at` (voir 09 §4), partition `DEFAULT`
+de secours. Une unicité sur une table partitionnée doit contenir la clé de
+partition : l'idempotence hors-ligne est donc portée par
+`time_log_client_ids(employee_id, client_punch_id) PRIMARY KEY, organization_id,
+time_log_id, punched_at, created_at`, écrite dans la même transaction.
+
+### `device_tokens` (kiosques, 05 §6)
+`id`, `organization_id`, `name`, `token_hash text UNIQUE` (SHA-256, le jeton
+`kd_…` n'est jamais stocké), `expires_at`, `revoked_at`, `last_used_at`,
+`created_by`, `created_at`. La fonction `device_token_org_id(hash)`
+(`SECURITY DEFINER`) résout l'organisation avant que le tenant soit connu.
 
 ### `attendance_days` (agrégat quotidien, matérialisé par job)
 `id`, `organization_id`, `employee_id`, `day date NOT NULL`,

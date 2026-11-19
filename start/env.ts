@@ -18,6 +18,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.string(),
   APP_KEY: Env.schema.secret(),
+  /** Server pepper of NFC badge UID hashes (docs/backend/05 §6, 07 §2.2). Never rotate in place. */
+  NFC_UID_PEPPER: Env.schema.secret(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
   WEB_APP_URL: Env.schema.string({ format: 'url', tld: false }),
   DEFAULT_LOCALE: Env.schema.enum.optional(['fr', 'en'] as const),

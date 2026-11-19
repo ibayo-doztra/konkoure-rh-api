@@ -162,6 +162,29 @@ export class DepartmentSchema extends BaseModel {
   declare updatedBy: string | null
 }
 
+export class DeviceTokenSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'expiresAt', 'id', 'lastUsedAt', 'name', 'organizationId', 'revokedAt', 'tokenHash'] as const
+  $columns = DeviceTokenSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare expiresAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare lastUsedAt: DateTime | null
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare revokedAt: DateTime | null
+  @column()
+  declare tokenHash: string
+}
+
 export class EmployeeSkillSchema extends BaseModel {
   static $columns = ['assessedAt', 'createdAt', 'createdBy', 'employeeId', 'id', 'level', 'organizationId', 'skillId', 'updatedAt', 'updatedBy'] as const
   $columns = EmployeeSkillSchema.$columns
@@ -419,6 +442,58 @@ export class LeaveRequestSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class NfcBadgeEventSchema extends BaseModel {
+  static $columns = ['actorUserId', 'badgeId', 'createdAt', 'employeeId', 'event', 'id', 'ip', 'organizationId', 'reason', 'uidMasked'] as const
+  $columns = NfcBadgeEventSchema.$columns
+  @column()
+  declare actorUserId: string | null
+  @column()
+  declare badgeId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: string | null
+  @column()
+  declare event: 'assigned' | 'revoked' | 'reassigned' | 'scan_rejected'
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare ip: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare reason: string | null
+  @column()
+  declare uidMasked: string
+}
+
+export class NfcBadgeSchema extends BaseModel {
+  static $columns = ['assignedAt', 'assignedBy', 'createdAt', 'employeeId', 'id', 'isActive', 'organizationId', 'revokedAt', 'uidHash', 'uidMasked', 'updatedAt'] as const
+  $columns = NfcBadgeSchema.$columns
+  @column.dateTime()
+  declare assignedAt: DateTime
+  @column()
+  declare assignedBy: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare revokedAt: DateTime | null
+  @column()
+  declare uidHash: string
+  @column()
+  declare uidMasked: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns
@@ -598,6 +673,66 @@ export class SubscriptionSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class TimeLogClientIdSchema extends BaseModel {
+  static $columns = ['clientPunchId', 'createdAt', 'employeeId', 'organizationId', 'punchedAt', 'timeLogId'] as const
+  $columns = TimeLogClientIdSchema.$columns
+  @column()
+  declare clientPunchId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare employeeId: string
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare punchedAt: DateTime
+  @column()
+  declare timeLogId: string
+}
+
+export class TimeLogSchema extends BaseModel {
+  static $columns = ['accuracyMeters', 'anomaly', 'clientPunchId', 'createdBy', 'deviceId', 'distanceMeters', 'employeeId', 'id', 'isWithinZone', 'latitude', 'longitude', 'notes', 'organizationId', 'punchedAt', 'recordedAt', 'source', 'type', 'updatedAt', 'workZoneId'] as const
+  $columns = TimeLogSchema.$columns
+  @column()
+  declare accuracyMeters: string | null
+  @column()
+  declare anomaly: 'out_of_zone' | 'low_accuracy' | 'clock_drift' | null
+  @column()
+  declare clientPunchId: string | null
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare deviceId: string | null
+  @column()
+  declare distanceMeters: string | null
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isWithinZone: boolean
+  @column()
+  declare latitude: number | null
+  @column()
+  declare longitude: number | null
+  @column()
+  declare notes: string | null
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare punchedAt: DateTime
+  @column.dateTime()
+  declare recordedAt: DateTime
+  @column()
+  declare source: 'nfc' | 'manual' | 'mobile_gps' | 'kiosk' | 'import'
+  @column()
+  declare type: 'in' | 'out'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare workZoneId: string | null
+}
+
 export class UserRoleSchema extends BaseModel {
   static $columns = ['createdAt', 'grantedBy', 'id', 'organizationId', 'role', 'userId'] as const
   $columns = UserRoleSchema.$columns
@@ -646,6 +781,39 @@ export class UserSchema extends BaseModel {
   declare passwordHash: string | null
   @column()
   declare preferredLanguage: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class WorkZoneSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'id', 'isActive', 'latitude', 'longitude', 'name', 'organizationId', 'polygon', 'radiusMeters', 'shape', 'timezone', 'updatedAt'] as const
+  $columns = WorkZoneSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isActive: boolean
+  @column()
+  declare latitude: number | null
+  @column()
+  declare longitude: number | null
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare polygon: { type: "Polygon"; coordinates: number[][][] } | null
+  @column()
+  declare radiusMeters: number | null
+  @column()
+  declare shape: 'circle' | 'polygon'
+  @column()
+  declare timezone: string | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

@@ -112,6 +112,7 @@ réservée aux rôles autorisés. Elle n'est jamais ouverte publiquement.
 
 - L'UID de badge est normalisé puis **haché avec un pepper serveur**
   (`NFC_UID_PEPPER`) avant recherche : aucun UID en clair en base ni en logs.
+  Seule la forme masquée (`••••6B3E`) est stockée et renvoyée, à tous les rôles.
 - Un badge inconnu renvoie `404 E_BADGE_UNKNOWN` sans indiquer si l'UID existe
   ailleurs, et écrit un `nfc_badge_events` de type `scan_rejected`.
 - Rate limit : 30 scans/min par appareil, 300/min par organisation.

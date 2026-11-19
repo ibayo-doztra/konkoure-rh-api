@@ -97,5 +97,20 @@
     "ambiguousManager": "Several employees share this name: specify the manager.",
     "cycle": "This assignment would create a loop in the hierarchy.",
     "quotaExceeded": "The import exceeds the maximum number of employees of your plan."
+  },
+  "timeclock": {
+    "zoneName": "A zone already has this name.",
+    "circle": "A circular zone needs a latitude, a longitude and a radius.",
+    "polygon": "A polygonal zone needs a polygon.",
+    "pointCount": "The polygon must have 4 to 100 points.",
+    "coordinates": "The polygon contains invalid coordinates.",
+    "notClosed": "The polygon must be closed (first point = last point).",
+    "selfIntersecting": "The polygon must not cross itself.",
+    "badgeUid": "This badge identifier is not valid.",
+    "badgeTaken": "This badge is already active.",
+    "employeeTerminated": "This employee has left the organization.",
+    "noEmployee": "Your account is not linked to an employee record.",
+    "logChange": "Give at least one field to correct.",
+    "zone": "Work zone not found."
   }
 }

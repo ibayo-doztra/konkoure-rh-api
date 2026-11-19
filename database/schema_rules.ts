@@ -62,6 +62,25 @@ export default {
         },
       },
     },
+    work_zones: {
+      columns: {
+        shape: { tsType: `'circle' | 'polygon'` },
+        polygon: { tsType: '{ type: "Polygon"; coordinates: number[][][] }' },
+      },
+    },
+    nfc_badge_events: {
+      columns: {
+        event: { tsType: `'assigned' | 'revoked' | 'reassigned' | 'scan_rejected'` },
+        ip: { tsType: 'string' },
+      },
+    },
+    time_logs: {
+      columns: {
+        type: { tsType: `'in' | 'out'` },
+        source: { tsType: `'nfc' | 'manual' | 'mobile_gps' | 'kiosk' | 'import'` },
+        anomaly: { tsType: `'out_of_zone' | 'low_accuracy' | 'clock_drift'` },
+      },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },
