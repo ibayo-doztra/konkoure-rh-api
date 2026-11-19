@@ -18,6 +18,8 @@ export default await Env.create(new URL('../', import.meta.url), {
   HOST: Env.schema.string({ format: 'host' }),
   LOG_LEVEL: Env.schema.string(),
   APP_KEY: Env.schema.secret(),
+  /** Server pepper of NFC badge UID hashes (docs/backend/05 §6, 07 §2.2). Never rotate in place. */
+  NFC_UID_PEPPER: Env.schema.secret(),
   APP_URL: Env.schema.string({ format: 'url', tld: false }),
   WEB_APP_URL: Env.schema.string({ format: 'url', tld: false }),
   DEFAULT_LOCALE: Env.schema.enum.optional(['fr', 'en'] as const),
@@ -49,6 +51,11 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Rate limit : `memory` réservé aux tests (store non partagé entre réplicas)
   LIMITER_STORE: Env.schema.enum(['redis', 'memory'] as const),
+  /**
+   * Global budget per IP and minute (default 300, docs/backend/05 §8). Test and
+   * e2e environments only: refused at boot when NODE_ENV=production.
+   */
+  RATE_LIMIT_GLOBAL_IP_PER_MINUTE: Env.schema.number.optional(),
 
   // Authentification (docs/backend/04, 11 §1)
   ACCESS_TOKEN_TTL: Env.schema.string.optional(),

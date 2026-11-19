@@ -12,6 +12,7 @@ variable manquante ou invalide échoue immédiatement.
 | `PORT` | number | `3333` | |
 | `HOST` | string | `0.0.0.0` | |
 | `APP_KEY` | string ≥ 32 | — | chiffrement et signature |
+| `NFC_UID_PEPPER` | secret | — | pepper des empreintes d'UID NFC (05 §6) ; ne jamais le changer en service |
 | `APP_URL` | url | — | URL publique de l'API |
 | `WEB_APP_URL` | url | — | front, pour les liens des e-mails |
 | `LOG_LEVEL` | enum | `info` | |
@@ -34,6 +35,10 @@ un autre compte (développement, e2e).
 `QUEUE_DRIVER` : `bullmq` (défaut en production) ou `sync`.
 `LIMITER_STORE` : `redis` partout, `memory` uniquement pour les tests
 (`.env.test`). En local : `docker compose up -d redis`.
+`RATE_LIMIT_GLOBAL_IP_PER_MINUTE` (défaut 300) : réservé aux suites de test et e2e, dont
+toutes les requêtes partent d'une même IP ; l'application refuse de démarrer si elle est
+définie avec `NODE_ENV=production`. Les en-têtes `Retry-After`, `X-RateLimit-Limit` et
+`X-RateLimit-Remaining` sont exposés en CORS.
 
 ### Authentification
 `ACCESS_TOKEN_TTL` (`15m`), `REFRESH_TOKEN_TTL` (`30d`),

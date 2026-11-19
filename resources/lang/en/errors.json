@@ -18,5 +18,10 @@
   "E_INTERNAL": "An unexpected error occurred.",
   "E_DEPENDENCY_UNAVAILABLE": "An external service is temporarily unavailable.",
   "E_LEAVE_OVERLAP": "This leave overlaps another pending or approved request.",
-  "E_INSUFFICIENT_BALANCE": "The leave balance is insufficient for this request."
+  "E_INSUFFICIENT_BALANCE": "The leave balance is insufficient for this request.",
+  "E_BADGE_UNKNOWN": "Unknown badge.",
+  "E_BADGE_INACTIVE": "This badge is not active.",
+  "E_DUPLICATE_PUNCH": "This punch has just been recorded already.",
+  "E_OUT_OF_ZONE": "You are outside every authorized work zone.",
+  "E_MANUAL_PUNCH_DISABLED": "Manual punching is disabled for this organization."
 }

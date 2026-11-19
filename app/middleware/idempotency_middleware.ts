@@ -34,7 +34,7 @@ export default class IdempotencyMiddleware {
     }
 
     const scope = [
-      ctx.auth.user?.id ?? 'anonymous',
+      ctx.auth.user?.id ?? (ctx.device ? `device:${ctx.device.id}` : 'anonymous'),
       ctx.request.header('x-organization-id') ?? '-',
       ctx.request.method(),
       ctx.request.url(),

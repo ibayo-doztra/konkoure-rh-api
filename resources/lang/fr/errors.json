@@ -18,5 +18,10 @@
   "E_INTERNAL": "Une erreur inattendue est survenue.",
   "E_DEPENDENCY_UNAVAILABLE": "Un service externe est momentanément indisponible.",
   "E_LEAVE_OVERLAP": "Ce congé chevauche une autre demande en attente ou approuvée.",
-  "E_INSUFFICIENT_BALANCE": "Le solde de congés est insuffisant pour cette demande."
+  "E_INSUFFICIENT_BALANCE": "Le solde de congés est insuffisant pour cette demande.",
+  "E_BADGE_UNKNOWN": "Badge inconnu.",
+  "E_BADGE_INACTIVE": "Ce badge n'est pas actif.",
+  "E_DUPLICATE_PUNCH": "Ce pointage vient déjà d’être enregistré.",
+  "E_OUT_OF_ZONE": "Vous êtes hors de toute zone de travail autorisée.",
+  "E_MANUAL_PUNCH_DISABLED": "Le pointage manuel est désactivé pour cette organisation."
 }

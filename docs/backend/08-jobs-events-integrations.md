@@ -50,6 +50,8 @@ Ordonnancement via `@adonisjs/scheduler` ou BullMQ repeatable jobs, avec
 fuseau `Africa/Conakry`), déclarés au démarrage de `node ace queue:work` ; Redis
 n'enfile qu'une occurrence par échéance, quel que soit le nombre de workers.
 Chaque tâche parcourt les organisations, chacune dans sa transaction et son fuseau.
+`partitions:ensure` est en place pour `time_logs` (mois courant + 3) ; un mois dont
+des lignes sont déjà dans la partition `DEFAULT` est signalé en erreur, pas créé.
 Exécution manuelle (développement, rattrapage) : `node ace schedule:run <job>`
 (ex. `leaves.end`, `contracts.expiring`).
 `contracts:expiring` couvre tous les contrats `active` finissant dans les 30 jours

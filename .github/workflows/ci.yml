@@ -12,6 +12,7 @@ env:
   HOST: localhost
   LOG_LEVEL: warn
   APP_KEY: ci-only-key-not-used-outside-this-workflow
+  NFC_UID_PEPPER: ci-only-pepper-not-used-outside-this-workflow
   APP_URL: http://localhost:3333
   WEB_APP_URL: http://localhost:8080
   DB_HOST: 127.0.0.1

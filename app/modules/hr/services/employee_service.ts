@@ -9,6 +9,7 @@ import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import teamCache from '#modules/hr/team_cache'
 import leaveService from '#modules/leaves/services/leave_service'
+import badgeService from '#modules/timeclock/services/badge_service'
 import type { TenantContext } from '#shared/tenant/tenant_context'
 import entitlementService from '#modules/billing/services/entitlement_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
@@ -311,8 +312,7 @@ export class EmployeeService {
 
   /**
    * End of employment (07 §1.5): end date, active contract, pending leaves,
-   * application roles and reports. NFC badges join this transaction with the
-   * timeclock module.
+   * NFC badge, application roles and reports, in one transaction.
    */
   private async terminate(
     tenant: TenantContext,
@@ -331,6 +331,7 @@ export class EmployeeService {
     employee.endDate = endDate
     await contractService.closeActiveOf(trx, tenant, actor, employee.id, endDate, audit)
     await leaveService.cancelPendingOf(trx, tenant, actor, employee.id, audit)
+    await badgeService.revokeAllOf(trx, tenant, actor, employee.id, audit)
     await this.detachFromHierarchy(employeesIn(tenant.organizationId, trx), employee, trx)
   }
 

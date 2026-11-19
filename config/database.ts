@@ -26,6 +26,21 @@ const pgConnection = {
  * Seul le serveur HTTP prend le rôle applicatif : les migrations gardent le rôle
  * propriétaire. Inutile quand DB_USER est déjà `konkoure_app` (production).
  */
+/**
+ * Names of the monthly partitions (`<table>_YYYY_MM`) that may exist, from
+ * 2026 to two years ahead: the schema generator only excludes exact names.
+ */
+function monthlyPartitions(table: string) {
+  const names: string[] = []
+  const lastYear = new Date().getUTCFullYear() + 2
+  for (let year = 2026; year <= lastYear; year += 1) {
+    for (let month = 1; month <= 12; month += 1) {
+      names.push(`${table}_${year}_${String(month).padStart(2, '0')}`)
+    }
+  }
+  return names
+}
+
 const appRole = app.getEnvironment() === 'web' ? env.get('DB_APP_ROLE') : undefined
 
 type PgConnection = { query(sql: string, done: (error: Error | null) => void): void }
@@ -53,8 +68,12 @@ const dbConfig = defineConfig({
       schemaGeneration: {
         enabled: true,
         rulesPaths: ['./database/schema_rules.js'],
-        // Partition technique, pas une entité métier.
-        excludeTables: ['audit_logs_default'],
+        // Partitions techniques, pas des entités métier (09 §4).
+        excludeTables: [
+          'audit_logs_default',
+          'time_logs_default',
+          ...monthlyPartitions('time_logs'),
+        ],
       },
       debug: app.inDev,
     },

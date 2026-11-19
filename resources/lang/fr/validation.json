@@ -97,5 +97,20 @@
     "ambiguousManager": "Plusieurs employés portent ce nom : précisez le manager.",
     "cycle": "Ce rattachement créerait une boucle dans la hiérarchie.",
     "quotaExceeded": "L'import dépasse le nombre maximal d'employés de votre offre."
+  },
+  "timeclock": {
+    "zoneName": "Une zone porte déjà ce nom.",
+    "circle": "Une zone circulaire demande une latitude, une longitude et un rayon.",
+    "polygon": "Une zone polygonale demande un polygone.",
+    "pointCount": "Le polygone doit compter de 4 à 100 points.",
+    "coordinates": "Le polygone contient des coordonnées invalides.",
+    "notClosed": "Le polygone doit être fermé (premier point = dernier point).",
+    "selfIntersecting": "Le polygone ne doit pas se croiser lui-même.",
+    "badgeUid": "Cet identifiant de badge n'est pas valide.",
+    "badgeTaken": "Ce badge est déjà actif.",
+    "employeeTerminated": "Cet employé a quitté l’organisation.",
+    "noEmployee": "Votre compte n’est lié à aucune fiche employé.",
+    "logChange": "Indiquez au moins un champ à corriger.",
+    "zone": "Zone de travail introuvable."
   }
 }

@@ -95,6 +95,24 @@ export type ScannedRoutes = {
     'org.holidays.import': { paramsTuple?: []; params?: {} }
     'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
+    'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.zones.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.punch': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.logs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.store': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.devices.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.scan': { paramsTuple?: []; params?: {} }
+    'org.timeclock.sync': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -132,6 +150,12 @@ export type ScannedRoutes = {
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   HEAD: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -169,6 +193,12 @@ export type ScannedRoutes = {
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   POST: {
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -206,6 +236,12 @@ export type ScannedRoutes = {
     'org.leaves.attachment.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.store': { paramsTuple?: []; params?: {} }
     'org.holidays.import': { paramsTuple?: []; params?: {} }
+    'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
+    'org.timeclock.punch': { paramsTuple?: []; params?: {} }
+    'org.timeclock.devices.store': { paramsTuple?: []; params?: {} }
+    'org.employees.badge.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.scan': { paramsTuple?: []; params?: {} }
+    'org.timeclock.sync': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
@@ -217,6 +253,8 @@ export type ScannedRoutes = {
     'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.logs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   DELETE: {
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -229,6 +267,10 @@ export type ScannedRoutes = {
     'org.contracts.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.zones.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.logs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.timeclock.devices.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.employees.badge.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
   PUT: {
     'org.settings.update': { paramsTuple?: []; params?: {} }
