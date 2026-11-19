@@ -34,6 +34,10 @@ un autre compte (développement, e2e).
 `QUEUE_DRIVER` : `bullmq` (défaut en production) ou `sync`.
 `LIMITER_STORE` : `redis` partout, `memory` uniquement pour les tests
 (`.env.test`). En local : `docker compose up -d redis`.
+`RATE_LIMIT_GLOBAL_IP_PER_MINUTE` (défaut 300) : réservé aux suites de test et e2e, dont
+toutes les requêtes partent d'une même IP ; l'application refuse de démarrer si elle est
+définie avec `NODE_ENV=production`. Les en-têtes `Retry-After`, `X-RateLimit-Limit` et
+`X-RateLimit-Remaining` sont exposés en CORS.
 
 ### Authentification
 `ACCESS_TOKEN_TTL` (`15m`), `REFRESH_TOKEN_TTL` (`30d`),
