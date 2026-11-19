@@ -1,5 +1,6 @@
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { ModelAttributes } from '@adonisjs/lucid/types/model'
+import type { ContractType } from '#models/contract'
 import Employee, { type EmployeeStatus } from '#models/employee'
 import { TenantRepository } from '#shared/base/tenant_repository'
 import { withTenant } from '#shared/tenant/with_tenant'
@@ -19,6 +20,8 @@ export interface EmployeeListFilters {
   status?: EmployeeStatus
   departmentId?: string
   managerId?: string
+  /** Type of the employee's active contract. */
+  contractType?: ContractType
   sort?: EmployeeSortField
   descending?: boolean
   /** Restricts the list to these records (team, self). */
@@ -90,6 +93,18 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
     if (filters.status) query.where('status', filters.status)
     if (filters.departmentId) query.where('department_id', filters.departmentId)
     if (filters.managerId) query.where('manager_id', filters.managerId)
+    if (filters.contractType) {
+      query.whereIn(
+        'id',
+        this.trx
+          .from('contracts')
+          .where('organization_id', this.organizationId)
+          .where('type', filters.contractType)
+          .where('status', 'active')
+          .whereNull('deleted_at')
+          .select('employee_id')
+      )
+    }
     if (filters.q) {
       const pattern = likePattern(filters.q)
       query.where((search) => {

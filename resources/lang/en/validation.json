@@ -42,6 +42,19 @@
     "reassignTo": "The destination department is invalid.",
     "hasEmployees": "This department still has employees."
   },
+  "contract": {
+    "employee": "This employee does not exist.",
+    "endDate": "The end date cannot be before the start date.",
+    "trialPeriodEnd": "The end of the trial period must fall within the contract.",
+    "activeExists": "This employee already has an active contract.",
+    "employeeTerminated": "A former employee cannot have an active contract.",
+    "terminated": "A terminated contract can no longer be changed.",
+    "notTerminable": "Only an active or suspended contract can be terminated."
+  },
+  "skill": {
+    "nameTaken": "A skill already has this name.",
+    "unknown": "One of the skills does not exist."
+  },
   "entitlement": {
     "requiredModule": "Required module.",
     "currentPlan": "Current plan."

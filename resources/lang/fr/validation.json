@@ -42,6 +42,19 @@
     "reassignTo": "Le département de destination est invalide.",
     "hasEmployees": "Ce département contient encore des employés."
   },
+  "contract": {
+    "employee": "Cet employé n'existe pas.",
+    "endDate": "La date de fin ne peut pas précéder la date de début.",
+    "trialPeriodEnd": "La fin de la période d'essai doit se situer pendant le contrat.",
+    "activeExists": "Cet employé a déjà un contrat actif.",
+    "employeeTerminated": "Un employé parti ne peut pas avoir de contrat actif.",
+    "terminated": "Un contrat clôturé ne peut plus être modifié.",
+    "notTerminable": "Seul un contrat actif ou suspendu peut être clôturé."
+  },
+  "skill": {
+    "nameTaken": "Une compétence porte déjà ce nom.",
+    "unknown": "Une des compétences n'existe pas."
+  },
   "entitlement": {
     "requiredModule": "Module requis.",
     "currentPlan": "Offre actuelle."

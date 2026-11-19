@@ -14,6 +14,8 @@ const MembersController = () => import('#modules/organizations/controllers/membe
 
 const DepartmentsController = () => import('#modules/hr/controllers/departments_controller')
 const EmployeesController = () => import('#modules/hr/controllers/employees_controller')
+const ContractsController = () => import('#modules/hr/controllers/contracts_controller')
+const SkillsController = () => import('#modules/hr/controllers/skills_controller')
 
 /**
  * `/api/v1/org/*` — 06-api-reference §3 onwards. Every route runs behind
@@ -80,9 +82,34 @@ export function registerOrgRoutes() {
               router.post(':id/restore', [EmployeesController, 'restore']).as('restore')
               router.get(':id/salary', [EmployeesController, 'salary']).as('salary')
               router.get(':id/team', [EmployeesController, 'team']).as('team')
+              router.get(':id/skills', [SkillsController, 'ofEmployee']).as('skills.index')
+              router.put(':id/skills', [SkillsController, 'replaceOfEmployee']).as('skills.replace')
             })
             .prefix('employees')
             .as('employees')
+
+          router
+            .group(() => {
+              router.get('/', [ContractsController, 'index']).as('index')
+              router.post('/', [ContractsController, 'store']).as('store')
+              router.get(':id', [ContractsController, 'show']).as('show')
+              router.patch(':id', [ContractsController, 'update']).as('update')
+              router.delete(':id', [ContractsController, 'destroy']).as('destroy')
+              router.post(':id/terminate', [ContractsController, 'terminate']).as('terminate')
+              router.get(':id/document', [ContractsController, 'document']).as('document')
+            })
+            .prefix('contracts')
+            .as('contracts')
+
+          router
+            .group(() => {
+              router.get('/', [SkillsController, 'index']).as('index')
+              router.post('/', [SkillsController, 'store']).as('store')
+              router.patch(':id', [SkillsController, 'update']).as('update')
+              router.delete(':id', [SkillsController, 'destroy']).as('destroy')
+            })
+            .prefix('skills')
+            .as('skills')
         })
         .use(middleware.entitlement({ module: 'hr' }))
     })

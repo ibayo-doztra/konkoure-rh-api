@@ -10,12 +10,12 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements et employés (cœur du module RH), `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
+Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements, employés, contrats et compétences (module RH), `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
 
 | Sujet | Reste à faire |
 |---|---|
-| Tables | tout le reste de 03 §1 (contrats, compétences, pointage, congés, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
-| RH | documents, photo, import, export, contrats, compétences ; cache Redis de la descendance manager (04 §6) ; à la fin d'emploi, clôture du contrat, badges et congés en attente |
+| Tables | tout le reste de 03 §1 (pointage, congés, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
+| RH | documents, photo, import, export ; dépôt du document de contrat (endpoint non spécifié) ; job `contracts:expiring` ; cache Redis de la descendance manager (04 §6) ; à la fin d'emploi, badges et congés en attente |
 | `/me` | notifications, export, suppression du compte |
 | `/org` | tableau de bord ; purge à 30 jours des organisations supprimées (avant le lancement) ; entrée `files` des logos (table 0104) |
 | Transverse | `/metrics`, `system_logs`, `modules_open_for_testing` (platform_settings) |

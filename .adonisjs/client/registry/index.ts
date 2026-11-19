@@ -314,6 +314,84 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"team"]],
     types: placeholder as Registry['org.employees.team']['types'],
   },
+  'org.employees.skills.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/skills',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"skills"]],
+    types: placeholder as Registry['org.employees.skills.index']['types'],
+  },
+  'org.employees.skills.replace': {
+    methods: ["PUT"],
+    pattern: '/api/v1/org/employees/:id/skills',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"skills"]],
+    types: placeholder as Registry['org.employees.skills.replace']['types'],
+  },
+  'org.contracts.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/contracts',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"]],
+    types: placeholder as Registry['org.contracts.index']['types'],
+  },
+  'org.contracts.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/contracts',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"]],
+    types: placeholder as Registry['org.contracts.store']['types'],
+  },
+  'org.contracts.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/contracts/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"]],
+    types: placeholder as Registry['org.contracts.show']['types'],
+  },
+  'org.contracts.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/contracts/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"]],
+    types: placeholder as Registry['org.contracts.update']['types'],
+  },
+  'org.contracts.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/contracts/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"]],
+    types: placeholder as Registry['org.contracts.destroy']['types'],
+  },
+  'org.contracts.terminate': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/contracts/:id/terminate',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"],[0,"terminate"]],
+    types: placeholder as Registry['org.contracts.terminate']['types'],
+  },
+  'org.contracts.document': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/contracts/:id/document',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"contracts"],[1,"id"],[0,"document"]],
+    types: placeholder as Registry['org.contracts.document']['types'],
+  },
+  'org.skills.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/skills',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"skills"]],
+    types: placeholder as Registry['org.skills.index']['types'],
+  },
+  'org.skills.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/skills',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"skills"]],
+    types: placeholder as Registry['org.skills.store']['types'],
+  },
+  'org.skills.update': {
+    methods: ["PATCH"],
+    pattern: '/api/v1/org/skills/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"skills"],[1,"id"]],
+    types: placeholder as Registry['org.skills.update']['types'],
+  },
+  'org.skills.destroy': {
+    methods: ["DELETE"],
+    pattern: '/api/v1/org/skills/:id',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"skills"],[1,"id"]],
+    types: placeholder as Registry['org.skills.destroy']['types'],
+  },
 } as const satisfies Record<string, AdonisEndpoint>
 
 export { routes }

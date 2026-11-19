@@ -37,6 +37,12 @@ export default {
         profile_details: JSON_OBJECT,
       },
     },
+    contracts: {
+      columns: {
+        type: { tsType: `'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'` },
+        status: { tsType: `'draft' | 'active' | 'suspended' | 'terminated'` },
+      },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

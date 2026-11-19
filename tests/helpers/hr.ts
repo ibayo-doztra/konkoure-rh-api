@@ -1,10 +1,12 @@
 import { DateTime } from 'luxon'
 import type { ApiClient } from '@japa/api-client'
 import type { ModelAttributes } from '@adonisjs/lucid/types/model'
+import Contract from '#models/contract'
 import Department from '#models/department'
 import Employee from '#models/employee'
 import type Organization from '#models/organization'
 import Plan from '#models/plan'
+import Skill from '#models/skill'
 import Subscription from '#models/subscription'
 import type { AppRole } from '#models/user_role'
 import entitlementService from '#modules/billing/services/entitlement_service'
@@ -46,6 +48,23 @@ export function createEmployee(
 
 export function createDepartment(organization: Organization, name = `Service ${++sequence}`) {
   return Department.create({ organizationId: organization.id, name })
+}
+
+export function createContract(
+  employee: Employee,
+  overrides: Partial<ModelAttributes<Contract>> = {}
+) {
+  return Contract.create({
+    organizationId: employee.organizationId,
+    employeeId: employee.id,
+    type: 'cdi',
+    startDate: DateTime.fromISO('2026-01-05'),
+    ...overrides,
+  })
+}
+
+export function createSkill(organization: Organization, name = `Compétence ${++sequence}`) {
+  return Skill.create({ organizationId: organization.id, name })
 }
 
 /** Logged-in member, linked to an employee record unless `linked` is false. */

@@ -3,6 +3,7 @@ import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type Employee from '#models/employee'
 import type { EmployeeStatus } from '#models/employee'
+import type { ContractType } from '#models/contract'
 import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
@@ -10,6 +11,7 @@ import type { TenantContext } from '#shared/tenant/tenant_context'
 import entitlementService from '#modules/billing/services/entitlement_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import memberService from '#modules/organizations/services/member_service'
+import contractService from '#modules/hr/services/contract_service'
 import { departmentsIn } from '#modules/hr/repositories/department_repository'
 import {
   employeesIn,
@@ -41,7 +43,12 @@ export interface EmployeeListQuery {
   perPage?: number
   q?: string
   sort?: `${'' | '-'}${EmployeeSortField}`
-  filter?: { status?: EmployeeStatus; departmentId?: string; managerId?: string }
+  filter?: {
+    status?: EmployeeStatus
+    departmentId?: string
+    managerId?: string
+    contractType?: ContractType
+  }
 }
 
 /** Fields whose values may appear in the journal; the others are only named. */
@@ -117,6 +124,7 @@ export class EmployeeService {
         searchPrivateFields: privateAccess,
         status: privateAccess ? query.filter?.status : undefined,
         managerId: privateAccess ? query.filter?.managerId : undefined,
+        contractType: privateAccess ? query.filter?.contractType : undefined,
         departmentId: departmentId ?? query.filter?.departmentId,
         sort: privateAccess ? sort : undefined,
         descending: privateAccess && query.sort?.startsWith('-'),
@@ -293,9 +301,9 @@ export class EmployeeService {
   }
 
   /**
-   * End of employment (07 §1.5) for what exists today: end date, application
-   * roles and reports. Contracts, badges and pending leaves join this
-   * transaction with their modules.
+   * End of employment (07 §1.5) for what exists today: end date, active
+   * contract, application roles and reports. Badges and pending leaves join
+   * this transaction with their modules.
    */
   private async terminate(
     tenant: TenantContext,
@@ -310,7 +318,9 @@ export class EmployeeService {
     }
     const organization = await organizations.findActive(tenant.organizationId, trx)
     if (!organization) throw new AppException('E_NOT_FOUND')
-    employee.endDate ??= DateTime.now().setZone(organization.timezone).startOf('day')
+    const endDate = employee.endDate ?? DateTime.now().setZone(organization.timezone).startOf('day')
+    employee.endDate = endDate
+    await contractService.closeActiveOf(trx, tenant, actor, employee.id, endDate, audit)
     await this.detachFromHierarchy(employeesIn(tenant.organizationId, trx), employee, trx)
   }
 
