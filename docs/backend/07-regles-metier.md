@@ -163,6 +163,16 @@ sa propre demande, quel que soit son rôle.
 min(solde restant, `settings.leave.maxCarryOverDays`, défaut 10),
 `entitled_days` réinitialisé, `taken_days` remis à 0, ligne de ledger par
 employé.
+Précisions (validées le 2026-11-19) : type `annual` uniquement ; les soldes étant
+annuels, la ligne de l'année N est ouverte (droit plein) et reçoit le report ; un
+solde N−1 négatif n'est **pas** reporté (plancher 0) ; la ligne de ledger
+`carry_over` rend le job idempotent ; employés licenciés exclus.
+
+3.9 **Statut `on_leave`** — `leaves:apply-started` passe en `on_leave` un employé
+`active` ayant un congé approuvé couvrant le jour ; `leaves:end` repasse en
+`active` un employé `on_leave` dont un congé approuvé s'est terminé dans les
+7 derniers jours et qui n'en a aucun en cours. Un `on_leave` saisi à la main sans
+congé n'est pas modifié.
 
 ## 4. Recrutement
 

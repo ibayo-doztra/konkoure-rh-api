@@ -5,6 +5,7 @@ import leaveBalanceService from '#modules/leaves/services/leave_balance_service'
 import { leaveBalanceDto } from '#modules/leaves/transformers/leave_transformer'
 import {
   adjustBalanceValidator,
+  employeeBalanceValidator,
   listBalancesValidator,
 } from '#modules/leaves/validators/leave_validator'
 import { auditContext } from '#modules/auth/http_helpers'
@@ -16,6 +17,15 @@ export default class LeaveBalancesController {
     const query = await ctx.request.validateUsing(listBalancesValidator)
     await ctx.bouncer.with(LeavePolicy).authorize('list')
     const balances = await leaveBalanceService.list(ctx.tenant, query)
+    return { data: balances.map(leaveBalanceDto) }
+  }
+
+  @ApiOperation({ summary: 'Leave balances of one employee for a year' })
+  async ofEmployee(ctx: HttpContext) {
+    const { params, year } = await ctx.request.validateUsing(employeeBalanceValidator)
+    const { employee, inTeam } = await leaveBalanceService.employeeScope(ctx.tenant, params.id)
+    await ctx.bouncer.with(LeavePolicy).authorize('viewBalanceOf', employee.id, inTeam)
+    const balances = await leaveBalanceService.list(ctx.tenant, { employeeId: employee.id, year })
     return { data: balances.map(leaveBalanceDto) }
   }
 

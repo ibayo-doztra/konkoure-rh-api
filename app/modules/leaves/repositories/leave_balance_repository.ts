@@ -52,6 +52,34 @@ export class LeaveBalanceRepository extends TenantRepository<typeof LeaveBalance
     return query.orderBy('employee_id', 'asc').orderBy('leave_type', 'asc')
   }
 
+  /** Annual balances of `year` of employees still employed (carry-over source). */
+  annualOf(year: number) {
+    return this.query()
+      .where('year', year)
+      .where('leave_type', 'annual')
+      .whereIn(
+        'employee_id',
+        this.trx
+          .from('employees')
+          .where('organization_id', this.organizationId)
+          .whereNull('deleted_at')
+          .whereNot('status', 'terminated')
+          .select('id')
+      )
+      .orderBy('employee_id', 'asc')
+  }
+
+  async hasEntry(employeeId: string, year: number, leaveType: LeaveType, reason: string) {
+    const row = await LeaveBalanceLedgerEntry.query({ client: this.trx })
+      .where('organization_id', this.organizationId)
+      .where('employee_id', employeeId)
+      .where('year', year)
+      .where('leave_type', leaveType)
+      .where('reason', reason)
+      .first()
+    return row !== null
+  }
+
   record(entry: Partial<ModelAttributes<LeaveBalanceLedgerEntry>>) {
     return LeaveBalanceLedgerEntry.create(
       { ...entry, organizationId: this.organizationId },

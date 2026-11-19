@@ -326,6 +326,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"skills"]],
     types: placeholder as Registry['org.employees.skills.replace']['types'],
   },
+  'org.employees.leaveBalance': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/employees/:id/leave-balance',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"employees"],[1,"id"],[0,"leave-balance"]],
+    types: placeholder as Registry['org.employees.leaveBalance']['types'],
+  },
   'org.contracts.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/org/contracts',
@@ -404,6 +410,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"]],
     types: placeholder as Registry['org.leaves.store']['types'],
   },
+  'org.leaves.calendar': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/leaves/calendar',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[0,"calendar"]],
+    types: placeholder as Registry['org.leaves.calendar']['types'],
+  },
   'org.leaves.balances.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/org/leaves/balances',
@@ -445,6 +457,18 @@ const routes = {
     pattern: '/api/v1/org/leaves/:id/cancel',
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"cancel"]],
     types: placeholder as Registry['org.leaves.cancel']['types'],
+  },
+  'org.leaves.attachment.store': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/leaves/:id/attachment',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"attachment"]],
+    types: placeholder as Registry['org.leaves.attachment.store']['types'],
+  },
+  'org.leaves.attachment.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/leaves/:id/attachment',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"leaves"],[1,"id"],[0,"attachment"]],
+    types: placeholder as Registry['org.leaves.attachment.show']['types'],
   },
   'org.holidays.index': {
     methods: ["GET","HEAD"],

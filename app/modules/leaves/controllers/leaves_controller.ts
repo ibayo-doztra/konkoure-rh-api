@@ -2,9 +2,12 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import LeavePolicy from '#policies/leave_policy'
 import leaveService from '#modules/leaves/services/leave_service'
-import { leaveDto, leaveViewDto } from '#modules/leaves/transformers/leave_transformer'
+import leaveAttachmentService from '#modules/leaves/services/leave_attachment_service'
+import { calendarDto, leaveDto, leaveViewDto } from '#modules/leaves/transformers/leave_transformer'
 import { pageMetaDto } from '#modules/hr/transformers/hr_transformer'
 import {
+  attachmentValidator,
+  calendarValidator,
   createLeaveValidator,
   leaveIdValidator,
   listLeavesValidator,
@@ -21,6 +24,35 @@ export default class LeavesController {
     await ctx.bouncer.with(LeavePolicy).authorize('list')
     const { rows, meta } = await leaveService.list(ctx.tenant, query)
     return { data: rows.map(leaveDto), meta: pageMetaDto(meta) }
+  }
+
+  @ApiOperation({ summary: 'Pending and approved leaves of a period, with holidays' })
+  async calendar(ctx: HttpContext) {
+    const query = await ctx.request.validateUsing(calendarValidator)
+    await ctx.bouncer.with(LeavePolicy).authorize('list')
+    return ctx.serialize(calendarDto(await leaveService.calendar(ctx.tenant, query)))
+  }
+
+  @ApiOperation({ summary: 'Attach a supporting document (PDF or image, 10 MB)' })
+  async attach(ctx: HttpContext) {
+    const { params, file } = await ctx.request.validateUsing(attachmentValidator)
+    const { leave } = await leaveService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(LeavePolicy).authorize('attach', leave)
+    const updated = await leaveAttachmentService.replace(
+      ctx.tenant,
+      params.id,
+      file,
+      auditContext(ctx)
+    )
+    return ctx.serialize(leaveDto(updated))
+  }
+
+  @ApiOperation({ summary: 'Signed link to the supporting document (audited)' })
+  async attachment(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(leaveIdValidator)
+    const { leave, inTeam } = await leaveService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(LeavePolicy).authorize('view', leave, inTeam)
+    return ctx.serialize(await leaveAttachmentService.url(ctx.tenant, leave, auditContext(ctx)))
   }
 
   @ApiOperation({ summary: 'Leave detail, with the projected balance' })

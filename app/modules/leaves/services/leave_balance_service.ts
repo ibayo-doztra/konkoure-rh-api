@@ -11,6 +11,7 @@ import organizations from '#modules/organizations/repositories/organization_repo
 import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import { leaveBalancesIn } from '#modules/leaves/repositories/leave_balance_repository'
 import { leaveRequestsIn } from '#modules/leaves/repositories/leave_request_repository'
+import { visibleEmployeeIds } from '#modules/leaves/leave_visibility'
 import { initialEntitlement, leaveSettings, type LeaveSettings } from '#modules/leaves/leave_rules'
 
 /** What the leave service needs to know about the organization in a mutation. */
@@ -27,6 +28,7 @@ export interface LeaveScope {
 /** Changes of the counters; positive values add days. */
 export interface BalanceChange {
   entitledDays?: number
+  carriedOverDays?: number
   takenDays?: number
   pendingDays?: number
 }
@@ -52,10 +54,14 @@ const round = (value: number) => Math.round(value * 100) / 100
  */
 export class LeaveBalanceService {
   /** Opens the tenant scope of a leave mutation. */
-  async scope(trx: TransactionClientContract, organizationId: string): Promise<LeaveScope> {
+  async scope(
+    trx: TransactionClientContract,
+    organizationId: string,
+    at: DateTime = DateTime.now()
+  ): Promise<LeaveScope> {
     const organization = await organizations.findActive(organizationId, trx)
     if (!organization) throw new AppException('E_NOT_FOUND')
-    const now = DateTime.now().setZone(organization.timezone)
+    const now = at.setZone(organization.timezone)
     return {
       trx,
       organizationId,
@@ -114,6 +120,9 @@ export class LeaveBalanceService {
     const before = displayedBalance(balance)
     balance.merge({
       entitledDays: round(Number(balance.entitledDays) + (change.entitledDays ?? 0)).toFixed(2),
+      carriedOverDays: round(
+        Number(balance.carriedOverDays) + (change.carriedOverDays ?? 0)
+      ).toFixed(2),
       takenDays: round(Number(balance.takenDays) + (change.takenDays ?? 0)).toFixed(2),
       pendingDays: round(Number(balance.pendingDays) + (change.pendingDays ?? 0)).toFixed(2),
     })
@@ -138,15 +147,7 @@ export class LeaveBalanceService {
     return withTenant(organizationId, async (trx) => {
       const scope = await this.scope(trx, organizationId)
       const year = query.year ?? scope.currentYear
-      let employeeIds: string[] | undefined
-      if (!tenant.hasRole('owner', 'hr_admin')) {
-        const self = tenant.employeeId
-        const team =
-          tenant.hasRole('manager') && self
-            ? await employeesIn(organizationId, trx).teamIds(self)
-            : []
-        employeeIds = [...team, ...(self ? [self] : [])]
-      }
+      let employeeIds = await visibleEmployeeIds(tenant, trx)
       if (query.employeeId) {
         if (employeeIds && !employeeIds.includes(query.employeeId)) {
           throw new AppException('E_FORBIDDEN')
@@ -154,6 +155,24 @@ export class LeaveBalanceService {
         employeeIds = [query.employeeId]
       }
       return leaveBalancesIn(organizationId, trx).list(year, employeeIds)
+    })
+  }
+
+  /**
+   * GET /org/employees/:id/leave-balance: the employee must exist in the
+   * organization (404); `inTeam` feeds the policy.
+   */
+  employeeScope(tenant: TenantContext, employeeId: string) {
+    const { organizationId } = tenant
+    return withTenant(organizationId, async (trx) => {
+      const employees = employeesIn(organizationId, trx)
+      const employee = await employees.findOrFail(employeeId)
+      const self = tenant.employeeId
+      const inTeam =
+        self !== null && tenant.hasRole('manager')
+          ? await employees.isInTeamOf(self, employee.id)
+          : false
+      return { employee, inTeam }
     })
   }
 

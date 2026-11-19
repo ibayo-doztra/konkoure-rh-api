@@ -3,6 +3,9 @@ import type { ModelAttributes } from '@adonisjs/lucid/types/model'
 import LeaveRequest, { type LeaveStatus, type LeaveType } from '#models/leave_request'
 import { TenantRepository } from '#shared/base/tenant_repository'
 
+/** Safety ceiling of one calendar read. */
+const CALENDAR_LIMIT = 5000
+
 export interface LeaveListFilters {
   page: number
   perPage: number
@@ -61,6 +64,65 @@ export class LeaveRequestRepository extends TenantRepository<typeof LeaveRequest
       .where('end_date', '>=', startDate)
     if (exceptId) query.whereNot('id', exceptId)
     return (await query.first()) !== null
+  }
+
+  /** Pending and approved leaves overlapping `[from, to]`, for the calendar (≤ 92 days). */
+  calendar(from: string, to: string, employeeIds?: string[]) {
+    const query = this.query()
+      .whereIn('status', ['pending', 'approved'])
+      .where('start_date', '<=', to)
+      .where('end_date', '>=', from)
+    if (employeeIds) query.whereIn('employee_id', employeeIds)
+    return query.orderBy('start_date', 'asc').orderBy('id', 'asc').limit(CALENDAR_LIMIT)
+  }
+
+  /** Active employees with an approved leave covering `today` (`leaves:apply-started`). */
+  async startedEmployeeIds(today: string): Promise<string[]> {
+    const rows = await this.query()
+      .where('status', 'approved')
+      .where('start_date', '<=', today)
+      .where('end_date', '>=', today)
+      .whereIn(
+        'employee_id',
+        this.trx
+          .from('employees')
+          .where('organization_id', this.organizationId)
+          .where('status', 'active')
+          .select('id')
+      )
+      .distinct('employee_id')
+    return rows.map((row) => row.employeeId)
+  }
+
+  /**
+   * Employees `on_leave` whose approved leave ended in `[since, today[` and who
+   * have none covering `today` (`leaves:end`). A manual `on_leave` is left alone.
+   */
+  async endedEmployeeIds(since: string, today: string): Promise<string[]> {
+    const rows = await this.query()
+      .where('status', 'approved')
+      .where('end_date', '>=', since)
+      .where('end_date', '<', today)
+      .whereIn(
+        'employee_id',
+        this.trx
+          .from('employees')
+          .where('organization_id', this.organizationId)
+          .where('status', 'on_leave')
+          .select('id')
+      )
+      .whereNotIn(
+        'employee_id',
+        this.trx
+          .from('leave_requests')
+          .where('organization_id', this.organizationId)
+          .where('status', 'approved')
+          .where('start_date', '<=', today)
+          .where('end_date', '>=', today)
+          .select('employee_id')
+      )
+      .distinct('employee_id')
+    return rows.map((row) => row.employeeId)
   }
 
   paginate(filters: LeaveListFilters) {

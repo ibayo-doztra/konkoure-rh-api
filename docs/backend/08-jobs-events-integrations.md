@@ -46,6 +46,11 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 
 Ordonnancement via `@adonisjs/scheduler` ou BullMQ repeatable jobs, avec
 **verrou Redis** pour éviter les exécutions concurrentes en multi-réplicas.
+**Retenu** : *job schedulers* BullMQ (`SCHEDULES` dans `app/shared/queue/jobs.ts`,
+fuseau `Africa/Conakry`), déclarés au démarrage de `node ace queue:work` ; Redis
+n'enfile qu'une occurrence par échéance, quel que soit le nombre de workers.
+Chaque tâche parcourt les organisations, chacune dans sa transaction et son fuseau.
+Exécution manuelle (développement, rattrapage) : `node ace leaves:run <apply-started|end|annual-rollover>`.
 
 ## 3. Événements applicatifs
 
@@ -84,6 +89,11 @@ l'organisation quand il existe.
 | `invitation` | invitation | invité | organisation, rôle, lien, inviteur |
 | `leave_requested` | demande | approbateur | demandeur, dates, jours, solde |
 | `leave_decided` | décision | demandeur | décision, motif |
+
+Destinataires des congés : `leave_requested` va au manager direct s'il a un compte
+actif, sinon à tous les `hr_admin`, sinon aux `owner` ; `leave_decided` (approbation
+ou refus) va au compte de l'employé. Jamais à l'auteur de l'action (07 §8). Envoi
+après commit ; les notifications in-app viendront avec la table `notifications`.
 | `review_opened` | ouverture de cycle | employé | cycle, échéance |
 | `review_sent_back` | renvoi | employé | commentaire du manager |
 | `review_signed` | signature | manager + RH | employé, date |

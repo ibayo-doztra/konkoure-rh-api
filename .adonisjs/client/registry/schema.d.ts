@@ -697,6 +697,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/hr/controllers/skills_controller').default['replaceOfEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.employees.leaveBalance': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/employees/:id/leave-balance'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').employeeBalanceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['ofEmployee']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['ofEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leave_balances_controller').default['ofEmployee']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.contracts.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/contracts'
@@ -866,6 +879,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['store']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.leaves.calendar': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/leaves/calendar'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').calendarValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['calendar']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['calendar']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['calendar']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.leaves.balances.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/leaves/balances'
@@ -955,6 +981,32 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['cancel']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.attachment.store': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/leaves/:id/attachment'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/leaves/validators/leave_validator').attachmentValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/leaves/validators/leave_validator').attachmentValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attach']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attach']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attach']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.leaves.attachment.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/leaves/:id/attachment'
+    types: {
+      body: {}
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/leaves/validators/leave_validator').leaveIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attachment']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attachment']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/leaves/controllers/leaves_controller').default['attachment']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'org.holidays.index': {

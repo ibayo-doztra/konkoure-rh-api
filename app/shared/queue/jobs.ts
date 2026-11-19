@@ -24,6 +24,16 @@ function defineJob<Payload>(definition: JobDefinition<Payload>) {
   return definition
 }
 
+/** Scheduled leave task; the service is loaded on use to keep this map light. */
+const leaveTask = (task: 'apply-started' | 'end' | 'annual-rollover') =>
+  defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#modules/leaves/services/leave_schedule_service')
+      return service.run(task)
+    },
+  })
+
 /** Every background job. Handlers are idempotent or safe to retry (08 §1). */
 export const jobs = {
   'mail.send': defineJob<SendMailPayload>({
@@ -31,7 +41,23 @@ export const jobs = {
     sensitive: true,
     handle: ({ mail: message, sendConfig }) => mail.use().sendCompiled(message, sendConfig),
   }),
+  'leaves.apply-started': leaveTask('apply-started'),
+  'leaves.end': leaveTask('end'),
+  'leaves.annual-rollover': leaveTask('annual-rollover'),
 }
 
 export type JobName = keyof typeof jobs
+
+/**
+ * Recurring jobs of docs/backend/08 §2, in Guinea local time. BullMQ job
+ * schedulers enqueue each occurrence once, whatever the number of workers.
+ */
+export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
+  { job: 'leaves.apply-started', pattern: '5 0 * * *' },
+  { job: 'leaves.end', pattern: '10 0 * * *' },
+  { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
+]
+
+export const SCHEDULE_TIMEZONE = 'Africa/Conakry'
+
 export type JobPayload<Name extends JobName> = Parameters<(typeof jobs)[Name]['handle']>[0]

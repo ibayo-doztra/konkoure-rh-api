@@ -57,3 +57,27 @@ export function holidayDto(holiday: PublicHoliday) {
     isRecurring: holiday.isRecurring,
   }
 }
+
+export function calendarDto(calendar: {
+  from: string
+  to: string
+  leaves: Array<{ leave: LeaveRequest; employeeName: string }>
+  holidays: Array<{ holiday: PublicHoliday; date: string }>
+}) {
+  return {
+    from: calendar.from,
+    to: calendar.to,
+    leaves: calendar.leaves.map(({ leave, employeeName }) => ({
+      id: leave.id,
+      employeeId: leave.employeeId,
+      employeeName,
+      type: leave.type,
+      status: leave.status,
+      startDate: leave.startDate.toISODate(),
+      endDate: leave.endDate.toISODate(),
+      halfDayStart: leave.halfDayStart,
+      halfDayEnd: leave.halfDayEnd,
+    })),
+    holidays: calendar.holidays.map(({ holiday, date }) => ({ ...holidayDto(holiday), date })),
+  }
+}

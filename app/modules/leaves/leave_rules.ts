@@ -8,6 +8,8 @@ export interface LeaveSettings {
   maxNegativeDays: number
   countWeekends: boolean
   countHolidays: boolean
+  /** Ceiling of the annual carry-over (07 §3.8). */
+  maxCarryOverDays: number
 }
 
 const DEFAULTS: LeaveSettings = {
@@ -16,11 +18,12 @@ const DEFAULTS: LeaveSettings = {
   maxNegativeDays: 5,
   countWeekends: false,
   countHolidays: false,
+  maxCarryOverDays: 10,
 }
 
 export function leaveSettings(settings: Record<string, unknown> | null): LeaveSettings {
   const leave = (settings?.leave ?? {}) as Partial<Record<keyof LeaveSettings, unknown>>
-  const num = (key: 'annualEntitlementDays' | 'maxNegativeDays') => {
+  const num = (key: 'annualEntitlementDays' | 'maxNegativeDays' | 'maxCarryOverDays') => {
     const value = leave[key]
     return typeof value === 'number' ? value : DEFAULTS[key]
   }
@@ -34,6 +37,7 @@ export function leaveSettings(settings: Record<string, unknown> | null): LeaveSe
     maxNegativeDays: num('maxNegativeDays'),
     countWeekends: bool('countWeekends'),
     countHolidays: bool('countHolidays'),
+    maxCarryOverDays: num('maxCarryOverDays'),
   }
 }
 

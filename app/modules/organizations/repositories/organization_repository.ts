@@ -7,6 +7,12 @@ import UserRole, { type AppRole } from '#models/user_role'
  * exists; every other access goes through the tenant-scoped repositories.
  */
 export class OrganizationRepository {
+  /** Ids of every live organization, for scheduled tasks that visit each tenant. */
+  async activeIds(): Promise<string[]> {
+    const rows = await Organization.query().whereNull('deleted_at').orderBy('id').select('id')
+    return rows.map((row) => row.id)
+  }
+
   /** The tenant root itself, excluding deleted organizations. */
   findActive(id: string, trx?: TransactionClientContract) {
     return Organization.query({ client: trx }).where('id', id).whereNull('deleted_at').first()

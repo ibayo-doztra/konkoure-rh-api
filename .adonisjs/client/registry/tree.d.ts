@@ -85,6 +85,7 @@ export interface ApiDefinition {
         index: typeof routes['org.employees.skills.index']
         replace: typeof routes['org.employees.skills.replace']
       }
+      leaveBalance: typeof routes['org.employees.leaveBalance']
     }
     contracts: {
       index: typeof routes['org.contracts.index']
@@ -104,6 +105,7 @@ export interface ApiDefinition {
     leaves: {
       index: typeof routes['org.leaves.index']
       store: typeof routes['org.leaves.store']
+      calendar: typeof routes['org.leaves.calendar']
       balances: {
         index: typeof routes['org.leaves.balances.index']
         adjust: typeof routes['org.leaves.balances.adjust']
@@ -113,6 +115,10 @@ export interface ApiDefinition {
       approve: typeof routes['org.leaves.approve']
       reject: typeof routes['org.leaves.reject']
       cancel: typeof routes['org.leaves.cancel']
+      attachment: {
+        store: typeof routes['org.leaves.attachment.store']
+        show: typeof routes['org.leaves.attachment.show']
+      }
     }
     holidays: {
       index: typeof routes['org.holidays.index']

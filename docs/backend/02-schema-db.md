@@ -601,7 +601,8 @@ Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
 ```jsonc
 {
   "leave": { "annualEntitlementDays": 30, "allowNegativeBalance": true,
-             "maxNegativeDays": 5, "countWeekends": false, "countHolidays": false },
+             "maxNegativeDays": 5, "countWeekends": false, "countHolidays": false,
+             "maxCarryOverDays": 10 },
   "timeclock": { "defaultRadiusMeters": 150, "requireZone": true,
                  "allowManualPunch": true, "maxAccuracyMeters": 100,
                  "duplicateWindowSeconds": 120 },

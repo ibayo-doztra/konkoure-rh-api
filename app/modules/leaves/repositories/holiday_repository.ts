@@ -31,21 +31,38 @@ export class HolidayRepository extends TenantRepository<typeof PublicHoliday> {
   }
 
   /**
-   * ISO dates off in `[startDate, endDate]` (same year): dated holidays, plus
-   * recurring ones moved to that year.
+   * Holidays falling in `[startDate, endDate]`, with the ISO date they fall on:
+   * dated ones, plus recurring ones moved to each year of the range.
    */
-  async datesWithin(startDate: string, endDate: string, year: number): Promise<Set<string>> {
+  async occurrences(startDate: string, endDate: string) {
     const rows = await this.query()
       .where((query) => {
         query.whereBetween('date', [startDate, endDate]).orWhere('is_recurring', true)
       })
-      .select('date', 'is_recurring')
-    const dates = new Set<string>()
-    for (const row of rows) {
-      const date = row.isRecurring ? recurringOn(row.date, year) : row.date.toISODate()
-      if (date && date >= startDate && date <= endDate) dates.add(date)
+      .orderBy('date', 'asc')
+    const firstYear = Number(startDate.slice(0, 4))
+    const lastYear = Number(endDate.slice(0, 4))
+    const found: Array<{ holiday: PublicHoliday; date: string }> = []
+    const seen = new Set<string>()
+    for (const holiday of rows) {
+      const dates = holiday.isRecurring
+        ? Array.from({ length: lastYear - firstYear + 1 }, (_, index) =>
+            recurringOn(holiday.date, firstYear + index)
+          )
+        : [holiday.date.toISODate()]
+      for (const date of dates) {
+        if (!date || date < startDate || date > endDate || seen.has(date)) continue
+        seen.add(date)
+        found.push({ holiday, date })
+      }
     }
-    return dates
+    return found.sort((a, b) => a.date.localeCompare(b.date))
+  }
+
+  /** ISO dates off in `[startDate, endDate]`. */
+  async datesWithin(startDate: string, endDate: string): Promise<Set<string>> {
+    const found = await this.occurrences(startDate, endDate)
+    return new Set(found.map((occurrence) => occurrence.date))
   }
 
   async remove(holiday: PublicHoliday) {
