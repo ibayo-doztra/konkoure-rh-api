@@ -29,10 +29,8 @@ export default class extends BaseSchema {
       t.index(['organization_id', 'created_at'])
     })
 
+    // Insert only for the application roles: see 0115, which runs after the grants of 0114.
     this.schema.raw(`SELECT enable_tenant_rls('leave_balance_ledger')`)
-    // Insert only (03 §7): the application roles can neither rewrite nor erase it.
-    this.schema.raw(`REVOKE UPDATE, DELETE ON leave_balance_ledger
-                     FROM konkoure_app, konkoure_worker`)
   }
 
   async down() {
