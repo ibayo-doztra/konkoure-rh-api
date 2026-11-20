@@ -25,7 +25,13 @@ export interface ExportFilters {
   anomaly?: PunchAnomaly
 }
 
+export interface ExportCursor {
+  punchedAt: Date
+  id: string
+}
+
 export interface ExportRow {
+  id: string
   employeeNumber: string | null
   firstName: string
   lastName: string
@@ -165,13 +171,20 @@ export class TimeLogRepository extends TenantRepository<typeof TimeLog> {
     return Number(row?.total ?? 0)
   }
 
-  exportPage(filters: ExportFilters, offset: number, limit: number): Promise<ExportRow[]> {
-    return this.exportQuery(filters)
+  /** Keyset page after `after` (`punched_at`, `id`): an offset would crawl on a million rows. */
+  exportPage(
+    filters: ExportFilters,
+    after: ExportCursor | null,
+    limit: number
+  ): Promise<ExportRow[]> {
+    const query = this.exportQuery(filters)
+    if (after) query.whereRaw('(t.punched_at, t.id) > (?, ?)', [after.punchedAt, after.id])
+    return query
       .orderBy('t.punched_at', 'asc')
       .orderBy('t.id', 'asc')
-      .offset(offset)
       .limit(limit)
       .select(
+        't.id',
         'e.employee_number as employeeNumber',
         'e.first_name as firstName',
         'e.last_name as lastName',

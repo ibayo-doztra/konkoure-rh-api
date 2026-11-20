@@ -122,7 +122,7 @@ export const listAttendanceValidator = vine.create({
     .optional(),
 })
 
-/** GET /org/timeclock/logs/export (lot 2 decision): `from` and `to` required, ≤ 31 days. */
+/** POST /org/timeclock/logs/export (lot 2 decision): `from` and `to` required, ≤ 366 days. */
 export const exportLogsValidator = vine.create({
   format: vine.enum(['csv', 'xlsx'] as const),
   filter: vine.object({

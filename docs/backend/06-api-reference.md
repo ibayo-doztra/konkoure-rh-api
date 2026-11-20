@@ -519,7 +519,7 @@ renvoient `{ data: [{ skillId, name, category, level, assessedAt }] }`.
 | POST | `/org/timeclock/scan` ⚡ | O H M S |
 | POST | `/org/timeclock/punch` ⚡ | tous (pour soi) |
 | GET | `/org/timeclock/logs` | O H · M(team) · E(self) · S |
-| GET | `/org/timeclock/logs/export` | O H |
+| POST | `/org/timeclock/logs/export` | O H (asynchrone, 08 §9) |
 | PATCH | `/org/timeclock/logs/:id` | O H (correction, auditée) |
 | DELETE | `/org/timeclock/logs/:id` | O H (auditée) |
 | GET | `/org/timeclock/attendance` | O H · M(team) · E(self) | agrégats `attendance_days` |
@@ -616,12 +616,15 @@ Refusé si `settings.timeclock.allowManualPunch = false`
   (agrégat, jusqu'à 60 s de retard) ; en congé = congé `approved` couvrant le jour ou
   statut `on_leave` ; absent = le reste. Le manager ne voit que son équipe et lui-même ;
   E ⇒ `403`.
-- **Export** : `GET /logs/export?format=csv|xlsx&filter[from|to|employeeId|source|anomaly]`,
-  O H seulement, **synchrone** (écart à 08 §9) : `from` et `to` obligatoires (instants
-  ISO), au plus 31 jours locaux (`422` règle `range`) et 50 000 pointages (`422` règle
-  `tooManyRows`), 10 exports/h/utilisateur. Fichier `pointages_<from>_<to>.<ext>`,
-  colonnes Matricule, Nom, Prénom, Type, Date, Heure (locales), Source, Zone, Dans la
-  zone, Anomalie, Notes, en-têtes selon `Accept-Language`. Audité `time_log.exported`.
+- **Export** (asynchrone, 08 §9) : `POST /logs/export` `{ format: 'csv'|'xlsx', filter: {
+  from, to, employeeId?, source?, anomaly? } }`, O H seulement. `from` et `to` obligatoires
+  (instants ISO), au plus 366 jours locaux (`422` règle `range`) ; plus de 1 000 000
+  pointages ⇒ `422` règle `tooManyRows` (vérifié à la demande) ; 5 exports/h/utilisateur.
+  Réponse `202 { data: { jobId } }`, audit `time_log.exported`. Le job `time-logs.export`
+  écrit le fichier page par page sur disque, le dépose dans `private-docs` (entrée `files`
+  `owner_type = 'time_log_export'`) et envoie au demandeur un lien valable 24 h. Colonnes
+  Matricule, Nom, Prénom, Type, Date, Heure (fuseau de l'organisation), Source, Zone, Dans
+  la zone, Anomalie, Notes, en-têtes dans la langue du demandeur.
 
 ### Synchronisation hors-ligne (mobile)
 `POST /org/timeclock/sync` accepte un tableau de 1 à 200 pointages avec

@@ -219,13 +219,15 @@ diagnostic. Aucun jeton n'est jamais renvoyé par l'API.
 
 ## 9. Exports
 
-Exports volumineux (employés, journaux) traités en asynchrone (l'export des
-pointages est synchrone et borné, voir 06 §6, décision du 2026-11-20) :
+Exports volumineux (employés, pointages, journaux) traités en asynchrone :
 `POST …/export` renvoie `202` + `jobId` ; le fichier est déposé dans
 `private-docs`, une notification et un e-mail contiennent une URL signée
 valable 24 h. Formats CSV (UTF-8 BOM) et XLSX. Limite : 5 exports/h/utilisateur.
 Employés : job `employees.export` (file `maintenance`), fichier enregistré dans
 `files` (`owner_type = 'employee_export'`), e-mail au demandeur ; aucune
 notification in-app tant que la table `notifications` n'existe pas.
+Pointages : job `time-logs.export` (file `maintenance`), au plus 366 jours et
+1 000 000 de lignes, écrit en flux (CSV ou `exceljs` en mode streaming) puis déposé
+avec `owner_type = 'time_log_export'` (06 §6, décision du 2026-11-20).
 XLSX lu et écrit avec `exceljs` (dépendance validée le 2026-11-19 ; `uuid` forcé
 en 11.x par `pnpm-workspace.yaml`, GHSA-w5hq-g745-h8pq).

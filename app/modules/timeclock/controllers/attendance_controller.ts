@@ -1,5 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { ApiOperation } from '@foadonis/openapi/decorators'
+import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import TimeclockPolicy from '#policies/timeclock_policy'
 import attendanceService from '#modules/timeclock/services/attendance_service'
 import timeLogExportService from '#modules/timeclock/services/time_log_export_service'
@@ -27,20 +27,18 @@ export default class AttendanceController {
     return ctx.serialize(todayDto(await attendanceService.today(ctx.tenant)))
   }
 
-  @ApiOperation({ summary: 'Export punches as CSV or XLSX (≤ 31 days)' })
+  @ApiOperation({ summary: 'Export punches as CSV or XLSX, e-mailed (≤ 366 days)' })
+  @ApiBody({ type: () => exportLogsValidator })
   async export(ctx: HttpContext) {
     const query = await ctx.request.validateUsing(exportLogsValidator)
     await ctx.bouncer.with(TimeclockPolicy).authorize('exportLogs')
-    const locale = ctx.i18n.locale.startsWith('en') ? 'en' : 'fr'
-    const file = await timeLogExportService.build(
+    const result = await timeLogExportService.request(
       ctx.tenant,
       ctx.auth.getUserOrFail(),
       query,
-      locale,
       auditContext(ctx)
     )
-    ctx.response.header('Content-Type', file.contentType)
-    ctx.response.attachment(file.filename)
-    return ctx.response.send(file.content)
+    ctx.response.status(202)
+    return ctx.serialize(result)
   }
 }

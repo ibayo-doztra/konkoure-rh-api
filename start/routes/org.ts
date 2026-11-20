@@ -198,7 +198,7 @@ export function registerOrgRoutes() {
             .as('punch')
             .use(middleware.idempotency())
           router.get('logs', [TimeclockController, 'logs']).as('logs.index')
-          router.get('logs/export', [AttendanceController, 'export']).as('logs.export')
+          router.post('logs/export', [AttendanceController, 'export']).as('logs.export')
           router.get('attendance', [AttendanceController, 'index']).as('attendance.index')
           router.get('today', [AttendanceController, 'today']).as('today')
           router.patch('logs/:id', [TimeclockController, 'correct']).as('logs.update')

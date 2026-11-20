@@ -59,5 +59,10 @@
     "subject": "Your employee export is ready — Konkouré",
     "body": "The export of {rows} employee(s) is ready. The download link is valid for 24 hours.",
     "action": "Download the export"
+  },
+  "timeLogsExport": {
+    "subject": "Your punch export is ready — Konkouré",
+    "body": "The export of {rows} punch(es) is ready. The download link is valid for 24 hours.",
+    "action": "Download the export"
   }
 }

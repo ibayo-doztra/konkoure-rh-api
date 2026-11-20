@@ -59,5 +59,10 @@
     "subject": "Votre export des employés est prêt — Konkouré",
     "body": "L'export de {rows} employé(s) est prêt. Le lien de téléchargement est valable 24 heures.",
     "action": "Télécharger l'export"
+  },
+  "timeLogsExport": {
+    "subject": "Votre export des pointages est prêt — Konkouré",
+    "body": "L'export de {rows} pointage(s) est prêt. Le lien de téléchargement est valable 24 heures.",
+    "action": "Télécharger l'export"
   }
 }

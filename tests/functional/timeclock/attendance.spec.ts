@@ -1,11 +1,21 @@
 import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
+import ExcelJS from 'exceljs'
+import drive from '@adonisjs/drive/services/main'
+import mail from '@adonisjs/mail/services/main'
 import testUtils from '@adonisjs/core/services/test_utils'
 import limiter from '@adonisjs/limiter/services/main'
 import redis from '@adonisjs/redis/services/main'
 import AttendanceDay from '#models/attendance_day'
 import AuditLog from '#models/audit_log'
 import type Employee from '#models/employee'
+import StoredFile from '#models/stored_file'
+import { TimeLogsExportMail } from '#modules/timeclock/mails/time_logs_export_mail'
+import timeLogExportService, {
+  EXPORT_LIMITS,
+  type TimeLogExportJob,
+} from '#modules/timeclock/services/time_log_export_service'
+import queueService from '#shared/queue/queue_service'
 import attendanceService from '#modules/timeclock/services/attendance_service'
 import { errorOf, expectStatus } from '#tests/helpers/http'
 import { createEmployee, createHrOrganization, hrSession, orgCall } from '#tests/helpers/hr'
@@ -250,15 +260,111 @@ test.group('GET /org/timeclock/today', (group) => {
   })
 })
 
-test.group('GET /org/timeclock/logs/export', (group) => {
+test.group('POST /org/timeclock/logs/export', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
   group.each.setup(() => limiter.clear(['memory']))
+  group.each.setup(() => {
+    drive.fake('s3')
+    return () => drive.restore('s3')
+  })
 
-  const period = (from: string, to: string) =>
-    `filter[from]=${encodeURIComponent(on('00:00', from).toISO()!)}` +
-    `&filter[to]=${encodeURIComponent(on('23:59', to).toISO()!)}`
+  const period = (from: string, to: string) => ({
+    from: on('00:00', from).toISO(),
+    to: on('23:59', to).toISO(),
+  })
 
-  test('exports the punches of the organization as CSV, audited', async ({ client, assert }) => {
+  /** Captures the queued exports instead of running them. */
+  function captureDispatch() {
+    const dispatched: Array<{ name: string; payload: TimeLogExportJob }> = []
+    const original = queueService.dispatch.bind(queueService)
+    queueService.dispatch = (async (name: string, payload: TimeLogExportJob) => {
+      dispatched.push({ name, payload })
+    }) as typeof queueService.dispatch
+    return {
+      dispatched,
+      restore: () => {
+        queueService.dispatch = original
+      },
+    }
+  }
+
+  test('answers 202, audited, limited to 5 per hour and reserved to HR', async ({
+    client,
+    assert,
+    cleanup,
+  }) => {
+    const { dispatched, restore } = captureDispatch()
+    cleanup(restore)
+    const org = await createHrOrganization()
+    const hr = await hrSession(client, org, ['hr_admin'])
+    const manager = await hrSession(client, org, ['manager'])
+    const agent = await hrSession(client, org, ['security_agent'])
+    const employee = await hrSession(client, org, ['employee'])
+    const worker = await createEmployee(org)
+    await createPunch(worker, { punchedAt: on('08:00') })
+    const request = (who: Session) =>
+      orgCall(client, 'POST', '/timeclock/logs/export', who, org).json({
+        format: 'csv',
+        filter: { ...period(DAY, DAY), employeeId: worker.id },
+      })
+
+    for (const who of [manager, agent, employee]) await expectStatus(request(who), 403)
+    const accepted = await expectStatus(request(hr), 202)
+    assert.isString(accepted.body().data.jobId)
+    assert.equal(dispatched[0].name, 'time-logs.export')
+    assert.deepInclude(dispatched[0].payload, {
+      exportId: accepted.body().data.jobId,
+      organizationId: org.id,
+      userId: hr.user.id,
+      format: 'csv',
+    })
+    assert.equal(dispatched[0].payload.filters.employeeId, worker.id)
+    const audit = await AuditLog.query()
+      .where('organization_id', org.id)
+      .where('action', 'time_log.exported')
+      .firstOrFail()
+    assert.equal((audit.afterData as { rows: number }).rows, 1)
+
+    for (let index = 0; index < 4; index += 1) await expectStatus(request(hr), 202)
+    await expectStatus(request(hr), 429)
+    assert.lengthOf(dispatched, 5)
+  })
+
+  test('validates the format, the period and the size', async ({ client, assert, cleanup }) => {
+    const { dispatched, restore } = captureDispatch()
+    cleanup(restore)
+    const org = await createHrOrganization()
+    const owner = await hrSession(client, org, ['owner'])
+    const call = (body: Record<string, unknown>) =>
+      orgCall(client, 'POST', '/timeclock/logs/export', owner, org).json(body)
+
+    await expectStatus(call({ format: 'pdf', filter: period(DAY, DAY) }), 422)
+    await expectStatus(call({ format: 'csv' }), 422)
+    const tooLong = await expectStatus(
+      call({ format: 'csv', filter: period('2025-11-01', DAY) }),
+      422
+    )
+    assert.equal(errorOf(tooLong).details[0].rule, 'range')
+    await expectStatus(call({ format: 'xlsx', filter: period('2025-11-10', DAY) }), 202)
+
+    const worker = await createEmployee(org)
+    await createPunch(worker, { type: 'in', punchedAt: on('08:00') })
+    await createPunch(worker, { type: 'out', punchedAt: on('17:00') })
+    const { maxRows } = EXPORT_LIMITS
+    EXPORT_LIMITS.maxRows = 1
+    cleanup(() => {
+      EXPORT_LIMITS.maxRows = maxRows
+    })
+    const tooLarge = await expectStatus(call({ format: 'csv', filter: period(DAY, DAY) }), 422)
+    assert.equal(errorOf(tooLarge).details[0].rule, 'tooManyRows')
+    assert.lengthOf(dispatched, 1)
+  })
+
+  test('the job writes a CSV of the organization and e-mails a link', async ({
+    client,
+    assert,
+  }) => {
+    const { mails } = mail.fake()
     const org = await createHrOrganization()
     const other = await createHrOrganization('Autre')
     const hr = await hrSession(client, org, ['hr_admin'])
@@ -271,57 +377,70 @@ test.group('GET /org/timeclock/logs/export', (group) => {
     await createPunch(worker, { type: 'out', punchedAt: on('17:00'), notes: '=SUM(A1)' })
     await createPunch(await createEmployee(other), { punchedAt: on('09:00') })
 
-    const response = await expectStatus(
-      orgCall(client, 'GET', `/timeclock/logs/export?format=csv&${period(DAY, DAY)}`, hr, org),
-      200
-    )
-    assert.match(response.header('content-type') ?? '', /text\/csv/)
-    assert.include(response.header('content-disposition') ?? '', `pointages_${DAY}_${DAY}.csv`)
-    // trim() also drops the BOM.
-    const lines = response.text().trim().split('\r\n')
-    assert.lengthOf(lines, 3)
-    assert.equal(
-      lines[0],
-      'Matricule;Nom;Prénom;Type;Date;Heure;Source;Zone;Dans la zone;Anomalie;Notes'
-    )
-    assert.equal(lines[1], `K-001;Diallo;Mariama;in;${DAY};08:02:00;nfc;;non;out_of_zone;`)
-    assert.equal(lines[2], `K-001;Diallo;Mariama;out;${DAY};17:00:00;nfc;;non;;'=SUM(A1)`)
+    const rows = await timeLogExportService.build({
+      exportId: 'test',
+      organizationId: org.id,
+      userId: hr.user.id,
+      format: 'csv',
+      filters: { from: on('00:00').toISO()!, to: on('23:59').toISO()! },
+    })
+    assert.equal(rows, 2)
+    mails.assertQueued(TimeLogsExportMail, (message) => message.message.hasTo(hr.user.email))
 
-    const audit = await AuditLog.query()
-      .where('organization_id', org.id)
-      .where('action', 'time_log.exported')
+    const file = await StoredFile.query()
+      .where('owner_type', 'time_log_export')
+      .where('owner_id', hr.user.id)
       .firstOrFail()
-    assert.equal((audit.afterData as { rows: number }).rows, 2)
+    assert.equal(file.organizationId, org.id)
+    const text = Buffer.from(await drive.use('s3').getBytes(file.path)).toString('utf8')
+    // trim() also drops the BOM.
+    assert.deepEqual(text.trim().split('\r\n'), [
+      'Matricule;Nom;Prénom;Type;Date;Heure;Source;Zone;Dans la zone;Anomalie;Notes',
+      `K-001;Diallo;Mariama;in;${DAY};08:02:00;nfc;;non;out_of_zone;`,
+      `K-001;Diallo;Mariama;out;${DAY};17:00:00;nfc;;non;;'=SUM(A1)`,
+    ])
   })
 
-  test('XLSX, English headers and refusals', async ({ client, assert }) => {
-    const org = await createHrOrganization()
-    const owner = await hrSession(client, org, ['owner'])
-    const manager = await hrSession(client, org, ['manager'])
-    const agent = await hrSession(client, org, ['security_agent'])
-    const call = (who: Session, query: string) =>
-      orgCall(client, 'GET', `/timeclock/logs/export?${query}`, who, org)
-
-    const xlsx = await expectStatus(
-      call(owner, `format=xlsx&${period(DAY, DAY)}`).header('Accept-Language', 'en'),
-      200
-    )
-    assert.include(xlsx.header('content-type') ?? '', 'spreadsheetml')
-    await expectStatus(call(manager, `format=csv&${period(DAY, DAY)}`), 403)
-    await expectStatus(call(agent, `format=csv&${period(DAY, DAY)}`), 403)
-    await expectStatus(call(owner, `format=pdf&${period(DAY, DAY)}`), 422)
-    await expectStatus(call(owner, 'format=csv'), 422)
-    const tooLong = await expectStatus(call(owner, `format=csv&${period('2026-09-01', DAY)}`), 422)
-    assert.equal(errorOf(tooLong).details[0].rule, 'range')
-  })
-
-  test('at most 10 exports per hour and user', async ({ client }) => {
+  test('XLSX in the language of the requester, read page by page', async ({
+    client,
+    assert,
+    cleanup,
+  }) => {
+    mail.fake()
+    const { pageSize } = EXPORT_LIMITS
+    EXPORT_LIMITS.pageSize = 2
+    cleanup(() => {
+      EXPORT_LIMITS.pageSize = pageSize
+    })
     const org = await createHrOrganization()
     const hr = await hrSession(client, org, ['hr_admin'])
-    const query = `/timeclock/logs/export?format=csv&${period(DAY, DAY)}`
-    for (let index = 0; index < 10; index += 1) {
-      await expectStatus(orgCall(client, 'GET', query, hr, org), 200)
+    hr.user.merge({ preferredLanguage: 'en' })
+    await hr.user.save()
+    const worker = await createEmployee(org)
+    for (let minute = 0; minute < 5; minute += 1) {
+      await createPunch(worker, { type: 'in', punchedAt: on(`08:0${minute}`) })
     }
-    await expectStatus(orgCall(client, 'GET', query, hr, org), 429)
+
+    const rows = await timeLogExportService.build({
+      exportId: 'test',
+      organizationId: org.id,
+      userId: hr.user.id,
+      format: 'xlsx',
+      filters: { from: on('00:00').toISO()!, to: on('23:59').toISO()! },
+    })
+    assert.equal(rows, 5)
+    const file = await StoredFile.query()
+      .where('owner_type', 'time_log_export')
+      .where('owner_id', hr.user.id)
+      .firstOrFail()
+    const workbook = new ExcelJS.Workbook()
+    const bytes = await drive.use('s3').getBytes(file.path)
+    await workbook.xlsx.load(Buffer.from(bytes) as unknown as ArrayBuffer)
+    const sheet = workbook.worksheets[0]
+    assert.equal(sheet.getCell('A1').value, 'Employee number')
+    assert.equal(sheet.getCell('I2').value, 'no')
+    assert.equal(sheet.actualRowCount, 6)
+    const times = [2, 3, 4, 5, 6].map((index) => sheet.getCell(`F${index}`).value)
+    assert.deepEqual(times, ['08:00:00', '08:01:00', '08:02:00', '08:03:00', '08:04:00'])
   })
 })

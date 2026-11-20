@@ -114,7 +114,7 @@
     "zone": "Zone de travail introuvable.",
     "range": "La fin de la période doit suivre son début.",
     "attendanceRange": "La période ne peut pas dépasser 93 jours.",
-    "exportRange": "Un export couvre au plus 31 jours.",
-    "exportTooLarge": "L’export dépasse 50 000 pointages : réduisez la période ou filtrez."
+    "exportRange": "Un export couvre au plus 366 jours.",
+    "exportTooLarge": "L’export dépasse 1 000 000 de pointages : réduisez la période ou filtrez."
   }
 }
