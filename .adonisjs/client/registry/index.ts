@@ -590,6 +590,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"timeclock"],[0,"logs"]],
     types: placeholder as Registry['org.timeclock.logs.index']['types'],
   },
+  'org.timeclock.logs.export': {
+    methods: ["POST"],
+    pattern: '/api/v1/org/timeclock/logs/export',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"timeclock"],[0,"logs"],[0,"export"]],
+    types: placeholder as Registry['org.timeclock.logs.export']['types'],
+  },
+  'org.timeclock.attendance.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/timeclock/attendance',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"timeclock"],[0,"attendance"]],
+    types: placeholder as Registry['org.timeclock.attendance.index']['types'],
+  },
+  'org.timeclock.today': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/timeclock/today',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"timeclock"],[0,"today"]],
+    types: placeholder as Registry['org.timeclock.today']['types'],
+  },
   'org.timeclock.logs.update': {
     methods: ["PATCH"],
     pattern: '/api/v1/org/timeclock/logs/:id',

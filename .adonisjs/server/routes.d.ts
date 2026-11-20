@@ -101,6 +101,9 @@ export type ScannedRoutes = {
     'org.timeclock.zones.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.punch': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.export': { paramsTuple?: []; params?: {} }
+    'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.today': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.logs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
@@ -152,6 +155,8 @@ export type ScannedRoutes = {
     'org.holidays.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.today': { paramsTuple?: []; params?: {} }
     'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -195,6 +200,8 @@ export type ScannedRoutes = {
     'org.holidays.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
+    'org.timeclock.today': { paramsTuple?: []; params?: {} }
     'org.timeclock.badgeEvents': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -238,6 +245,7 @@ export type ScannedRoutes = {
     'org.holidays.import': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.punch': { paramsTuple?: []; params?: {} }
+    'org.timeclock.logs.export': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.store': { paramsTuple?: []; params?: {} }
     'org.employees.badge.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.scan': { paramsTuple?: []; params?: {} }

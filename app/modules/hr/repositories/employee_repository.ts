@@ -222,6 +222,16 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
     return chain.includes(managerId)
   }
 
+  /** Present workforce (`active`, `on_leave`), by name, for the daily attendance board. */
+  roster(ids?: string[]) {
+    const query = this.query().whereIn('status', ['active', 'on_leave'])
+    if (ids) query.whereIn('id', ids)
+    return query
+      .orderBy('last_name', 'asc')
+      .orderBy('first_name', 'asc')
+      .select('id', 'first_name', 'last_name', 'department_id', 'status')
+  }
+
   /** First and last names of live employee records, by id. */
   async namesOf(ids: string[]) {
     if (ids.length === 0) return new Map<string, string>()

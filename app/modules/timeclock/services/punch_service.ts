@@ -16,6 +16,7 @@ import { badgesIn } from '#modules/timeclock/repositories/badge_repository'
 import { timeLogsIn } from '#modules/timeclock/repositories/time_log_repository'
 import { workZonesIn } from '#modules/timeclock/repositories/work_zone_repository'
 import { badgeIdentity } from '#modules/timeclock/services/badge_service'
+import attendanceService from '#modules/timeclock/services/attendance_service'
 import {
   haversineMeters,
   insidePolygon,
@@ -52,6 +53,8 @@ export interface PunchResult {
   zone: WorkZone | null
   /** The `clientPunchId` was already known: the existing punch is returned (07 §2.5). */
   replayed: boolean
+  /** Organization timezone, for the attendance day of the punch. */
+  timezone: string
 }
 
 export interface SyncItem extends PunchInput {
@@ -102,13 +105,15 @@ export class PunchService {
     }
     const source: PunchSource =
       input.latitude !== undefined && input.longitude !== undefined ? 'mobile_gps' : 'manual'
-    return withTenant(tenant.organizationId, async (trx) => {
+    const result = await withTenant(tenant.organizationId, async (trx) => {
       const settings = await this.settings(trx, tenant.organizationId)
       if (!settings.allowManualPunch) throw new AppException('E_MANUAL_PUNCH_DISABLED')
       const employee = await employeesIn(tenant.organizationId, trx).find(employeeId)
       if (!employee) throw new AppException('E_NOT_FOUND')
       return this.record(trx, tenant.organizationId, employee, source, input, user.id)
     })
+    await this.recorded(tenant.organizationId, result)
+    return result
   }
 
   /**
@@ -192,9 +197,22 @@ export class PunchService {
     }
 
     const source: PunchSource = actor.kind === 'device' ? 'kiosk' : 'nfc'
-    return withTenant(organizationId, (trx) =>
+    const result = await withTenant(organizationId, (trx) =>
       this.record(trx, organizationId, found.employee, source, input, actorUserId(actor))
     )
+    await this.recorded(organizationId, result)
+    return result
+  }
+
+  /** After the commit: the attendance day of a new punch is recomputed (08 §3). */
+  private async recorded(organizationId: string, result: PunchResult) {
+    if (result.replayed) return
+    await attendanceService.punchChanged({
+      organizationId,
+      employeeId: result.employee.id,
+      timezone: result.timezone,
+      instants: [result.log.punchedAt],
+    })
   }
 
   /** One punch: offline window, idempotency, zone, type, duplicate window (07 §2.4–2.7). */
@@ -218,7 +236,7 @@ export class PunchService {
         const zone = known.workZoneId
           ? await workZonesIn(organizationId, trx).find(known.workZoneId)
           : null
-        return { log: known, employee, zone, replayed: true }
+        return { log: known, employee, zone, replayed: true, timezone: organization.timezone }
       }
     }
 
@@ -282,7 +300,13 @@ export class PunchService {
       createdBy,
     })
     if (input.clientPunchId) await logs.rememberClientId(log)
-    return { log, employee, zone: match.inside ? match.zone : null, replayed: false }
+    return {
+      log,
+      employee,
+      zone: match.inside ? match.zone : null,
+      replayed: false,
+      timezone: organization.timezone,
+    }
   }
 
   /** Last punch of the same local day: none or `out` ⇒ `in`, else `out` (07 §2.4). */

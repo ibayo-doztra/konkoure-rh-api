@@ -5,9 +5,12 @@ import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import type { TenantContext } from '#shared/tenant/tenant_context'
-import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import { timeLogsIn } from '#modules/timeclock/repositories/time_log_repository'
 import { workZonesIn } from '#modules/timeclock/repositories/work_zone_repository'
+import { visibleEmployeeIds } from '#modules/timeclock/scope'
+import attendanceService from '#modules/timeclock/services/attendance_service'
+import organizations from '#modules/organizations/repositories/organization_repository'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 
 export interface TimeLogQuery {
   page?: number
@@ -34,15 +37,7 @@ export class TimeLogService {
   list(tenant: TenantContext, query: TimeLogQuery) {
     const { organizationId } = tenant
     return withTenant(organizationId, async (trx) => {
-      let employeeIds: string[] | undefined
-      if (!tenant.hasRole('owner', 'hr_admin', 'security_agent')) {
-        const self = tenant.employeeId
-        const team =
-          tenant.hasRole('manager') && self
-            ? await employeesIn(organizationId, trx).teamIds(self)
-            : []
-        employeeIds = [...team, ...(self ? [self] : [])]
-      }
+      const employeeIds = await visibleEmployeeIds(tenant, trx)
       const page = await timeLogsIn(organizationId, trx).paginate({
         page: query.page ?? 1,
         perPage: query.perPage ?? 50,
@@ -58,9 +53,9 @@ export class TimeLogService {
   }
 
   /** Correction by owner or hr_admin; the previous values go to the audit log. */
-  correct(tenant: TenantContext, id: string, input: TimeLogCorrection, audit: AuditContext) {
+  async correct(tenant: TenantContext, id: string, input: TimeLogCorrection, audit: AuditContext) {
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const corrected = await withTenant(organizationId, async (trx) => {
       const logs = timeLogsIn(organizationId, trx)
       const log = await logs.findForUpdate(id)
       if (!log) throw new AppException('E_NOT_FOUND')
@@ -71,6 +66,7 @@ export class TimeLogService {
         throw AppException.validation('workZoneId', 'exists', 'validation.timeclock.zone')
       }
       const before = this.snapshot(log)
+      const punchedBefore = log.punchedAt
       // A new `punched_at` moves the row to its month partition (PostgreSQL ≥ 11).
       log.merge(this.changes(input))
       await logs.save(log)
@@ -81,13 +77,22 @@ export class TimeLogService {
         before,
         after: this.snapshot(log),
       })
-      return log
+      return { log, previous: punchedBefore, timezone: await this.timezone(trx, organizationId) }
     })
+    // Both the former and the new day of a moved punch are recomputed.
+    const { log, previous, timezone } = corrected
+    await attendanceService.punchChanged({
+      organizationId,
+      employeeId: log.employeeId,
+      timezone,
+      instants: [previous, log.punchedAt],
+    })
+    return log
   }
 
   async remove(tenant: TenantContext, id: string, audit: AuditContext) {
     const { organizationId } = tenant
-    await withTenant(organizationId, async (trx) => {
+    const removed = await withTenant(organizationId, async (trx) => {
       const logs = timeLogsIn(organizationId, trx)
       const log = await logs.findForUpdate(id)
       if (!log) throw new AppException('E_NOT_FOUND')
@@ -99,7 +104,20 @@ export class TimeLogService {
         targetId: id,
         before: this.snapshot(log),
       })
+      return { log, timezone: await this.timezone(trx, organizationId) }
     })
+    await attendanceService.punchChanged({
+      organizationId,
+      employeeId: removed.log.employeeId,
+      timezone: removed.timezone,
+      instants: [removed.log.punchedAt],
+    })
+  }
+
+  private async timezone(trx: TransactionClientContract, organizationId: string) {
+    const organization = await organizations.findActive(organizationId, trx)
+    if (!organization) throw new AppException('E_NOT_FOUND')
+    return organization.timezone
   }
 
   private changes(input: TimeLogCorrection) {

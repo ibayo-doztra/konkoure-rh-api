@@ -34,6 +34,20 @@ export default class TimeclockPolicy extends BasePolicy {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager', 'employee', 'security_agent')
   }
 
+  /** Daily aggregates: everyone, scoped by the service (06 §6). */
+  listAttendance(_user: User) {
+    return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager', 'employee', 'security_agent')
+  }
+
+  /** Present and absent today: managers see their team (lot 2 decision). */
+  viewToday(_user: User) {
+    return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager', 'security_agent')
+  }
+
+  exportLogs(_user: User) {
+    return this.ctx.tenant.hasRole('owner', 'hr_admin')
+  }
+
   /** Assignment, revocation and masked reading of badges. */
   manageBadges(_user: User) {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'security_agent')

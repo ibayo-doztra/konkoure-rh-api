@@ -81,6 +81,9 @@ export default {
         anomaly: { tsType: `'out_of_zone' | 'low_accuracy' | 'clock_drift'` },
       },
     },
+    attendance_days: {
+      columns: { anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate'` } },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

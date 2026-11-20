@@ -16,6 +16,34 @@ export interface TimeLogFilters {
   employeeIds?: string[]
 }
 
+export interface ExportFilters {
+  /** ISO instants, inclusive. */
+  from: string
+  to: string
+  employeeId?: string
+  source?: PunchSource
+  anomaly?: PunchAnomaly
+}
+
+export interface ExportCursor {
+  punchedAt: Date
+  id: string
+}
+
+export interface ExportRow {
+  id: string
+  employeeNumber: string | null
+  firstName: string
+  lastName: string
+  type: PunchType
+  punchedAt: Date
+  source: PunchSource
+  zoneName: string | null
+  isWithinZone: boolean
+  anomaly: PunchAnomaly | null
+  notes: string | null
+}
+
 /** Tenant-scoped punches; those of deleted employee records stay hidden. */
 export class TimeLogRepository extends TenantRepository<typeof TimeLog> {
   constructor(organizationId: string, trx: TransactionClientContract) {
@@ -54,6 +82,16 @@ export class TimeLogRepository extends TenantRepository<typeof TimeLog> {
       .where('punched_at', '<=', before)
       .orderBy('punched_at', 'desc')
       .first()
+  }
+
+  /** Punches of the employee in `[from, to[`, oldest first (attendance aggregate). */
+  ofEmployeeBetween(employeeId: string, from: string, to: string) {
+    return this.query()
+      .where('employee_id', employeeId)
+      .where('punched_at', '>=', from)
+      .where('punched_at', '<', to)
+      .orderBy('punched_at', 'asc')
+      .orderBy('id', 'asc')
   }
 
   /** A punch of the same type within the duplicate window (07 §2.5). */
@@ -109,6 +147,55 @@ export class TimeLogRepository extends TenantRepository<typeof TimeLog> {
       .orderBy('punched_at', 'desc')
       .orderBy('id', 'desc')
       .paginate(filters.page, filters.perPage)
+  }
+
+  /** Export rows (`[from, to]` required), joined with the employee and the zone. */
+  private exportQuery(filters: ExportFilters) {
+    const query = this.trx
+      .from('time_logs as t')
+      .join('employees as e', 'e.id', 't.employee_id')
+      .leftJoin('work_zones as z', 'z.id', 't.work_zone_id')
+      .where('t.organization_id', this.organizationId)
+      .where('e.organization_id', this.organizationId)
+      .whereNull('e.deleted_at')
+      .where('t.punched_at', '>=', filters.from)
+      .where('t.punched_at', '<=', filters.to)
+    if (filters.employeeId) query.where('t.employee_id', filters.employeeId)
+    if (filters.source) query.where('t.source', filters.source)
+    if (filters.anomaly) query.where('t.anomaly', filters.anomaly)
+    return query
+  }
+
+  async exportCount(filters: ExportFilters): Promise<number> {
+    const row = await this.exportQuery(filters).count('* as total').first()
+    return Number(row?.total ?? 0)
+  }
+
+  /** Keyset page after `after` (`punched_at`, `id`): an offset would crawl on a million rows. */
+  exportPage(
+    filters: ExportFilters,
+    after: ExportCursor | null,
+    limit: number
+  ): Promise<ExportRow[]> {
+    const query = this.exportQuery(filters)
+    if (after) query.whereRaw('(t.punched_at, t.id) > (?, ?)', [after.punchedAt, after.id])
+    return query
+      .orderBy('t.punched_at', 'asc')
+      .orderBy('t.id', 'asc')
+      .limit(limit)
+      .select(
+        't.id',
+        'e.employee_number as employeeNumber',
+        'e.first_name as firstName',
+        'e.last_name as lastName',
+        't.type',
+        't.punched_at as punchedAt',
+        't.source',
+        'z.name as zoneName',
+        't.is_within_zone as isWithinZone',
+        't.anomaly',
+        't.notes'
+      )
   }
 
   async remove(log: TimeLog) {

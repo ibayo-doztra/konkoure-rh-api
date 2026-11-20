@@ -2,6 +2,7 @@ import { test } from '@japa/runner'
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import testUtils from '@adonisjs/core/services/test_utils'
+import attendanceService from '#modules/timeclock/services/attendance_service'
 import badgeService from '#modules/timeclock/services/badge_service'
 import deviceTokenService from '#modules/timeclock/services/device_token_service'
 import punchService from '#modules/timeclock/services/punch_service'
@@ -47,6 +48,34 @@ test.group('Timeclock services under the application role', (group) => {
       [scanned.log.id]
     )
     await assert.rejects(() => timeLogService.remove(tenant, foreign.id, {}))
+  })
+
+  test('attendance days are computed and read under RLS, other tenants hidden', async ({
+    assert,
+  }) => {
+    const org = await createHrOrganization('Mienne')
+    const other = await createHrOrganization('Autre')
+    const worker = await createEmployee(org)
+    const stranger = await createEmployee(other)
+    const day = DateTime.fromISO('2026-11-10T08:00:00Z')
+    await createPunch(worker, { type: 'in', punchedAt: day })
+    await createPunch(stranger, { type: 'in', punchedAt: day })
+    await attendanceService.recompute(other.id, stranger.id, '2026-11-10')
+    const tenant = new TenantContext(org.id, ['owner'])
+
+    await db.rawQuery('SET LOCAL ROLE konkoure_app')
+    await attendanceService.recompute(org.id, worker.id, '2026-11-10')
+    const { rows } = await attendanceService.list(tenant, {
+      filter: { from: day, to: day },
+    })
+    assert.deepEqual(
+      rows.map((row) => row.employeeId),
+      [worker.id]
+    )
+    // A recompute under the wrong tenant finds no punch and writes nothing.
+    await attendanceService.recompute(org.id, stranger.id, '2026-11-10')
+    const visible = await withTenant(org.id, (trx) => trx.from('attendance_days').select('id'))
+    assert.lengthOf(visible, 1)
   })
 
   test('the badge journal is insert only for the application role', async ({ assert }) => {

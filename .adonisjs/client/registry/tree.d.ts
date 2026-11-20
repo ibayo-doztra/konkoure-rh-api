@@ -156,9 +156,14 @@ export interface ApiDefinition {
       punch: typeof routes['org.timeclock.punch']
       logs: {
         index: typeof routes['org.timeclock.logs.index']
+        export: typeof routes['org.timeclock.logs.export']
         update: typeof routes['org.timeclock.logs.update']
         destroy: typeof routes['org.timeclock.logs.destroy']
       }
+      attendance: {
+        index: typeof routes['org.timeclock.attendance.index']
+      }
+      today: typeof routes['org.timeclock.today']
       badgeEvents: typeof routes['org.timeclock.badgeEvents']
       devices: {
         index: typeof routes['org.timeclock.devices.index']
