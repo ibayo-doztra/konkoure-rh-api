@@ -200,6 +200,12 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"entitlements"]],
     types: placeholder as Registry['org.entitlements.show']['types'],
   },
+  'org.dashboard.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/dashboard',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"dashboard"]],
+    types: placeholder as Registry['org.dashboard.show']['types'],
+  },
   'org.members.index': {
     methods: ["GET","HEAD"],
     pattern: '/api/v1/org/members',

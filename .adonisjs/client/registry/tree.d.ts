@@ -55,6 +55,9 @@ export interface ApiDefinition {
     entitlements: {
       show: typeof routes['org.entitlements.show']
     }
+    dashboard: {
+      show: typeof routes['org.dashboard.show']
+    }
     members: {
       index: typeof routes['org.members.index']
       roles: {

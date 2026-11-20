@@ -424,6 +424,19 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
     }
   }
+  'org.dashboard.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/dashboard/validators/dashboard_validator').dashboardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'org.members.index': {
     methods: ["GET","HEAD"]
     pattern: '/api/v1/org/members'

@@ -36,6 +36,7 @@ export type ScannedRoutes = {
     'org.settings.update': { paramsTuple?: []; params?: {} }
     'org.logo.store': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.dashboard.show': { paramsTuple?: []; params?: {} }
     'org.members.index': { paramsTuple?: []; params?: {} }
     'org.members.roles.update': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
     'org.members.destroy': { paramsTuple: [ParamValue]; params: {'userId': ParamValue} }
@@ -133,6 +134,7 @@ export type ScannedRoutes = {
     'me.notifications.index': { paramsTuple?: []; params?: {} }
     'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.dashboard.show': { paramsTuple?: []; params?: {} }
     'org.members.index': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
     'org.departments.index': { paramsTuple?: []; params?: {} }
@@ -179,6 +181,7 @@ export type ScannedRoutes = {
     'me.notifications.index': { paramsTuple?: []; params?: {} }
     'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
+    'org.dashboard.show': { paramsTuple?: []; params?: {} }
     'org.members.index': { paramsTuple?: []; params?: {} }
     'org.invitations.index': { paramsTuple?: []; params?: {} }
     'org.departments.index': { paramsTuple?: []; params?: {} }
