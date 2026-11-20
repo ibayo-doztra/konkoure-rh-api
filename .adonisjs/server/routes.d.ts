@@ -26,6 +26,9 @@ export type ScannedRoutes = {
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.revokeSession': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'me.notifications.index': { paramsTuple?: []; params?: {} }
+    'me.notifications.readAll': { paramsTuple?: []; params?: {} }
+    'me.notifications.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store': { paramsTuple?: []; params?: {} }
     'org.show': { paramsTuple?: []; params?: {} }
     'org.update': { paramsTuple?: []; params?: {} }
@@ -127,6 +130,7 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'me.notifications.index': { paramsTuple?: []; params?: {} }
     'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
     'org.members.index': { paramsTuple?: []; params?: {} }
@@ -172,6 +176,7 @@ export type ScannedRoutes = {
     'me.show': { paramsTuple?: []; params?: {} }
     'me.sessions': { paramsTuple?: []; params?: {} }
     'me.organizations': { paramsTuple?: []; params?: {} }
+    'me.notifications.index': { paramsTuple?: []; params?: {} }
     'org.show': { paramsTuple?: []; params?: {} }
     'org.entitlements.show': { paramsTuple?: []; params?: {} }
     'org.members.index': { paramsTuple?: []; params?: {} }
@@ -219,6 +224,8 @@ export type ScannedRoutes = {
     'auth.logoutAll': { paramsTuple?: []; params?: {} }
     'auth.resendVerification': { paramsTuple?: []; params?: {} }
     'me.changePassword': { paramsTuple?: []; params?: {} }
+    'me.notifications.readAll': { paramsTuple?: []; params?: {} }
+    'me.notifications.read': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'organizations.store': { paramsTuple?: []; params?: {} }
     'org.logo.store': { paramsTuple?: []; params?: {} }
     'org.invitations.store': { paramsTuple?: []; params?: {} }
