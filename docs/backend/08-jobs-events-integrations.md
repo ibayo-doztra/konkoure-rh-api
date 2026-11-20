@@ -54,6 +54,13 @@ Chaque tâche parcourt les organisations, chacune dans sa transaction et son fus
 des lignes sont déjà dans la partition `DEFAULT` est signalé en erreur, pas créé.
 Exécution manuelle (développement, rattrapage) : `node ace schedule:run <job>`
 (ex. `leaves.end`, `contracts.expiring`).
+`attendance:*` (2026-11-20) : après le commit d'un pointage, d'une correction (ancien
+et nouveau jour) ou d'une suppression, le jour local est ajouté à l'ensemble Redis
+`attendance:dirty` et un job `attendance.recompute` est mis en file avec
+`jobId = attendance_<org>_<employé>_<jour>` et `delay` 60 s (débounce : BullMQ ignore
+un job de même id en attente). `attendance:consolidate` recalcule ce qui reste dans
+l'ensemble ; `attendance:close-day` clôt les jours incomplets d'aujourd'hui et d'hier
+(rattrapage). En `sync`, le recalcul est immédiat.
 `contracts:expiring` couvre tous les contrats `active` finissant dans les 30 jours
 (fuseau de l'organisation), pour rattraper une nuit manquée ; un marqueur Redis par
 contrat et date de fin garantit un seul e-mail `contract_expiring`, envoyé aux
@@ -212,7 +219,8 @@ diagnostic. Aucun jeton n'est jamais renvoyé par l'API.
 
 ## 9. Exports
 
-Exports volumineux (employés, pointages, journaux) traités en asynchrone :
+Exports volumineux (employés, journaux) traités en asynchrone (l'export des
+pointages est synchrone et borné, voir 06 §6, décision du 2026-11-20) :
 `POST …/export` renvoie `202` + `jobId` ; le fichier est déposé dans
 `private-docs`, une notification et un e-mail contiennent une URL signée
 valable 24 h. Formats CSV (UTF-8 BOM) et XLSX. Limite : 5 exports/h/utilisateur.

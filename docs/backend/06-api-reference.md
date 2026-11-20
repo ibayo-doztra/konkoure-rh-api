@@ -597,6 +597,32 @@ Refusé si `settings.timeclock.allowManualPunch = false`
   `Authorization: Bearer kd_…`, sans `X-Organization-Id` (l'organisation vient du
   jeton) ; toute autre route le refuse en `401`. Source enregistrée : `kiosk`.
 
+### Décisions du 2026-11-20 (lot 2)
+- **Agrégats** : `GET /attendance?page&perPage (≤ 200)&filter[employeeId|from|to|anomaly]`,
+  `from`/`to` en dates locales `YYYY-MM-DD` (défaut : les 30 derniers jours, au plus
+  93 jours, sinon `422` règle `range`), `anomaly` ∈ `missing_out`, `out_of_zone`,
+  `duplicate`. Réponse `{ data: [{ employeeId, day, firstIn, lastOut, workedMinutes,
+  punchCount, isComplete, anomaly }], meta }`, tri `day desc`. Périmètre de `/logs`
+  (O H S tous, M équipe + soi, E soi).
+- **Jour** : date locale dans le fuseau de l'organisation ; un service de nuit est coupé
+  à minuit tant que `work_schedules` n'existe pas. Paires lues dans l'ordre : un `in`
+  alors qu'une paire est ouverte, ou un `out` sans `in`, ⇒ `duplicate` (le premier `in`
+  est gardé). Une anomalie : `missing_out` (paire ouverte sur un jour clos), puis
+  `duplicate`, puis `out_of_zone`.
+- **Aujourd'hui** : `GET /today` ⇒ `{ data: { date, isHoliday, counts: { total, present,
+  absent, onLeave }, present: [{ employeeId, fullName, departmentId, firstIn, lastOut,
+  isComplete, anomaly }], absent: [{ employeeId, fullName, departmentId }], onLeave: […] } }`
+  sur les employés `active` et `on_leave`. Présent = au moins un pointage du jour
+  (agrégat, jusqu'à 60 s de retard) ; en congé = congé `approved` couvrant le jour ou
+  statut `on_leave` ; absent = le reste. Le manager ne voit que son équipe et lui-même ;
+  E ⇒ `403`.
+- **Export** : `GET /logs/export?format=csv|xlsx&filter[from|to|employeeId|source|anomaly]`,
+  O H seulement, **synchrone** (écart à 08 §9) : `from` et `to` obligatoires (instants
+  ISO), au plus 31 jours locaux (`422` règle `range`) et 50 000 pointages (`422` règle
+  `tooManyRows`), 10 exports/h/utilisateur. Fichier `pointages_<from>_<to>.<ext>`,
+  colonnes Matricule, Nom, Prénom, Type, Date, Heure (locales), Source, Zone, Dans la
+  zone, Anomalie, Notes, en-têtes selon `Accept-Language`. Audité `time_log.exported`.
+
 ### Synchronisation hors-ligne (mobile)
 `POST /org/timeclock/sync` accepte un tableau de 1 à 200 pointages avec
 `clientPunchId` obligatoire, et renvoie par élément

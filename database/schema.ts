@@ -7,6 +7,35 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AttendanceDaySchema extends BaseModel {
+  static $columns = ['anomaly', 'createdAt', 'day', 'employeeId', 'firstIn', 'id', 'isComplete', 'lastOut', 'organizationId', 'punchCount', 'updatedAt', 'workedMinutes'] as const
+  $columns = AttendanceDaySchema.$columns
+  @column()
+  declare anomaly: 'missing_out' | 'out_of_zone' | 'duplicate' | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.date()
+  declare day: DateTime
+  @column()
+  declare employeeId: string
+  @column.dateTime()
+  declare firstIn: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isComplete: boolean
+  @column.dateTime()
+  declare lastOut: DateTime | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare punchCount: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare workedMinutes: number
+}
+
 export class AuditLogSchema extends BaseModel {
   static $columns = ['action', 'actorEmail', 'actorRole', 'actorUserId', 'afterData', 'beforeData', 'createdAt', 'id', 'ip', 'organizationId', 'requestId', 'targetId', 'targetType', 'userAgent'] as const
   $columns = AuditLogSchema.$columns

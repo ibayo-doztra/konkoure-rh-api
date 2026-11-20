@@ -2,6 +2,8 @@ import type DeviceToken from '#models/device_token'
 import type NfcBadge from '#models/nfc_badge'
 import type NfcBadgeEvent from '#models/nfc_badge_event'
 import type TimeLog from '#models/time_log'
+import type AttendanceDay from '#models/attendance_day'
+import type Employee from '#models/employee'
 import type WorkZone from '#models/work_zone'
 import type { PunchResult } from '#modules/timeclock/services/punch_service'
 
@@ -97,5 +99,52 @@ export function deviceTokenDto(device: DeviceToken) {
     revokedAt: device.revokedAt?.toISO() ?? null,
     lastUsedAt: device.lastUsedAt?.toISO() ?? null,
     createdAt: device.createdAt.toISO(),
+  }
+}
+
+export function attendanceDayDto(day: AttendanceDay) {
+  return {
+    employeeId: day.employeeId,
+    day: day.day.toISODate(),
+    firstIn: day.firstIn?.toISO() ?? null,
+    lastOut: day.lastOut?.toISO() ?? null,
+    workedMinutes: day.workedMinutes,
+    punchCount: day.punchCount,
+    isComplete: day.isComplete,
+    anomaly: day.anomaly,
+  }
+}
+
+const rosterEntry = (employee: Employee) => ({
+  employeeId: employee.id,
+  fullName: `${employee.firstName} ${employee.lastName}`,
+  departmentId: employee.departmentId,
+})
+
+export function todayDto(board: {
+  date: string
+  isHoliday: boolean
+  present: Array<{ employee: Employee; day: AttendanceDay }>
+  absent: Employee[]
+  onLeave: Employee[]
+}) {
+  return {
+    date: board.date,
+    isHoliday: board.isHoliday,
+    counts: {
+      total: board.present.length + board.absent.length + board.onLeave.length,
+      present: board.present.length,
+      absent: board.absent.length,
+      onLeave: board.onLeave.length,
+    },
+    present: board.present.map(({ employee, day }) => ({
+      ...rosterEntry(employee),
+      firstIn: day.firstIn?.toISO() ?? null,
+      lastOut: day.lastOut?.toISO() ?? null,
+      isComplete: day.isComplete,
+      anomaly: day.anomaly,
+    })),
+    absent: board.absent.map(rosterEntry),
+    onLeave: board.onLeave.map(rosterEntry),
   }
 }

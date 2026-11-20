@@ -111,6 +111,10 @@
     "employeeTerminated": "Cet employé a quitté l’organisation.",
     "noEmployee": "Votre compte n’est lié à aucune fiche employé.",
     "logChange": "Indiquez au moins un champ à corriger.",
-    "zone": "Zone de travail introuvable."
+    "zone": "Zone de travail introuvable.",
+    "range": "La fin de la période doit suivre son début.",
+    "attendanceRange": "La période ne peut pas dépasser 93 jours.",
+    "exportRange": "Un export couvre au plus 31 jours.",
+    "exportTooLarge": "L’export dépasse 50 000 pointages : réduisez la période ou filtrez."
   }
 }

@@ -13,6 +13,16 @@ import {
 
 export type QueueDriver = 'bullmq' | 'sync'
 
+/**
+ * Debounce (08 §3): while a job with the same `jobId` waits, BullMQ ignores the
+ * new one. The id must not contain `:`. Such a job is removed once finished, so
+ * the next occurrence can be enqueued. The `sync` driver ignores both options.
+ */
+export interface DispatchOptions {
+  jobId?: string
+  delay?: number
+}
+
 /** Queues, concurrency and priorities of docs/backend/08 §1. */
 export const QUEUES: Record<QueueName, { concurrency: number; priority: number }> = {
   critical: { concurrency: 10, priority: 1 },
@@ -64,7 +74,11 @@ export class QueueService {
 
   constructor(readonly driver: QueueDriver) {}
 
-  async dispatch<Name extends JobName>(name: Name, payload: JobPayload<Name>): Promise<void> {
+  async dispatch<Name extends JobName>(
+    name: Name,
+    payload: JobPayload<Name>,
+    options: DispatchOptions = {}
+  ): Promise<void> {
     if (this.driver === 'sync') {
       setImmediate(() => {
         this.run(name, payload).catch((error) =>
@@ -79,7 +93,9 @@ export class QueueService {
       timer = setTimeout(() => reject(new Error('Queue unavailable')), ENQUEUE_TIMEOUT_MS)
     })
     try {
-      const add = this.queue(jobs[name].queue).add(name, payload, jobOptions(name))
+      const opts: JobsOptions = { ...jobOptions(name), ...options }
+      if (options.jobId) Object.assign(opts, { removeOnComplete: true, removeOnFail: true })
+      const add = this.queue(jobs[name].queue).add(name, payload, opts)
       await Promise.race([add, timeout])
     } finally {
       clearTimeout(timer)

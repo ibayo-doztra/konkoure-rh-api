@@ -23,6 +23,7 @@ const LeaveBalancesController = () =>
   import('#modules/leaves/controllers/leave_balances_controller')
 const HolidaysController = () => import('#modules/leaves/controllers/holidays_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
+const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
   import('#modules/timeclock/controllers/timeclock_setup_controller')
 
@@ -197,6 +198,9 @@ export function registerOrgRoutes() {
             .as('punch')
             .use(middleware.idempotency())
           router.get('logs', [TimeclockController, 'logs']).as('logs.index')
+          router.get('logs/export', [AttendanceController, 'export']).as('logs.export')
+          router.get('attendance', [AttendanceController, 'index']).as('attendance.index')
+          router.get('today', [AttendanceController, 'today']).as('today')
           router.patch('logs/:id', [TimeclockController, 'correct']).as('logs.update')
           router.delete('logs/:id', [TimeclockController, 'destroy']).as('logs.destroy')
           router.get('badge-events', [TimeclockSetupController, 'badgeEvents']).as('badgeEvents')

@@ -85,6 +85,16 @@ export class LeaveRequestRepository extends TenantRepository<typeof LeaveRequest
     return query.orderBy('start_date', 'asc').orderBy('id', 'asc').limit(CALENDAR_LIMIT)
   }
 
+  /** Employees with an approved leave covering `day` (daily attendance board). */
+  async approvedEmployeeIdsOn(day: string): Promise<string[]> {
+    const rows = await this.query()
+      .where('status', 'approved')
+      .where('start_date', '<=', day)
+      .where('end_date', '>=', day)
+      .distinct('employee_id')
+    return rows.map((row) => row.employeeId)
+  }
+
   /** Active employees with an approved leave covering `today` (`leaves:apply-started`). */
   async startedEmployeeIds(today: string): Promise<string[]> {
     const rows = await this.query()
