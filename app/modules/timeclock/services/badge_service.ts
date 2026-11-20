@@ -102,6 +102,9 @@ export class BadgeService {
         targetId: employeeId,
         after: { badgeId: badge.id, uid: identity.masked, replaced: previous?.uidMasked ?? null },
       })
+      // The savepoint commit detached the row from any transaction: read it back
+      // in the outer one, the only place where it is visible before the commit.
+      badge.useTransaction(trx)
       await badge.refresh()
       return badge
     })

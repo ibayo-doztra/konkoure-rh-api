@@ -1269,6 +1269,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/timeclock_controller').default['logs']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
+  'org.timeclock.logs.export': {
+    methods: ["POST"]
+    pattern: '/api/v1/org/timeclock/logs/export'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').exportLogsValidator)>>
+      paramsTuple: []
+      params: {}
+      query: ExtractQuery<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').exportLogsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['export']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['export']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.attendance.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/attendance'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/timeclock/validators/timeclock_validator').listAttendanceValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'org.timeclock.today': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/timeclock/today'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['today']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['today']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/timeclock/controllers/attendance_controller').default['today']>>>
+    }
+  }
   'org.timeclock.logs.update': {
     methods: ["PATCH"]
     pattern: '/api/v1/org/timeclock/logs/:id'
