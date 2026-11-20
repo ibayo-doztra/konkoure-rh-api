@@ -2,6 +2,7 @@ import { DateTime } from 'luxon'
 import logger from '@adonisjs/core/services/logger'
 import redis from '@adonisjs/redis/services/main'
 import { dispatchMail } from '#shared/mail/dispatch_mail'
+import notificationService from '#modules/notifications/services/notification_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import { membersIn, type MailAccount } from '#modules/organizations/repositories/member_repository'
@@ -62,6 +63,18 @@ export class ContractExpiryService {
       for (const recipient of recipients) {
         await dispatchMail(new ContractExpiringMail(recipient, { employeeName, endDate }))
       }
+      await notificationService.notify(
+        organizationId,
+        recipients,
+        {
+          type: 'contract.expiring',
+          key: 'contractExpiring',
+          data: { employeeName, endDate },
+          link: `/employees/${contract.employeeId}`,
+          payload: { contractId: contract.id, employeeId: contract.employeeId, endDate },
+        },
+        null
+      )
       announced += 1
     }
     return announced

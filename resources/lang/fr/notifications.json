@@ -1,0 +1,22 @@
+{
+  "leaveRequested": {
+    "title": "Nouvelle demande de congé",
+    "body": "{employeeName} demande un congé du {startDate} au {endDate} ({requestedDays} jour(s))."
+  },
+  "leaveApproved": {
+    "title": "Congé approuvé",
+    "body": "Votre congé du {startDate} au {endDate} est approuvé."
+  },
+  "leaveRejected": {
+    "title": "Congé refusé",
+    "body": "Votre congé du {startDate} au {endDate} est refusé."
+  },
+  "contractExpiring": {
+    "title": "Contrat bientôt à échéance",
+    "body": "Le contrat de {employeeName} prend fin le {endDate}."
+  },
+  "badgeAssigned": {
+    "title": "Badge de pointage attribué",
+    "body": "Un badge ({uid}) vous a été attribué."
+  }
+}

@@ -1,6 +1,7 @@
 import logger from '@adonisjs/core/services/logger'
 import type LeaveRequest from '#models/leave_request'
 import { dispatchMail } from '#shared/mail/dispatch_mail'
+import notificationService from '#modules/notifications/services/notification_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import { membersIn, type MailAccount } from '#modules/organizations/repositories/member_repository'
@@ -41,6 +42,18 @@ export class LeaveNotifier {
       for (const recipient of recipients) {
         await dispatchMail(new LeaveRequestedMail(recipient, { ...details, balanceAfter }))
       }
+      await notificationService.notify(
+        leave.organizationId,
+        recipients,
+        {
+          type: 'leave.requested',
+          key: 'leaveRequested',
+          data: this.texts(details),
+          link: `/leaves/${leave.id}`,
+          payload: { leaveId: leave.id, employeeId: leave.employeeId },
+        },
+        actorUserId
+      )
     })
   }
 
@@ -60,7 +73,29 @@ export class LeaveNotifier {
       await dispatchMail(
         new LeaveDecidedMail(recipient, { ...details, decision, comment: leave.decisionComment })
       )
+      await notificationService.notify(
+        leave.organizationId,
+        [recipient],
+        {
+          type: 'leave.decided',
+          key: decision === 'approved' ? 'leaveApproved' : 'leaveRejected',
+          data: this.texts(details),
+          link: `/leaves/${leave.id}`,
+          payload: { leaveId: leave.id, decision },
+        },
+        actorUserId
+      )
     })
+  }
+
+  /** Placeholders of the notification texts. */
+  private texts(details: LeaveMailDetails): Record<string, string> {
+    return {
+      employeeName: details.employeeName,
+      startDate: details.startDate,
+      endDate: details.endDate,
+      requestedDays: String(details.requestedDays),
+    }
   }
 
   private details(

@@ -3,8 +3,10 @@ import { middleware } from '#start/kernel'
 import { throttleUser } from '#start/limiter'
 
 const MeController = () => import('#modules/users/controllers/me_controller')
+const NotificationsController = () =>
+  import('#modules/notifications/controllers/notifications_controller')
 
-/** `/api/v1/me/*` — 06-api-reference §2 (notifications, export, deletion: later modules). */
+/** `/api/v1/me/*` — 06-api-reference §2 (export, deletion: later modules). */
 export function registerMeRoutes() {
   router
     .group(() => {
@@ -14,6 +16,16 @@ export function registerMeRoutes() {
       router.get('sessions', [MeController, 'sessions']).as('sessions')
       router.delete('sessions/:id', [MeController, 'revokeSession']).as('revokeSession')
       router.get('organizations', [MeController, 'organizations']).as('organizations')
+      // Notifications of the current organization: `X-Organization-Id` is required.
+      router
+        .group(() => {
+          router.get('/', [NotificationsController, 'index']).as('index')
+          router.post('read-all', [NotificationsController, 'readAll']).as('readAll')
+          router.post(':id/read', [NotificationsController, 'read']).as('read')
+        })
+        .prefix('notifications')
+        .as('notifications')
+        .use(middleware.tenant())
     })
     .prefix('me')
     .as('me')

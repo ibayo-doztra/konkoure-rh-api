@@ -523,6 +523,31 @@ export class NfcBadgeSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class NotificationSchema extends BaseModel {
+  static $columns = ['body', 'createdAt', 'id', 'link', 'organizationId', 'payload', 'readAt', 'title', 'type', 'userId'] as const
+  $columns = NotificationSchema.$columns
+  @column()
+  declare body: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare link: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare payload: Record<string, unknown>
+  @column.dateTime()
+  declare readAt: DateTime | null
+  @column()
+  declare title: string
+  @column()
+  declare type: string
+  @column()
+  declare userId: string
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns

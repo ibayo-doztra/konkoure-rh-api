@@ -140,6 +140,24 @@ const routes = {
     tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"organizations"]],
     types: placeholder as Registry['me.organizations']['types'],
   },
+  'me.notifications.index': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/me/notifications',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"notifications"]],
+    types: placeholder as Registry['me.notifications.index']['types'],
+  },
+  'me.notifications.readAll': {
+    methods: ["POST"],
+    pattern: '/api/v1/me/notifications/read-all',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"notifications"],[0,"read-all"]],
+    types: placeholder as Registry['me.notifications.readAll']['types'],
+  },
+  'me.notifications.read': {
+    methods: ["POST"],
+    pattern: '/api/v1/me/notifications/:id/read',
+    tokens: [[0,"api"],[0,"v1"],[0,"me"],[0,"notifications"],[1,"id"],[0,"read"]],
+    types: placeholder as Registry['me.notifications.read']['types'],
+  },
   'organizations.store': {
     methods: ["POST"],
     pattern: '/api/v1/organizations',
@@ -181,6 +199,12 @@ const routes = {
     pattern: '/api/v1/org/entitlements',
     tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"entitlements"]],
     types: placeholder as Registry['org.entitlements.show']['types'],
+  },
+  'org.dashboard.show': {
+    methods: ["GET","HEAD"],
+    pattern: '/api/v1/org/dashboard',
+    tokens: [[0,"api"],[0,"v1"],[0,"org"],[0,"dashboard"]],
+    types: placeholder as Registry['org.dashboard.show']['types'],
   },
   'org.members.index': {
     methods: ["GET","HEAD"],

@@ -61,6 +61,10 @@ et nouveau jour) ou d'une suppression, le jour local est ajouté à l'ensemble R
 un job de même id en attente). `attendance:consolidate` recalcule ce qui reste dans
 l'ensemble ; `attendance:close-day` clôt les jours incomplets d'aujourd'hui et d'hier
 (rattrapage). En `sync`, le recalcul est immédiat.
+`notifications.purge` (03h00, 2026-11-20) applique la rétention de 180 jours des
+notifications (première brique de `retention:purge`). Les notifications in-app sont
+écrites après le commit par les services émetteurs (congés, contrats, badges), dans leur
+propre transaction ; un échec est journalisé, jamais remonté.
 `contracts:expiring` couvre tous les contrats `active` finissant dans les 30 jours
 (fuseau de l'organisation), pour rattraper une nuit manquée ; un marqueur Redis par
 contrat et date de fin garantit un seul e-mail `contract_expiring`, envoyé aux

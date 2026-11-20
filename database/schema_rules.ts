@@ -99,6 +99,9 @@ export default {
     platform_admins: {
       columns: { level: { tsType: `'root' | 'support'` } },
     },
+    notifications: {
+      columns: { payload: JSON_OBJECT },
+    },
     audit_logs: {
       columns: { before_data: JSON_OBJECT, after_data: JSON_OBJECT },
     },

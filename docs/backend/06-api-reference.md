@@ -158,6 +158,23 @@ famille révoquée), `429` (60 / h / utilisateur).
 `GET /me/organizations` renvoie `{ data: [...] }` avec les mêmes éléments que
 `organizations` ci-dessus.
 
+### Notifications `/me/notifications` (décisions du 2026-11-20)
+- **Organisation courante** : ces routes exigent `X-Organization-Id` (la table est
+  tenant, sous RLS) ; la cloche suit l'organisation sélectionnée.
+- `GET /me/notifications?cursor&limit (1..100, défaut 50)&unreadOnly=true` ⇒
+  `{ data: [{ id, type, title, body, link, payload, readAt, createdAt }], meta:
+  { nextCursor, unreadCount } }`, tri `createdAt desc` ; `nextCursor` est `null` sur la
+  dernière page ; un curseur non émis par l'API ⇒ `422` (champ `cursor`).
+- `POST /me/notifications/:id/read` ⇒ `200` avec la notification ; celle d'un autre
+  utilisateur ou d'une autre organisation ⇒ `404`. `POST /me/notifications/read-all` ⇒
+  `200 { data: { updated } }`.
+- **Seule l'API crée des notifications**, à partir des événements métier (08 §3) ; il
+  n'existe pas de `POST /me/notifications`. `title` et `body` sont rendus à la création
+  dans la langue du destinataire ; `link` est le chemin du front (`/leaves/:id`,
+  `/employees/:id`, `/timeclock`), `payload` les identifiants utiles. Types émis à ce
+  jour : `leave.requested`, `leave.decided`, `contract.expiring`, `badge.assigned` ; les
+  autres de 07 §8 arrivent avec leurs modules.
+
 ### `GET /me/sessions`
 `{ data: [{ id, deviceLabel, ip, userAgent, startedAt, lastActivityAt, expiresAt,
 current }] }` : une entrée par famille de refresh tokens ouverte ; `id` est
@@ -302,6 +319,26 @@ Renvoie, filtré selon le rôle (un `employee` ne voit que ses propres chiffres)
 ```
 Sources : `attendance_days`, `leave_balances`, agrégats précalculés. Cache Redis
 5 min, clé `dash:<orgId>:<period>:<roleScope>`.
+
+Décisions du 2026-11-20 :
+- **Période** : semaine (lundi–dimanche), mois ou trimestre calendaire **en cours**, dans
+  le fuseau de l'organisation ; défaut `month` ; autre valeur ⇒ `422`.
+- **Périmètre** : O H toute l'organisation ; manager son équipe et lui-même ; tout autre
+  rôle sa propre fiche ; sans fiche employé liée, des zéros. `roleScope` vaut `org`,
+  `team:<employeeId>` ou `self:<employeeId>`.
+- **Indicateurs** : `headcount.total` exclut les fiches `terminated` ; `newHires` et
+  `exits` comptent `hire_date` et `end_date` dans la période. `attendance.avgWorkedHours` =
+  moyenne des journées complètes (`null` sans journée) ; `absencesToday` = les absents de
+  `GET /org/timeclock/today` ; `outOfZonePunches` = pointages `out_of_zone` de la période ;
+  `punctualityRate` vaut `null` tant que `work_schedules` n'existe pas. `leaves.pending`
+  sans condition de date, `approvedThisPeriod` selon `decided_at`, `daysTaken` = jours
+  approuvés commençant dans la période. Séries : `headcountByMonth` sur 12 mois
+  `[{ month: 'YYYY-MM', total }]`, `punchesByDay` `[{ day, count }]` (jours sans pointage
+  omis), `leavesByType` `[{ type, days }]`.
+- **Modules** : `recruitment` et `performance` valent `null` tant que leurs modules ne sont
+  pas livrés ; un bloc (ou une série) dont le module n'est pas dans les droits de
+  l'organisation vaut `null` (`hr` : effectifs, `timeclock` : présence, `leaves` : congés).
+  La route n'a donc pas de middleware d'entitlement.
 
 ---
 
@@ -798,6 +835,7 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | PATCH | `/org/performance/cycles/:id` | O H |
 | POST | `/org/performance/cycles/:id/open` \| `/close` | O H |
 | GET/POST | `/org/performance/plans` | écriture : O H |
+| PATCH/DELETE | `/org/performance/plans/:id` | O H (ajouté le 2026-11-20, écrans de réglages) |
 | GET/POST | `/org/performance/goals` | création : tous (soi) · O H M (autrui) |
 | GET/PATCH/DELETE | `/org/performance/goals/:id` | O H · M(team) · self |
 | PATCH | `/org/performance/goals/:id/progress` | self · M(team) |
@@ -824,6 +862,7 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | GET/POST | `/org/performance/feedback` | tous |
 | DELETE | `/org/performance/feedback/:id` | auteur · O H |
 | GET/POST | `/org/performance/achievements` | self · M(team) · O H |
+| DELETE | `/org/performance/achievements/:id` | auteur · O H (ajouté le 2026-11-20) |
 | GET | `/org/talents/9box` | O H · M(team) |
 | GET/PUT | `/org/talents/skills-matrix` | O H · M(team lecture) |
 | GET/POST/PATCH/DELETE | `/org/talents/succession` | O H |
@@ -962,12 +1001,11 @@ Format, pagination et erreurs identiques au reste du document.
 | Méthode | Chemin | Rôle | Description |
 |---|---|---|---|
 | GET | `/me` | authentifié | contrat détaillé en §2 (`GET /me`) |
-| GET | `/org/dashboard/kpis?period=` | owner, hr_admin, manager (périmètre) | KPIs en direct |
 | GET | `/org/employees/:id/leave-balance` | soi, manager, RH | solde, jours en attente |
 | PATCH | `/org/recruitment/candidates/:id/stage` | recrutement | change l'étape, journalise |
 | GET | `/org/recruitment/candidates/:id/cv-url` | recrutement | URL signée courte du CV |
-| GET/PUT/DELETE | `/org/employees/:id/badge` | owner, hr_admin | badge NFC, audité |
-| GET | `/org/employees/:id/badge/history` | owner, hr_admin | historique |
+| GET/POST/DELETE | `/org/employees/:id/badge` | O H S | badge NFC, audité (§6) |
+| GET | `/org/timeclock/badge-events?employeeId` | O H | historique des badges (§6) |
 | POST | `/public/jobs/:id/application-uploads` | public, limité | contrôle doublon + URLs d'envoi |
 | POST | `/public/jobs/:id/applications` | public, limité | enregistrement + scoring n8n |
 | POST | `/public/prepaid/codes` · `/payments` · `/payments/:id/claim` | public / authentifié | paiement avant inscription |
