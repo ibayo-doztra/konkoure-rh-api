@@ -110,14 +110,22 @@ export async function readSheet(content: Buffer, maxRows: number): Promise<Sheet
 }
 
 /** A cell starting with = + - @ would run as a formula in a spreadsheet (CSV injection). */
-const neutralize = (value: string) => (/^[=+\-@\t\r]/.test(value) ? `'${value}` : value)
+export const neutralize = (value: string) => (/^[=+\-@\t\r]/.test(value) ? `'${value}` : value)
 
-export function writeCsv(rows: string[][]): Buffer {
+/** UTF-8 byte order mark written at the start of every CSV export. */
+export const CSV_BOM = BOM
+
+/** One CSV line without its line break: `;` separators, quoting, formulas neutralized. */
+export function csvLine(row: string[]): string {
   const escape = (value: string) => {
     const safe = neutralize(value)
     return /[";\n\r]/.test(safe) ? `"${safe.replace(/"/g, '""')}"` : safe
   }
-  const text = rows.map((row) => row.map(escape).join(';')).join('\r\n')
+  return row.map(escape).join(';')
+}
+
+export function writeCsv(rows: string[][]): Buffer {
+  const text = rows.map(csvLine).join('\r\n')
   return Buffer.from(`${BOM}${text}\r\n`, 'utf8')
 }
 

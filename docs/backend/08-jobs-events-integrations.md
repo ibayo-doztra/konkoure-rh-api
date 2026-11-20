@@ -54,6 +54,13 @@ Chaque tâche parcourt les organisations, chacune dans sa transaction et son fus
 des lignes sont déjà dans la partition `DEFAULT` est signalé en erreur, pas créé.
 Exécution manuelle (développement, rattrapage) : `node ace schedule:run <job>`
 (ex. `leaves.end`, `contracts.expiring`).
+`attendance:*` (2026-11-20) : après le commit d'un pointage, d'une correction (ancien
+et nouveau jour) ou d'une suppression, le jour local est ajouté à l'ensemble Redis
+`attendance:dirty` et un job `attendance.recompute` est mis en file avec
+`jobId = attendance_<org>_<employé>_<jour>` et `delay` 60 s (débounce : BullMQ ignore
+un job de même id en attente). `attendance:consolidate` recalcule ce qui reste dans
+l'ensemble ; `attendance:close-day` clôt les jours incomplets d'aujourd'hui et d'hier
+(rattrapage). En `sync`, le recalcul est immédiat.
 `contracts:expiring` couvre tous les contrats `active` finissant dans les 30 jours
 (fuseau de l'organisation), pour rattraper une nuit manquée ; un marqueur Redis par
 contrat et date de fin garantit un seul e-mail `contract_expiring`, envoyé aux
@@ -219,5 +226,8 @@ valable 24 h. Formats CSV (UTF-8 BOM) et XLSX. Limite : 5 exports/h/utilisateur.
 Employés : job `employees.export` (file `maintenance`), fichier enregistré dans
 `files` (`owner_type = 'employee_export'`), e-mail au demandeur ; aucune
 notification in-app tant que la table `notifications` n'existe pas.
+Pointages : job `time-logs.export` (file `maintenance`), au plus 366 jours et
+1 000 000 de lignes, écrit en flux (CSV ou `exceljs` en mode streaming) puis déposé
+avec `owner_type = 'time_log_export'` (06 §6, décision du 2026-11-20).
 XLSX lu et écrit avec `exceljs` (dépendance validée le 2026-11-19 ; `uuid` forcé
 en 11.x par `pnpm-workspace.yaml`, GHSA-w5hq-g745-h8pq).

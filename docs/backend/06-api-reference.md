@@ -519,7 +519,7 @@ renvoient `{ data: [{ skillId, name, category, level, assessedAt }] }`.
 | POST | `/org/timeclock/scan` ⚡ | O H M S |
 | POST | `/org/timeclock/punch` ⚡ | tous (pour soi) |
 | GET | `/org/timeclock/logs` | O H · M(team) · E(self) · S |
-| GET | `/org/timeclock/logs/export` | O H |
+| POST | `/org/timeclock/logs/export` | O H (asynchrone, 08 §9) |
 | PATCH | `/org/timeclock/logs/:id` | O H (correction, auditée) |
 | DELETE | `/org/timeclock/logs/:id` | O H (auditée) |
 | GET | `/org/timeclock/attendance` | O H · M(team) · E(self) | agrégats `attendance_days` |
@@ -596,6 +596,35 @@ Refusé si `settings.timeclock.allowManualPunch = false`
   sans `token`, `DELETE` révoque. Le kiosque appelle `POST /scan` et `/sync` avec
   `Authorization: Bearer kd_…`, sans `X-Organization-Id` (l'organisation vient du
   jeton) ; toute autre route le refuse en `401`. Source enregistrée : `kiosk`.
+
+### Décisions du 2026-11-20 (lot 2)
+- **Agrégats** : `GET /attendance?page&perPage (≤ 200)&filter[employeeId|from|to|anomaly]`,
+  `from`/`to` en dates locales `YYYY-MM-DD` (défaut : les 30 derniers jours, au plus
+  93 jours, sinon `422` règle `range`), `anomaly` ∈ `missing_out`, `out_of_zone`,
+  `duplicate`. Réponse `{ data: [{ employeeId, day, firstIn, lastOut, workedMinutes,
+  punchCount, isComplete, anomaly }], meta }`, tri `day desc`. Périmètre de `/logs`
+  (O H S tous, M équipe + soi, E soi).
+- **Jour** : date locale dans le fuseau de l'organisation ; un service de nuit est coupé
+  à minuit tant que `work_schedules` n'existe pas. Paires lues dans l'ordre : un `in`
+  alors qu'une paire est ouverte, ou un `out` sans `in`, ⇒ `duplicate` (le premier `in`
+  est gardé). Une anomalie : `missing_out` (paire ouverte sur un jour clos), puis
+  `duplicate`, puis `out_of_zone`.
+- **Aujourd'hui** : `GET /today` ⇒ `{ data: { date, isHoliday, counts: { total, present,
+  absent, onLeave }, present: [{ employeeId, fullName, departmentId, firstIn, lastOut,
+  isComplete, anomaly }], absent: [{ employeeId, fullName, departmentId }], onLeave: […] } }`
+  sur les employés `active` et `on_leave`. Présent = au moins un pointage du jour
+  (agrégat, jusqu'à 60 s de retard) ; en congé = congé `approved` couvrant le jour ou
+  statut `on_leave` ; absent = le reste. Le manager ne voit que son équipe et lui-même ;
+  E ⇒ `403`.
+- **Export** (asynchrone, 08 §9) : `POST /logs/export` `{ format: 'csv'|'xlsx', filter: {
+  from, to, employeeId?, source?, anomaly? } }`, O H seulement. `from` et `to` obligatoires
+  (instants ISO), au plus 366 jours locaux (`422` règle `range`) ; plus de 1 000 000
+  pointages ⇒ `422` règle `tooManyRows` (vérifié à la demande) ; 5 exports/h/utilisateur.
+  Réponse `202 { data: { jobId } }`, audit `time_log.exported`. Le job `time-logs.export`
+  écrit le fichier page par page sur disque, le dépose dans `private-docs` (entrée `files`
+  `owner_type = 'time_log_export'`) et envoie au demandeur un lien valable 24 h. Colonnes
+  Matricule, Nom, Prénom, Type, Date, Heure (fuseau de l'organisation), Source, Zone, Dans
+  la zone, Anomalie, Notes, en-têtes dans la langue du demandeur.
 
 ### Synchronisation hors-ligne (mobile)
 `POST /org/timeclock/sync` accepte un tableau de 1 à 200 pointages avec

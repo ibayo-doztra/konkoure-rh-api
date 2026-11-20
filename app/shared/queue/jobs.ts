@@ -4,6 +4,7 @@ import type { MailerMessenger } from '@adonisjs/mail/types'
 export type QueueName = 'critical' | 'default' | 'ai' | 'outbound' | 'maintenance'
 
 import type { ExportJob } from '#modules/hr/services/employee_export_service'
+import type { TimeLogExportJob } from '#modules/timeclock/services/time_log_export_service'
 
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
 
@@ -36,6 +37,12 @@ const leaveTask = (task: 'apply-started' | 'end' | 'annual-rollover') =>
     },
   })
 
+/** Attendance service, loaded on use. */
+async function attendance() {
+  const { default: service } = await import('#modules/timeclock/services/attendance_service')
+  return service
+}
+
 /** Every background job. Handlers are idempotent or safe to retry (08 §1). */
 export const jobs = {
   'mail.send': defineJob<SendMailPayload>({
@@ -53,12 +60,32 @@ export const jobs = {
       return service.build(payload)
     },
   }),
+  'time-logs.export': defineJob<TimeLogExportJob>({
+    queue: 'maintenance',
+    handle: async (payload) => {
+      const { default: service } =
+        await import('#modules/timeclock/services/time_log_export_service')
+      return service.build(payload)
+    },
+  }),
   'partitions.ensure': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
       const { default: service } = await import('#shared/maintenance/partition_service')
       return service.ensure()
     },
+  }),
+  'attendance.recompute': defineJob<{ organizationId: string; employeeId: string; day: string }>({
+    queue: 'default',
+    handle: async (payload) => attendance().then((service) => service.runRecompute(payload)),
+  }),
+  'attendance.consolidate': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => attendance().then((service) => service.consolidate()),
+  }),
+  'attendance.close-day': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => attendance().then((service) => service.closeDay()),
   }),
   'contracts.expiring': defineJob<Record<string, never>>({
     queue: 'maintenance',
@@ -81,6 +108,8 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
   { job: 'contracts.expiring', pattern: '0 2 * * *' },
   { job: 'partitions.ensure', pattern: '30 3 * * *' },
+  { job: 'attendance.consolidate', pattern: '*/15 * * * *' },
+  { job: 'attendance.close-day', pattern: '59 23 * * *' },
 ]
 
 export const SCHEDULE_TIMEZONE = 'Africa/Conakry'

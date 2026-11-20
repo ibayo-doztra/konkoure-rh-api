@@ -10,11 +10,10 @@ Backend API de **Konkouré**, SIRH SaaS B2B multi-tenant (Guinée : `Africa/Cona
 
 ## État actuel vs cible
 
-Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements, employés (documents, photo, import et export CSV/XLSX), contrats (dépôt du document, job `contracts:expiring`) et compétences (module RH), registre `files`, pointage (zones, badges NFC, scan, kiosque, pointage pour soi, synchronisation hors-ligne, historique et corrections, partitions mensuelles), congés (demandes, décisions, soldes et ledger, ajustement, calendrier, pièce jointe, e-mails, tâches planifiées `leaves:*`) et jours fériés, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
+Livré : auth complète, `/me` (profil, sessions, organisations, droits par organisation), création d'organisation avec essai de 30 jours, invitations, `/org` (détail, réglages, logo, suppression logique, membres), départements, employés (documents, photo, import et export CSV/XLSX), contrats (dépôt du document, job `contracts:expiring`) et compétences (module RH), registre `files`, pointage (zones, badges NFC, scan, kiosque, pointage pour soi, synchronisation hors-ligne, historique et corrections, partitions mensuelles, agrégats `attendance_days` et tâches `attendance:*`, `GET /attendance`, `GET /today`, export des pointages), congés (demandes, décisions, soldes et ledger, ajustement, calendrier, pièce jointe, e-mails, tâches planifiées `leaves:*`) et jours fériés, `/org/entitlements`, sondes `/health` et `/health/ready`. Socle : tenant, `TenantRepository`, RLS, Bouncer, entitlements, idempotence, BullMQ, Drive, Docker, CI.
 
 | Sujet | Reste à faire |
 |---|---|
-| Pointage | lot 2 : `attendance_days` (recalcul débouncé, `attendance:consolidate`, `attendance:close-day`), `GET /attendance`, `GET /today`, export des pointages |
 | Tables | tout le reste de 03 §1 (`work_schedules`, recrutement, performance, paiements…) et `konkoure_readonly` (0140) |
 | Congés | notifications in-app `leave.requested` / `leave.decided` (avec la table `notifications`) |
 | `/me` | notifications, export, suppression du compte |

@@ -111,6 +111,10 @@
     "employeeTerminated": "This employee has left the organization.",
     "noEmployee": "Your account is not linked to an employee record.",
     "logChange": "Give at least one field to correct.",
-    "zone": "Work zone not found."
+    "zone": "Work zone not found.",
+    "range": "The end of the period must follow its start.",
+    "attendanceRange": "The period cannot exceed 93 days.",
+    "exportRange": "An export covers at most 366 days.",
+    "exportTooLarge": "The export exceeds 1,000,000 punches: shorten the period or filter."
   }
 }

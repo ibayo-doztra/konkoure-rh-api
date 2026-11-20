@@ -107,3 +107,29 @@ export const createDeviceTokenValidator = vine.create({
   name: vine.string().trim().minLength(2).maxLength(80),
   expiresInDays: vine.number().withoutDecimals().min(1).max(365).optional(),
 })
+
+/** GET /org/timeclock/attendance (lot 2 decision): local dates, at most 93 days. */
+export const listAttendanceValidator = vine.create({
+  page: page(),
+  perPage: perPage(),
+  filter: vine
+    .object({
+      employeeId: vine.string().uuid().optional(),
+      from: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
+      to: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
+      anomaly: vine.enum(['missing_out', 'out_of_zone', 'duplicate'] as const).optional(),
+    })
+    .optional(),
+})
+
+/** POST /org/timeclock/logs/export (lot 2 decision): `from` and `to` required, ≤ 366 days. */
+export const exportLogsValidator = vine.create({
+  format: vine.enum(['csv', 'xlsx'] as const),
+  filter: vine.object({
+    from: vine.date({ formats: ['iso8601'] }),
+    to: vine.date({ formats: ['iso8601'] }),
+    employeeId: vine.string().uuid().optional(),
+    source: vine.enum(['nfc', 'manual', 'mobile_gps', 'kiosk', 'import'] as const).optional(),
+    anomaly: vine.enum(['out_of_zone', 'low_accuracy', 'clock_drift'] as const).optional(),
+  }),
+})

@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto'
-import { readFile } from 'node:fs/promises'
+import { createReadStream } from 'node:fs'
+import { readFile, stat } from 'node:fs/promises'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import logger from '@adonisjs/core/services/logger'
 import drive from '@adonisjs/drive/services/main'
@@ -64,6 +65,33 @@ export class FileStorage {
       mime: upload.type.mime,
       sizeBytes: upload.content.length,
       checksumSha256: createHash('sha256').update(upload.content).digest('hex'),
+      visibility: space,
+    }
+  }
+
+  /**
+   * Writes a generated file from disk in a stream (large exports), so it is
+   * never held in memory; returns the attributes of its `files` row.
+   */
+  async putFile(space: Space, key: string, path: string, type: { mime: string }) {
+    const { disk, bucket } = SPACES[space]
+    const hash = createHash('sha256')
+    for await (const chunk of createReadStream(path)) hash.update(chunk as Buffer)
+    const { size } = await stat(path)
+    try {
+      await drive.use(disk).putStream(key, createReadStream(path), {
+        contentType: type.mime,
+        visibility: space,
+      })
+    } catch (cause) {
+      throw new AppException('E_DEPENDENCY_UNAVAILABLE', { cause })
+    }
+    return {
+      bucket,
+      path: key,
+      mime: type.mime,
+      sizeBytes: size,
+      checksumSha256: hash.digest('hex'),
       visibility: space,
     }
   }
