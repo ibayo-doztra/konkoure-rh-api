@@ -6,7 +6,10 @@ import goalService from '#modules/performance/services/goal_service'
 import { goalActivityDto, goalDto } from '#modules/performance/transformers/performance_transformer'
 import { pageMetaDto } from '#modules/hr/transformers/hr_transformer'
 import {
+  activityIdValidator,
   createActivityValidator,
+  listActivitiesValidator,
+  updateActivityValidator,
   createGoalValidator,
   goalProgressValidator,
   idValidator,
@@ -123,5 +126,39 @@ export default class GoalsController {
     )
     ctx.response.status(201)
     return ctx.serialize(goalActivityDto(activity))
+  }
+
+  @ApiOperation({ summary: 'Activities across the goals visible to the caller' })
+  async allActivities(ctx: HttpContext) {
+    const query = await ctx.request.validateUsing(listActivitiesValidator)
+    await ctx.bouncer.with(PerformancePolicy).authorize('read')
+    const { rows, meta } = await goalService.listActivities(ctx.tenant, query)
+    return { data: rows.map(goalActivityDto), meta: pageMetaDto(meta) }
+  }
+
+  @ApiOperation({ summary: 'Update an activity of a goal' })
+  @ApiBody({ type: () => updateActivityValidator })
+  async updateActivity(ctx: HttpContext) {
+    const { params, ...input } = await ctx.request.validateUsing(updateActivityValidator)
+    const { goal, inTeam } = await goalService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(PerformancePolicy).authorize('viewGoal', goal, inTeam)
+    const activity = await goalService.updateActivity(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      goal.id,
+      params.activityId,
+      input,
+      auditContext(ctx)
+    )
+    return ctx.serialize(goalActivityDto(activity))
+  }
+
+  @ApiOperation({ summary: 'Delete an activity of a goal' })
+  async destroyActivity(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(activityIdValidator)
+    const { goal, inTeam } = await goalService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(PerformancePolicy).authorize('viewGoal', goal, inTeam)
+    await goalService.removeActivity(ctx.tenant, goal.id, params.activityId, auditContext(ctx))
+    return ctx.response.noContent()
   }
 }

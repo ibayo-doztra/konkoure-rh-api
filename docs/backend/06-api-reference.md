@@ -840,6 +840,8 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | GET/PATCH/DELETE | `/org/performance/goals/:id` | O H · M(team) · self |
 | PATCH | `/org/performance/goals/:id/progress` | self · M(team) |
 | GET/POST | `/org/performance/goals/:id/activities` | self · M(team) · O H |
+| PATCH/DELETE | `/org/performance/goals/:id/activities/:activityId` | self · M(team) · O H (ajouté le 2026-11-23, kanban des activités) |
+| GET | `/org/performance/activities` | tous, limité aux objectifs visibles (ajouté le 2026-11-23) |
 | GET/POST | `/org/performance/okrs` | self · O H M |
 | GET/PATCH/DELETE | `/org/performance/okrs/:id` | self (si `draft`/`needs_revision`) · O H |
 | PUT | `/org/performance/okrs/:id/key-results` | self · O H M |
@@ -887,6 +889,29 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `PATCH /goals/:id/progress` : `{ progress: 0..100 }` ; 100 ⇒ `achieved`.
 - `POST /goals/:id/activities` : `{ title, description?, status?, plannedDate?,
   employeeId? }` ; `completedAt` est posé si `status = done`.
+- `PATCH /goals/:id/activities/:activityId` : `{ title?, description?, status?,
+  plannedDate? }` ; `completedAt` est posé en passant à `done` et effacé en le
+  quittant. `DELETE` est physique (activité sans historique propre, audité).
+- `GET /activities` : `page`, `perPage` (≤ 200), `filter[goalId|employeeId|status]` ;
+  activités des objectifs non supprimés visibles par l'appelant.
+
+### OKR (précisions du 2026-11-23)
+- Réponses : l'OKR porte ses `keyResults` (ordonnés par `position`) et `progress`
+  (recalculé par trigger).
+- `POST /okrs` : `{ quarter: 'AAAA-Qn', objective, employeeId? }` ; `employeeId`
+  vaut par défaut la fiche de l'appelant, autrui réservé à O H et au manager.
+- `PATCH /okrs/:id` (`quarter`, `objective`) et `PUT /okrs/:id/key-results`
+  (`{ keyResults: [{ title, metric?, targetValue?, currentValue?, unit?, isDone? }] }`,
+  20 au plus, remplace la liste) : seulement en `draft` ou `needs_revision`, sinon `409`.
+- `PATCH /okrs/:id/key-results/:krId` : `{ isDone?, currentValue? }` ; refusé
+  (`409`) quand l'OKR est `pending`, `completed` ou `archived`.
+- `validate` : `{ comment? }` ; l'OKR passe `validated` et `status = active`.
+  `request-revision` : `{ comment }` obligatoire. Personne ne décide de son
+  propre OKR.
+- `DELETE /okrs/:id` : le porteur en `draft`/`needs_revision`, O H toujours.
+- `POST /okrs/:id/checkins` : `{ message }`, sur un OKR `validated` et `active`
+  seulement (`409` sinon) ; `progressSnapshot` fige la progression du moment.
+- `POST /okrs/suggest` : reporté avec les crédits IA (lot facturation).
 
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.

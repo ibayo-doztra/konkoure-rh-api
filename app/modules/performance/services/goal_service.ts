@@ -38,6 +38,12 @@ export interface GoalListQuery {
   filter?: { employeeId?: string; planId?: string; status?: GoalStatus; category?: GoalCategory }
 }
 
+export interface ActivityListQuery {
+  page?: number
+  perPage?: number
+  filter?: { goalId?: string; employeeId?: string; status?: GoalActivityStatus }
+}
+
 export interface ActivityInput {
   title: string
   description?: string | null
@@ -264,6 +270,74 @@ export class GoalService {
       })
       await activity.refresh()
       return activity
+    })
+  }
+
+  /** `GET /performance/activities` (added 2026-11-23): across the goals the viewer sees. */
+  listActivities(tenant: TenantContext, query: ActivityListQuery) {
+    const { organizationId } = tenant
+    return withTenant(organizationId, async (trx) => {
+      const page = await goalsIn(organizationId, trx).paginateActivities({
+        page: query.page ?? 1,
+        perPage: query.perPage ?? 50,
+        ...query.filter,
+        employeeIds: await visibleEmployeeIds(tenant, trx),
+      })
+      return { rows: page.all(), meta: page.getMeta() }
+    })
+  }
+
+  /** `completedAt` is set when the activity becomes `done` and cleared when it leaves it. */
+  updateActivity(
+    tenant: TenantContext,
+    actor: User,
+    goalId: string,
+    activityId: string,
+    input: Partial<Omit<ActivityInput, 'employeeId'>>,
+    audit: AuditContext
+  ) {
+    const { organizationId } = tenant
+    return withTenant(organizationId, async (trx) => {
+      const goals = goalsIn(organizationId, trx)
+      const activity = await goals.findActivityForUpdate(goalId, activityId)
+      if (!activity) throw new AppException('E_NOT_FOUND')
+      const changes = defined(input)
+      const before = { status: activity.status }
+      activity.merge({ ...changes, updatedBy: actor.id })
+      if (changes.status && changes.status !== before.status) {
+        activity.completedAt = changes.status === 'done' ? DateTime.now() : null
+      }
+      await goals.saveActivity(activity)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'goal.activity_updated',
+        targetType: 'goal',
+        targetId: goalId,
+        before,
+        after: { activityId, status: activity.status, changedFields: Object.keys(changes) },
+      })
+      await activity.refresh()
+      return activity
+    })
+  }
+
+  async removeActivity(
+    tenant: TenantContext,
+    goalId: string,
+    activityId: string,
+    audit: AuditContext
+  ) {
+    const { organizationId } = tenant
+    await withTenant(organizationId, async (trx) => {
+      const goals = goalsIn(organizationId, trx)
+      const activity = await goals.findActivityForUpdate(goalId, activityId)
+      if (!activity) throw new AppException('E_NOT_FOUND')
+      await goals.deleteActivity(activity)
+      await auditService.record(trx, this.context(tenant, audit), {
+        action: 'goal.activity_deleted',
+        targetType: 'goal',
+        targetId: goalId,
+        before: { activityId, title: activity.title, status: activity.status },
+      })
     })
   }
 

@@ -134,6 +134,10 @@
     "parentCycle": "This parent goal would create a loop.",
     "plan": "This plan does not exist.",
     "dueDate": "The due date cannot precede the start date.",
-    "goalCancelled": "A cancelled goal can no longer progress."
+    "goalCancelled": "A cancelled goal can no longer progress.",
+    "okrLocked": "This OKR can no longer be changed in its current state.",
+    "okrKeyResults": "Add at least one key result before submitting the OKR.",
+    "okrNotPending": "Only an OKR awaiting validation can be validated or sent back.",
+    "okrNotValidated": "Check-ins only apply to a validated, active OKR."
   }
 }
