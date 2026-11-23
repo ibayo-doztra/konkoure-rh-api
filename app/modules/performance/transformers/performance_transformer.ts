@@ -7,6 +7,8 @@ import type OkrKeyResult from '#models/okr_key_result'
 import type OkrCheckin from '#models/okr_checkin'
 import type PerformanceReview from '#models/performance_review'
 import type ReviewGoalComment from '#models/review_goal_comment'
+import type Feedback from '#models/feedback'
+import type Achievement from '#models/achievement'
 
 export function cycleDto(cycle: PerformanceCycle) {
   return {
@@ -167,5 +169,39 @@ export function reviewDto(
         managerRating: showManager ? (row?.managerRating ?? null) : null,
       }
     }),
+  }
+}
+
+/**
+ * Feedback. A private one hides its author from everyone but HR and the
+ * author (07 §5.9): `revealAuthor` is decided by the caller.
+ */
+export function feedbackDto(feedback: Feedback, revealAuthor: boolean) {
+  const hidden = feedback.isPrivate && !revealAuthor
+  return {
+    id: feedback.id,
+    fromEmployeeId: hidden ? null : feedback.fromEmployeeId,
+    toEmployeeId: feedback.toEmployeeId,
+    kind: feedback.kind,
+    message: feedback.message,
+    okrId: feedback.okrId,
+    goalId: feedback.goalId,
+    isPrivate: feedback.isPrivate,
+    visibleToManager: feedback.visibleToManager,
+    createdAt: feedback.createdAt.toUTC().toISO(),
+  }
+}
+
+export function achievementDto(achievement: Achievement) {
+  return {
+    id: achievement.id,
+    employeeId: achievement.employeeId,
+    goalId: achievement.goalId,
+    title: achievement.title,
+    description: achievement.description,
+    impact: achievement.impact,
+    achievedAt: achievement.achievedAt.toUTC().toISO(),
+    createdBy: achievement.createdBy,
+    createdAt: achievement.createdAt.toUTC().toISO(),
   }
 }

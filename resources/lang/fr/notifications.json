@@ -62,5 +62,17 @@
   "reviewReminderManager": {
     "title": "Évaluation en attente",
     "body": "L'évaluation de {employeeName} ({cycle}) attend votre retour."
+  },
+  "feedbackReceived": {
+    "title": "Nouveau feedback",
+    "body": "{authorName} vous a adressé un feedback."
+  },
+  "feedbackReceivedPrivate": {
+    "title": "Nouveau feedback",
+    "body": "Vous avez reçu un feedback."
+  },
+  "feedbackConcern": {
+    "title": "Signalement à examiner",
+    "body": "{authorName} a émis un signalement concernant {employeeName}."
   }
 }

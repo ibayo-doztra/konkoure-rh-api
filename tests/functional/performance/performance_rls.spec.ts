@@ -7,6 +7,8 @@ import planService from '#modules/performance/services/plan_service'
 import goalService from '#modules/performance/services/goal_service'
 import okrService from '#modules/performance/services/okr_service'
 import reviewService from '#modules/performance/services/review_service'
+import feedbackService from '#modules/performance/services/feedback_service'
+import achievementService from '#modules/performance/services/achievement_service'
 import { TenantContext } from '#shared/tenant/tenant_context'
 import { createUser, grantRoles } from '#tests/helpers/auth'
 import { createEmployee, createHrOrganization } from '#tests/helpers/hr'
@@ -165,5 +167,38 @@ test.group('Review services under the application role', (group) => {
       [goal.id]
     )
     await reviewService.reminders()
+  })
+})
+
+test.group('Feedback and achievement services under the application role', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('create, list and delete work with RLS enforced', async ({ assert }) => {
+    const org = await createHrOrganization('Mienne')
+    const author = await createUser({ emailVerifiedAt: DateTime.now() })
+    await grantRoles(author, org, ['employee'])
+    const from = await createEmployee(org, { userId: author.id })
+    const to = await createEmployee(org)
+    const self = new TenantContext(org.id, ['employee'], from.id)
+
+    await db.rawQuery('SET LOCAL ROLE konkoure_app')
+
+    const feedback = await feedbackService.create(
+      self,
+      author,
+      { toEmployeeId: to.id, kind: 'concern', message: 'Point' },
+      {}
+    )
+    const { rows } = await feedbackService.list(self, author, {})
+    assert.lengthOf(rows, 1)
+    await feedbackService.remove(self, feedback.id, {})
+    const achievement = await achievementService.create(
+      self,
+      author,
+      from.id,
+      { title: 'Réussite', achievedAt: DateTime.now() },
+      {}
+    )
+    await achievementService.remove(self, achievement.id, {})
   })
 })

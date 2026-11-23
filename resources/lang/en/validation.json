@@ -144,6 +144,9 @@
     "reviewNotSubmitted": "Only an evaluation submitted by the employee can be assessed, validated or sent back.",
     "reviewNotValidated": "Only a validated evaluation can be signed.",
     "reviewManagerIncomplete": "The manager's score and global comment are required to validate.",
-    "reviewGoal": "One of the goals does not belong to this evaluation."
+    "reviewGoal": "One of the goals does not belong to this evaluation.",
+    "feedbackSelf": "You cannot give feedback to yourself.",
+    "okr": "This OKR does not exist.",
+    "goal": "This goal does not exist or does not belong to this employee."
   }
 }

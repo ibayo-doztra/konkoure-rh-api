@@ -62,5 +62,17 @@
   "reviewReminderManager": {
     "title": "Evaluation waiting",
     "body": "{employeeName}'s evaluation ({cycle}) is waiting for your input."
+  },
+  "feedbackReceived": {
+    "title": "New feedback",
+    "body": "{authorName} gave you feedback."
+  },
+  "feedbackReceivedPrivate": {
+    "title": "New feedback",
+    "body": "You received feedback."
+  },
+  "feedbackConcern": {
+    "title": "Concern to review",
+    "body": "{authorName} raised a concern about {employeeName}."
   }
 }

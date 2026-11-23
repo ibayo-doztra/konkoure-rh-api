@@ -109,6 +109,9 @@ export default {
         },
       },
     },
+    feedbacks: {
+      columns: { kind: { tsType: `'kudos' | 'suggestion' | 'concern'` } },
+    },
     okrs: {
       columns: {
         status: { tsType: `'draft' | 'active' | 'completed' | 'archived'` },
