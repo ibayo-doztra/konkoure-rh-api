@@ -29,6 +29,8 @@ const GoalsController = () => import('#modules/performance/controllers/goals_con
 const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
 const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
 const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
+const JobsController = () => import('#modules/recruitment/controllers/jobs_controller')
+const CandidatesController = () => import('#modules/recruitment/controllers/candidates_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -305,6 +307,52 @@ export function registerOrgRoutes() {
         .prefix('performance')
         .as('performance')
         .use(middleware.entitlement({ module: 'performance' }))
+
+      router
+        .group(() => {
+          router
+            .group(() => {
+              router.get('/', [JobsController, 'index']).as('index')
+              router.post('/', [JobsController, 'store']).as('store')
+              router.get(':id', [JobsController, 'show']).as('show')
+              router.patch(':id', [JobsController, 'update']).as('update')
+              router.delete(':id', [JobsController, 'destroy']).as('destroy')
+              router.post(':id/publish', [JobsController, 'publish']).as('publish')
+              router.post(':id/close', [JobsController, 'close']).as('close')
+              router.post(':id/duplicate', [JobsController, 'duplicate']).as('duplicate')
+              router.get(':id/qr', [JobsController, 'qr']).as('qr')
+            })
+            .prefix('jobs')
+            .as('jobs')
+
+          router
+            .group(() => {
+              router.get('/', [CandidatesController, 'index']).as('index')
+              router.post('/', [CandidatesController, 'store']).as('store')
+              router.get(':id', [CandidatesController, 'show']).as('show')
+              router.patch(':id', [CandidatesController, 'update']).as('update')
+              router.delete(':id', [CandidatesController, 'destroy']).as('destroy')
+              router.post(':id/stage', [CandidatesController, 'stage']).as('stage')
+              router
+                .post(':id/hire', [CandidatesController, 'hire'])
+                .as('hire')
+                .use(middleware.idempotency())
+              router
+                .get(':id/documents/:key/url', [CandidatesController, 'documentUrl'])
+                .as('documents.url')
+              router.get(':id/notes', [CandidatesController, 'notes']).as('notes.index')
+              router.post(':id/notes', [CandidatesController, 'storeNote']).as('notes.store')
+              router
+                .delete(':id/notes/:noteId', [CandidatesController, 'destroyNote'])
+                .as('notes.destroy')
+              router.get(':id/events', [CandidatesController, 'events']).as('events')
+            })
+            .prefix('candidates')
+            .as('candidates')
+        })
+        .prefix('recruitment')
+        .as('recruitment')
+        .use(middleware.entitlement({ module: 'recruitment' }))
 
       router
         .group(() => {

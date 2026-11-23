@@ -33,6 +33,11 @@ export const throttleIp = limiter.define('global_ip', (ctx) =>
   limiter.allowRequests(GLOBAL_IP_PER_MINUTE).every('1 minute').usingKey(`ip:${ctx.request.ip()}`)
 )
 
+/** Public careers pages: 60 requests / minute / IP (docs/backend/05 §4). */
+export const throttleCareers = limiter.define('careers_ip', (ctx) =>
+  limiter.allowRequests(60).every('1 minute').usingKey(`careers:${ctx.request.ip()}`)
+)
+
 /** Authenticated budget: 600 requests / minute / user. */
 export const throttleUser = limiter.define('global_user', (ctx) =>
   limiter

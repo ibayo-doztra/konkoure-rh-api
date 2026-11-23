@@ -74,5 +74,9 @@
   "feedbackConcern": {
     "title": "Signalement à examiner",
     "body": "{authorName} a émis un signalement concernant {employeeName}."
+  },
+  "candidateApplied": {
+    "title": "Nouvelle candidature",
+    "body": "{candidateName} a postulé à l'offre « {jobTitle} »."
   }
 }

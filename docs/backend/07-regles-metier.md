@@ -237,7 +237,8 @@ new → screening → interview → offer → hired
  └──────────────── rejected ◄──────────┘  (depuis n'importe quel état)
 ```
 Le retour en arrière est permis à `owner`/`hr_admin` uniquement.
-`hired` est terminal et déclenche la règle 4.6.
+`hired` est terminal et déclenche la règle 4.6. On ne l'atteint que par
+`POST /candidates/:id/hire` (décision du 2026-11-23).
 
 4.6 **Embauche** — `POST /candidates/:id/hire` crée un `employees` (nom, e-mail,
 téléphone, poste = titre de l'offre, département de l'offre), lie
@@ -357,6 +358,13 @@ masquer un menu côté client n'est pas une protection.
 | `suspended` | lecture seule sur `hr`, écriture bloquée |
 | `canceled` | **accès maintenu jusqu'à `current_period_end`**, puis `expired` |
 | `expired` | `hr` lecture seule + `billing` |
+
+6.5bis **Attribution hors paiement** (décision du 2026-11-23) — la commande
+`node ace subscription:grant <organizationId> <planCode> [--days=30]` donne un
+abonnement `active` sur un plan, expire l'abonnement précédent, vide le cache des
+droits et écrit `subscription.granted` dans `audit_logs`. Elle sert aux tests de
+bout en bout et au support local, en attendant le back-office (lot 10), et est
+**refusée en production**, où seul le paiement Djomy active un plan.
 
 6.6 **Annulation** — `cancel_at_period_end = true`, `canceled_at` horodaté.
 L'accès n'est **jamais** coupé immédiatement. Une réactivation avant l'échéance

@@ -152,6 +152,103 @@ export class AuthRefreshTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class CandidateEventSchema extends BaseModel {
+  static $columns = ['actorId', 'candidateId', 'createdAt', 'id', 'organizationId', 'payload', 'type'] as const
+  $columns = CandidateEventSchema.$columns
+  @column()
+  declare actorId: string | null
+  @column()
+  declare candidateId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare payload: Record<string, unknown>
+  @column()
+  declare type: 'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'
+}
+
+export class CandidateNoteSchema extends BaseModel {
+  static $columns = ['authorId', 'body', 'candidateId', 'createdAt', 'deletedAt', 'id', 'organizationId', 'updatedAt'] as const
+  $columns = CandidateNoteSchema.$columns
+  @column()
+  declare authorId: string | null
+  @column()
+  declare body: string
+  @column()
+  declare candidateId: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class CandidateSchema extends BaseModel {
+  static $columns = ['aiCandidateName', 'aiFraudAlert', 'aiIsValidCv', 'aiJustification', 'aiScore', 'aiScoredAt', 'aiStrengths', 'aiWeaknesses', 'coverLetterPath', 'createdAt', 'createdBy', 'cvPath', 'cvText', 'documents', 'email', 'fullName', 'hiredEmployeeId', 'id', 'jobId', 'organizationId', 'phone', 'rejectedReason', 'source', 'stage', 'updatedAt', 'updatedBy'] as const
+  $columns = CandidateSchema.$columns
+  @column()
+  declare aiCandidateName: string | null
+  @column()
+  declare aiFraudAlert: boolean | null
+  @column()
+  declare aiIsValidCv: boolean | null
+  @column()
+  declare aiJustification: string | null
+  @column()
+  declare aiScore: number | null
+  @column.dateTime()
+  declare aiScoredAt: DateTime | null
+  @column()
+  declare aiStrengths: string[]
+  @column()
+  declare aiWeaknesses: string[]
+  @column()
+  declare coverLetterPath: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare cvPath: string | null
+  @column()
+  declare cvText: string | null
+  @column()
+  declare documents: Record<string, string>
+  @column()
+  declare email: string | null
+  @column()
+  declare fullName: string
+  @column()
+  declare hiredEmployeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare jobId: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare phone: string | null
+  @column()
+  declare rejectedReason: string | null
+  @column()
+  declare source: 'careers' | 'referral' | 'import' | 'social' | null
+  @column()
+  declare stage: 'new' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
 export class ContractSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'currency', 'deletedAt', 'documentPath', 'employeeId', 'endDate', 'id', 'notes', 'organizationId', 'salary', 'startDate', 'status', 'trialPeriodEnd', 'type', 'updatedAt', 'updatedBy', 'weeklyHours'] as const
   $columns = ContractSchema.$columns
@@ -514,6 +611,51 @@ export class InvitationSchema extends BaseModel {
   declare tokenHash: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class JobSchema extends BaseModel {
+  static $columns = ['contractType', 'createdAt', 'createdBy', 'deadline', 'deletedAt', 'departmentId', 'description', 'id', 'inclusiveScore', 'location', 'organizationId', 'publishedAt', 'requiredDocuments', 'requirements', 'slug', 'status', 'title', 'updatedAt', 'updatedBy', 'viewsCount'] as const
+  $columns = JobSchema.$columns
+  @column()
+  declare contractType: 'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deadline: DateTime | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare departmentId: string | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inclusiveScore: number | null
+  @column()
+  declare location: string | null
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare publishedAt: DateTime | null
+  @column()
+  declare requiredDocuments: Array<{ key: string; label: string; required: boolean }>
+  @column()
+  declare requirements: string | null
+  @column()
+  declare slug: string
+  @column()
+  declare status: 'draft' | 'published' | 'closed' | 'archived'
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare viewsCount: number
 }
 
 export class LeaveBalanceLedgerSchema extends BaseModel {

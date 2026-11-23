@@ -84,6 +84,36 @@ export default {
     attendance_days: {
       columns: { anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate'` } },
     },
+    jobs: {
+      columns: {
+        contract_type: {
+          tsType: `'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'`,
+        },
+        status: { tsType: `'draft' | 'published' | 'closed' | 'archived'` },
+        required_documents: {
+          tsType: 'Array<{ key: string; label: string; required: boolean }>',
+        },
+      },
+    },
+    candidates: {
+      columns: {
+        stage: {
+          tsType: `'new' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected'`,
+        },
+        source: { tsType: `'careers' | 'referral' | 'import' | 'social'` },
+        documents: { tsType: 'Record<string, string>' },
+        ai_strengths: { tsType: 'string[]' },
+        ai_weaknesses: { tsType: 'string[]' },
+      },
+    },
+    candidate_events: {
+      columns: {
+        type: {
+          tsType: `'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'`,
+        },
+        payload: JSON_OBJECT,
+      },
+    },
     performance_cycles: {
       columns: {
         frequency: { tsType: `'annual' | 'semestrial' | 'quarterly' | 'custom'` },

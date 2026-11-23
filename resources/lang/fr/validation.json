@@ -148,5 +148,23 @@
     "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
     "okr": "Cet OKR n'existe pas.",
     "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé."
+  },
+  "recruitment": {
+    "jobNotPublishable": "Seule une offre en brouillon ou fermée peut être publiée.",
+    "jobNotPublished": "Seule une offre publiée peut être fermée.",
+    "deadline": "La date limite d'une offre publiée doit être dans le futur.",
+    "department": "Ce département n'existe pas.",
+    "documentKeys": "Chaque pièce demandée doit avoir une clé distincte.",
+    "descriptionRequired": "Une offre publiée doit avoir une description.",
+    "cvRequired": "Joignez votre CV.",
+    "documentUnknown": "Cette pièce n'est pas demandée par l'offre.",
+    "documentRequired": "Cette pièce est obligatoire pour cette offre.",
+    "documentType": "Le fichier doit être un PDF, DOC, DOCX, JPG ou PNG.",
+    "alreadyApplied": "Une candidature existe déjà pour cette offre avec cet e-mail ou ce téléphone.",
+    "job": "Cette offre n'existe pas.",
+    "useHire": "L'embauche passe par l'action « Embaucher », qui crée la fiche employé.",
+    "hiredTerminal": "Un candidat embauché ne change plus d'étape.",
+    "sameStage": "Le candidat est déjà à cette étape.",
+    "hireRejected": "Un candidat refusé ne peut pas être embauché."
   }
 }
