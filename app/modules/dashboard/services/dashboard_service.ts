@@ -37,9 +37,13 @@ export interface Dashboard {
     outOfZonePunches: number
   } | null
   leaves: { pending: number; approvedThisPeriod: number; daysTaken: number } | null
-  /** Modules not delivered yet (lot 2 decision). */
+  /** Module not delivered yet (lot 2 decision). */
   recruitment: null
-  performance: null
+  performance: {
+    reviewsInProgress: number
+    reviewsSigned: number
+    avgGoalProgress: number | null
+  } | null
   series: {
     headcountByMonth: Array<{ month: string; total: number }> | null
     punchesByDay: Array<{ day: string; count: number }> | null
@@ -84,7 +88,7 @@ export class DashboardService {
           : null,
         leaves: can('leaves') ? await repository.leaves(scope, bounds) : null,
         recruitment: null,
-        performance: null,
+        performance: can('performance') ? await repository.performance(scope, bounds) : null,
         series: {
           headcountByMonth: can('hr')
             ? await repository.headcountByMonth(scope, months.first, months.last)

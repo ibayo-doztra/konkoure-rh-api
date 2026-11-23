@@ -119,5 +119,34 @@
   },
   "pagination": {
     "cursor": "Curseur de pagination invalide."
+  },
+  "performance": {
+    "cycleClosed": "Un cycle clôturé ne peut plus être modifié.",
+    "cycleNotDraft": "Seul un cycle en brouillon peut être ouvert.",
+    "cycleNotOpen": "Seul un cycle ouvert peut être clôturé.",
+    "periodEnd": "La fin de la période ne peut pas précéder son début.",
+    "selfEvalCloses": "La fermeture de l'auto-évaluation ne peut pas précéder son ouverture.",
+    "planOverflow": "Les objectifs d'au moins un employé dépassent une pondération totale de 100 sur ce plan.",
+    "weightOverflow": "La pondération totale des objectifs sur ce plan ne peut pas dépasser 100.",
+    "employee": "Cet employé n'existe pas.",
+    "holder": "Indiquez l'employé porteur de l'objectif.",
+    "parent": "L'objectif parent n'existe pas.",
+    "parentCycle": "Cet objectif parent créerait une boucle.",
+    "plan": "Ce plan n'existe pas.",
+    "dueDate": "L'échéance ne peut pas précéder la date de début.",
+    "goalCancelled": "Un objectif annulé ne peut plus progresser.",
+    "okrLocked": "Cet OKR n'est plus modifiable dans son état actuel.",
+    "okrKeyResults": "Ajoutez au moins un résultat clé avant de soumettre l'OKR.",
+    "okrNotPending": "Seul un OKR en attente de validation peut être validé ou renvoyé.",
+    "okrNotValidated": "Les check-ins ne concernent qu'un OKR validé et actif.",
+    "cycle": "Ce cycle n'existe pas.",
+    "reviewSelfLocked": "L'auto-évaluation n'est plus modifiable dans cet état.",
+    "reviewNotSubmitted": "Seule une évaluation soumise par l'employé peut être évaluée, validée ou renvoyée.",
+    "reviewNotValidated": "Seule une évaluation validée peut être signée.",
+    "reviewManagerIncomplete": "La note et le commentaire global du manager sont requis pour valider.",
+    "reviewGoal": "Un des objectifs n'appartient pas à cette évaluation.",
+    "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
+    "okr": "Cet OKR n'existe pas.",
+    "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé."
   }
 }

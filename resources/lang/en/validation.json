@@ -119,5 +119,34 @@
   },
   "pagination": {
     "cursor": "Invalid pagination cursor."
+  },
+  "performance": {
+    "cycleClosed": "A closed cycle can no longer be changed.",
+    "cycleNotDraft": "Only a draft cycle can be opened.",
+    "cycleNotOpen": "Only an open cycle can be closed.",
+    "periodEnd": "The end of the period cannot precede its start.",
+    "selfEvalCloses": "The self-evaluation cannot close before it opens.",
+    "planOverflow": "The goals of at least one employee weigh more than 100 in total on this plan.",
+    "weightOverflow": "The total weight of the goals on this plan cannot exceed 100.",
+    "employee": "This employee does not exist.",
+    "holder": "Specify the employee who holds the goal.",
+    "parent": "The parent goal does not exist.",
+    "parentCycle": "This parent goal would create a loop.",
+    "plan": "This plan does not exist.",
+    "dueDate": "The due date cannot precede the start date.",
+    "goalCancelled": "A cancelled goal can no longer progress.",
+    "okrLocked": "This OKR can no longer be changed in its current state.",
+    "okrKeyResults": "Add at least one key result before submitting the OKR.",
+    "okrNotPending": "Only an OKR awaiting validation can be validated or sent back.",
+    "okrNotValidated": "Check-ins only apply to a validated, active OKR.",
+    "cycle": "This cycle does not exist.",
+    "reviewSelfLocked": "The self-evaluation can no longer be changed in this state.",
+    "reviewNotSubmitted": "Only an evaluation submitted by the employee can be assessed, validated or sent back.",
+    "reviewNotValidated": "Only a validated evaluation can be signed.",
+    "reviewManagerIncomplete": "The manager's score and global comment are required to validate.",
+    "reviewGoal": "One of the goals does not belong to this evaluation.",
+    "feedbackSelf": "You cannot give feedback to yourself.",
+    "okr": "This OKR does not exist.",
+    "goal": "This goal does not exist or does not belong to this employee."
   }
 }

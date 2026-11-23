@@ -23,6 +23,12 @@ const LeavesController = () => import('#modules/leaves/controllers/leaves_contro
 const LeaveBalancesController = () =>
   import('#modules/leaves/controllers/leave_balances_controller')
 const HolidaysController = () => import('#modules/leaves/controllers/holidays_controller')
+const PerformanceSetupController = () =>
+  import('#modules/performance/controllers/performance_setup_controller')
+const GoalsController = () => import('#modules/performance/controllers/goals_controller')
+const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
+const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
+const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -189,6 +195,115 @@ export function registerOrgRoutes() {
             .as('holidays')
         })
         .use(middleware.entitlement({ module: 'leaves' }))
+
+      router
+        .group(() => {
+          router
+            .group(() => {
+              router.get('/', [PerformanceSetupController, 'cycles']).as('index')
+              router.post('/', [PerformanceSetupController, 'storeCycle']).as('store')
+              router.patch(':id', [PerformanceSetupController, 'updateCycle']).as('update')
+              router.post(':id/open', [PerformanceSetupController, 'openCycle']).as('open')
+              router.post(':id/close', [PerformanceSetupController, 'closeCycle']).as('close')
+            })
+            .prefix('cycles')
+            .as('cycles')
+
+          router
+            .group(() => {
+              router.get('/', [PerformanceSetupController, 'plans']).as('index')
+              router.post('/', [PerformanceSetupController, 'storePlan']).as('store')
+              router.patch(':id', [PerformanceSetupController, 'updatePlan']).as('update')
+              router.delete(':id', [PerformanceSetupController, 'destroyPlan']).as('destroy')
+            })
+            .prefix('plans')
+            .as('plans')
+
+          router
+            .group(() => {
+              router.get('/', [GoalsController, 'index']).as('index')
+              router.post('/', [GoalsController, 'store']).as('store')
+              router.get(':id', [GoalsController, 'show']).as('show')
+              router.patch(':id', [GoalsController, 'update']).as('update')
+              router.delete(':id', [GoalsController, 'destroy']).as('destroy')
+              router.patch(':id/progress', [GoalsController, 'progress']).as('progress')
+              router.get(':id/activities', [GoalsController, 'activities']).as('activities.index')
+              router
+                .post(':id/activities', [GoalsController, 'storeActivity'])
+                .as('activities.store')
+              router
+                .patch(':id/activities/:activityId', [GoalsController, 'updateActivity'])
+                .as('activities.update')
+              router
+                .delete(':id/activities/:activityId', [GoalsController, 'destroyActivity'])
+                .as('activities.destroy')
+            })
+            .prefix('goals')
+            .as('goals')
+
+          router.get('activities', [GoalsController, 'allActivities']).as('activities.index')
+
+          router
+            .group(() => {
+              router.get('/', [OkrsController, 'index']).as('index')
+              router.post('/', [OkrsController, 'store']).as('store')
+              router.get(':id', [OkrsController, 'show']).as('show')
+              router.patch(':id', [OkrsController, 'update']).as('update')
+              router.delete(':id', [OkrsController, 'destroy']).as('destroy')
+              router.put(':id/key-results', [OkrsController, 'replaceKeyResults']).as('keyResults')
+              router
+                .patch(':id/key-results/:krId', [OkrsController, 'updateKeyResult'])
+                .as('keyResults.update')
+              router.post(':id/submit', [OkrsController, 'submit']).as('submit')
+              router.post(':id/validate', [OkrsController, 'validate']).as('validate')
+              router
+                .post(':id/request-revision', [OkrsController, 'requestRevision'])
+                .as('requestRevision')
+              router.get(':id/checkins', [OkrsController, 'checkins']).as('checkins.index')
+              router.post(':id/checkins', [OkrsController, 'storeCheckin']).as('checkins.store')
+            })
+            .prefix('okrs')
+            .as('okrs')
+
+          router
+            .group(() => {
+              router.get('/', [ReviewsController, 'index']).as('index')
+              router
+                .post('/', [ReviewsController, 'store'])
+                .as('store')
+                .use(middleware.idempotency())
+              router.get(':id', [ReviewsController, 'show']).as('show')
+              router.patch(':id/self', [ReviewsController, 'saveSelf']).as('self')
+              router.post(':id/submit-self', [ReviewsController, 'submitSelf']).as('submitSelf')
+              router.patch(':id/manager', [ReviewsController, 'saveManager']).as('manager')
+              router.post(':id/validate', [ReviewsController, 'validate']).as('validate')
+              router.post(':id/send-back', [ReviewsController, 'sendBack']).as('sendBack')
+              router.post(':id/sign', [ReviewsController, 'sign']).as('sign')
+            })
+            .prefix('reviews')
+            .as('reviews')
+
+          router
+            .group(() => {
+              router.get('/', [FeedbackController, 'index']).as('index')
+              router.post('/', [FeedbackController, 'store']).as('store')
+              router.delete(':id', [FeedbackController, 'destroy']).as('destroy')
+            })
+            .prefix('feedback')
+            .as('feedback')
+
+          router
+            .group(() => {
+              router.get('/', [FeedbackController, 'achievements']).as('index')
+              router.post('/', [FeedbackController, 'storeAchievement']).as('store')
+              router.delete(':id', [FeedbackController, 'destroyAchievement']).as('destroy')
+            })
+            .prefix('achievements')
+            .as('achievements')
+        })
+        .prefix('performance')
+        .as('performance')
+        .use(middleware.entitlement({ module: 'performance' }))
 
       router
         .group(() => {

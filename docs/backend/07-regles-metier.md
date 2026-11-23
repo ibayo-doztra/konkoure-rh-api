@@ -414,6 +414,7 @@ l'API Djomy sur les dernières 48 h ; les écarts alimentent
 
 Types émis : `leave.requested`, `leave.decided`, `review.opened`,
 `review.submitted`, `review.sent_back`, `review.validated`, `review.signed`,
+`review.reminder` (ajouté le 2026-11-23, tâche `reviews:reminders`),
 `okr.submitted`, `okr.validated`, `okr.needs_revision`, `okr.checkin_reminder`,
 `candidate.applied`, `candidate.scored`, `contract.expiring`,
 `trial.ending`, `payment.succeeded`, `payment.failed`, `badge.assigned`,

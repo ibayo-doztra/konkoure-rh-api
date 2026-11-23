@@ -10,7 +10,21 @@ import { notificationsIn } from '#modules/notifications/repositories/notificatio
 
 /** Types of 07 §8 emitted by the modules delivered so far. */
 export type NotificationType =
-  'leave.requested' | 'leave.decided' | 'contract.expiring' | 'badge.assigned'
+  | 'leave.requested'
+  | 'leave.decided'
+  | 'contract.expiring'
+  | 'badge.assigned'
+  | 'okr.submitted'
+  | 'okr.validated'
+  | 'okr.needs_revision'
+  | 'okr.checkin_reminder'
+  | 'review.opened'
+  | 'review.submitted'
+  | 'review.sent_back'
+  | 'review.validated'
+  | 'review.signed'
+  | 'review.reminder'
+  | 'feedback.received'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5

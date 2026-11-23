@@ -86,7 +86,11 @@ test.group('GET /org/dashboard', (group) => {
       outOfZonePunches: 1,
     })
     assert.isNull(data.recruitment)
-    assert.isNull(data.performance)
+    assert.deepEqual(data.performance, {
+      reviewsInProgress: 0,
+      reviewsSigned: 0,
+      avgGoalProgress: null,
+    })
     assert.deepEqual(data.series.punchesByDay, [{ day: firstDay, count: 1 }])
     assert.deepEqual(data.series.leavesByType, [{ type: 'annual', days: 1 }])
     assert.lengthOf(data.series.headcountByMonth, 12)
@@ -136,6 +140,7 @@ test.group('GET /org/dashboard', (group) => {
     assert.isNull(restricted.leaves)
     assert.isNull(restricted.series.punchesByDay)
     assert.isNull(restricted.series.leavesByType)
+    assert.isNull(restricted.performance)
   })
 
   test('a member without employee record gets zeros', async ({ client, assert }) => {

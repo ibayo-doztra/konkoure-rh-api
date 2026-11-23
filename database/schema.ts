@@ -7,6 +7,35 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AchievementSchema extends BaseModel {
+  static $columns = ['achievedAt', 'createdAt', 'createdBy', 'deletedAt', 'description', 'employeeId', 'goalId', 'id', 'impact', 'organizationId', 'title', 'updatedAt'] as const
+  $columns = AchievementSchema.$columns
+  @column.dateTime()
+  declare achievedAt: DateTime
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column()
+  declare employeeId: string | null
+  @column()
+  declare goalId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare impact: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class AttendanceDaySchema extends BaseModel {
   static $columns = ['anomaly', 'createdAt', 'day', 'employeeId', 'firstIn', 'id', 'isComplete', 'lastOut', 'organizationId', 'punchCount', 'updatedAt', 'workedMinutes'] as const
   $columns = AttendanceDaySchema.$columns
@@ -304,6 +333,39 @@ export class EmployeeSchema extends BaseModel {
   declare userId: string | null
 }
 
+export class FeedbackSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'fromEmployeeId', 'goalId', 'id', 'isPrivate', 'kind', 'message', 'okrId', 'organizationId', 'toEmployeeId', 'updatedAt', 'visibleToManager'] as const
+  $columns = FeedbackSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare fromEmployeeId: string | null
+  @column()
+  declare goalId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPrivate: boolean
+  @column()
+  declare kind: 'kudos' | 'suggestion' | 'concern'
+  @column()
+  declare message: string
+  @column()
+  declare okrId: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare toEmployeeId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare visibleToManager: boolean
+}
+
 export class FileSchema extends BaseModel {
   static $columns = ['bucket', 'category', 'checksumSha256', 'createdAt', 'id', 'mime', 'name', 'organizationId', 'ownerId', 'ownerType', 'path', 'scanResult', 'scannedAt', 'sizeBytes', 'uploadedBy', 'visibility'] as const
   $columns = FileSchema.$columns
@@ -339,6 +401,84 @@ export class FileSchema extends BaseModel {
   declare uploadedBy: string | null
   @column()
   declare visibility: 'private' | 'public'
+}
+
+export class GoalActivitySchema extends BaseModel {
+  static $columns = ['completedAt', 'createdAt', 'createdBy', 'description', 'employeeId', 'goalId', 'id', 'organizationId', 'plannedDate', 'status', 'title', 'updatedAt', 'updatedBy'] as const
+  $columns = GoalActivitySchema.$columns
+  @column.dateTime()
+  declare completedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare description: string | null
+  @column()
+  declare employeeId: string | null
+  @column()
+  declare goalId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare organizationId: string
+  @column.date()
+  declare plannedDate: DateTime | null
+  @column()
+  declare status: 'planned' | 'in_progress' | 'done'
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class GoalSchema extends BaseModel {
+  static $columns = ['category', 'createdAt', 'createdBy', 'deletedAt', 'description', 'dueDate', 'employeeId', 'id', 'measurement', 'organizationId', 'ownerId', 'parentGoalId', 'planId', 'progress', 'reviewId', 'startDate', 'status', 'title', 'updatedAt', 'updatedBy', 'weight'] as const
+  $columns = GoalSchema.$columns
+  @column()
+  declare category: 'business' | 'development' | 'behavioral'
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column.date()
+  declare dueDate: DateTime | null
+  @column()
+  declare employeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare measurement: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare ownerId: string | null
+  @column()
+  declare parentGoalId: string | null
+  @column()
+  declare planId: string | null
+  @column()
+  declare progress: number
+  @column()
+  declare reviewId: string | null
+  @column.date()
+  declare startDate: DateTime | null
+  @column()
+  declare status: 'not_started' | 'in_progress' | 'achieved' | 'late' | 'cancelled'
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare weight: number
 }
 
 export class InvitationSchema extends BaseModel {
@@ -548,6 +688,99 @@ export class NotificationSchema extends BaseModel {
   declare userId: string
 }
 
+export class OkrCheckinSchema extends BaseModel {
+  static $columns = ['authorEmployeeId', 'createdAt', 'createdBy', 'id', 'message', 'okrId', 'organizationId', 'progressSnapshot', 'updatedAt'] as const
+  $columns = OkrCheckinSchema.$columns
+  @column()
+  declare authorEmployeeId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare message: string
+  @column()
+  declare okrId: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare progressSnapshot: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class OkrKeyResultSchema extends BaseModel {
+  static $columns = ['createdAt', 'currentValue', 'doneAt', 'id', 'isDone', 'metric', 'okrId', 'organizationId', 'position', 'targetValue', 'title', 'unit', 'updatedAt'] as const
+  $columns = OkrKeyResultSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currentValue: string | null
+  @column.dateTime()
+  declare doneAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isDone: boolean
+  @column()
+  declare metric: string | null
+  @column()
+  declare okrId: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare position: number
+  @column()
+  declare targetValue: string | null
+  @column()
+  declare title: string
+  @column()
+  declare unit: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class OkrSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'employeeId', 'id', 'managerComment', 'objective', 'organizationId', 'progress', 'quarter', 'reviewStatus', 'status', 'submittedAt', 'updatedAt', 'updatedBy', 'validatedAt', 'validatedBy'] as const
+  $columns = OkrSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare employeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerComment: string | null
+  @column()
+  declare objective: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare progress: number
+  @column()
+  declare quarter: string
+  @column()
+  declare reviewStatus: 'draft' | 'pending' | 'validated' | 'needs_revision'
+  @column()
+  declare status: 'draft' | 'active' | 'completed' | 'archived'
+  @column.dateTime()
+  declare submittedAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column.dateTime()
+  declare validatedAt: DateTime | null
+  @column()
+  declare validatedBy: string | null
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns
@@ -598,6 +831,123 @@ export class PasswordResetTokenSchema extends BaseModel {
   declare usedAt: DateTime | null
   @column()
   declare userId: string
+}
+
+export class PerformanceCycleSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'frequency', 'id', 'name', 'organizationId', 'periodEnd', 'periodStart', 'selfEvalClosesAt', 'selfEvalOpensAt', 'status', 'updatedAt', 'updatedBy'] as const
+  $columns = PerformanceCycleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare frequency: 'annual' | 'semestrial' | 'quarterly' | 'custom'
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.date()
+  declare periodEnd: DateTime
+  @column.date()
+  declare periodStart: DateTime
+  @column.dateTime()
+  declare selfEvalClosesAt: DateTime | null
+  @column.dateTime()
+  declare selfEvalOpensAt: DateTime | null
+  @column()
+  declare status: 'draft' | 'open' | 'closed'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class PerformancePlanSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'id', 'name', 'organizationId', 'periodEnd', 'periodStart', 'status', 'updatedAt', 'updatedBy'] as const
+  $columns = PerformancePlanSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.date()
+  declare periodEnd: DateTime
+  @column.date()
+  declare periodStart: DateTime
+  @column()
+  declare status: 'draft' | 'active' | 'closed'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
+export class PerformanceReviewSchema extends BaseModel {
+  static $columns = ['aiSummary', 'createdAt', 'createdBy', 'cycleId', 'employeeId', 'id', 'managerGlobalComment', 'managerId', 'managerScore', 'managerSubmittedAt', 'organizationId', 'performanceScore', 'planId', 'potentialScore', 'selfGlobalComment', 'selfScore', 'sentBackAt', 'sentBackComment', 'signedAt', 'signedBy', 'status', 'submittedAt', 'updatedAt', 'updatedBy', 'validatedAt', 'validatedBy'] as const
+  $columns = PerformanceReviewSchema.$columns
+  @column()
+  declare aiSummary: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare cycleId: string | null
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerGlobalComment: string | null
+  @column()
+  declare managerId: string | null
+  @column()
+  declare managerScore: number | null
+  @column.dateTime()
+  declare managerSubmittedAt: DateTime | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare performanceScore: number | null
+  @column()
+  declare planId: string | null
+  @column()
+  declare potentialScore: number | null
+  @column()
+  declare selfGlobalComment: string | null
+  @column()
+  declare selfScore: number | null
+  @column.dateTime()
+  declare sentBackAt: DateTime | null
+  @column()
+  declare sentBackComment: string | null
+  @column.dateTime()
+  declare signedAt: DateTime | null
+  @column()
+  declare signedBy: string | null
+  @column()
+  declare status: 'not_started' | 'in_progress' | 'submitted' | 'sent_back' | 'validated' | 'signed'
+  @column.dateTime()
+  declare submittedAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column.dateTime()
+  declare validatedAt: DateTime | null
+  @column()
+  declare validatedBy: string | null
 }
 
 export class PlanSchema extends BaseModel {
@@ -669,6 +1019,31 @@ export class PublicHolidaySchema extends BaseModel {
   declare name: string
   @column()
   declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ReviewGoalCommentSchema extends BaseModel {
+  static $columns = ['createdAt', 'goalId', 'id', 'managerComment', 'managerRating', 'organizationId', 'reviewId', 'selfComment', 'selfRating', 'updatedAt'] as const
+  $columns = ReviewGoalCommentSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare goalId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerComment: string | null
+  @column()
+  declare managerRating: number | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare reviewId: string
+  @column()
+  declare selfComment: string | null
+  @column()
+  declare selfRating: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

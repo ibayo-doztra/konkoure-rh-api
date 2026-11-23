@@ -18,5 +18,61 @@
   "badgeAssigned": {
     "title": "Badge de pointage attribué",
     "body": "Un badge ({uid}) vous a été attribué."
+  },
+  "okrSubmitted": {
+    "title": "OKR à valider",
+    "body": "{employeeName} a soumis l'OKR « {objective} » ({quarter})."
+  },
+  "okrValidated": {
+    "title": "OKR validé",
+    "body": "Votre OKR « {objective} » ({quarter}) est validé."
+  },
+  "okrNeedsRevision": {
+    "title": "OKR à revoir",
+    "body": "Votre OKR « {objective} » ({quarter}) vous est renvoyé pour révision."
+  },
+  "okrCheckinReminder": {
+    "title": "Check-in mensuel",
+    "body": "Faites le point ce mois-ci sur votre OKR « {objective} » ({quarter})."
+  },
+  "reviewOpened": {
+    "title": "Évaluation ouverte",
+    "body": "Votre évaluation du cycle « {cycle} » est ouverte."
+  },
+  "reviewSubmitted": {
+    "title": "Auto-évaluation soumise",
+    "body": "{employeeName} a soumis son auto-évaluation ({cycle})."
+  },
+  "reviewSentBack": {
+    "title": "Évaluation renvoyée",
+    "body": "Votre évaluation ({cycle}) vous est renvoyée pour correction."
+  },
+  "reviewValidated": {
+    "title": "Évaluation validée",
+    "body": "Votre évaluation ({cycle}) est validée : vous pouvez la signer."
+  },
+  "reviewSigned": {
+    "title": "Évaluation signée",
+    "body": "{employeeName} a signé son évaluation ({cycle})."
+  },
+  "reviewReminderSelf": {
+    "title": "Auto-évaluation à terminer",
+    "body": "Pensez à soumettre votre auto-évaluation du cycle « {cycle} »."
+  },
+  "reviewReminderManager": {
+    "title": "Évaluation en attente",
+    "body": "L'évaluation de {employeeName} ({cycle}) attend votre retour."
+  },
+  "feedbackReceived": {
+    "title": "Nouveau feedback",
+    "body": "{authorName} vous a adressé un feedback."
+  },
+  "feedbackReceivedPrivate": {
+    "title": "Nouveau feedback",
+    "body": "Vous avez reçu un feedback."
+  },
+  "feedbackConcern": {
+    "title": "Signalement à examiner",
+    "body": "{authorName} a émis un signalement concernant {employeeName}."
   }
 }

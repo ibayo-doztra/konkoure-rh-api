@@ -99,6 +99,53 @@ export type ScannedRoutes = {
     'org.holidays.import': { paramsTuple?: []; params?: {} }
     'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.cycles.index': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.store': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.cycles.open': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.cycles.close': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.plans.index': { paramsTuple?: []; params?: {} }
+    'org.performance.plans.store': { paramsTuple?: []; params?: {} }
+    'org.performance.plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.index': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.store': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'activityId': ParamValue} }
+    'org.performance.goals.activities.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'activityId': ParamValue} }
+    'org.performance.activities.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.store': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.keyResults': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.keyResults.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'krId': ParamValue} }
+    'org.performance.okrs.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.validate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.requestRevision': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.checkins.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.checkins.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.index': { paramsTuple?: []; params?: {} }
+    'org.performance.reviews.store': { paramsTuple?: []; params?: {} }
+    'org.performance.reviews.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.self': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.submitSelf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.manager': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.validate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.sendBack': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.sign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.feedback.index': { paramsTuple?: []; params?: {} }
+    'org.performance.feedback.store': { paramsTuple?: []; params?: {} }
+    'org.performance.feedback.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
+    'org.performance.achievements.store': { paramsTuple?: []; params?: {} }
+    'org.performance.achievements.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -159,6 +206,19 @@ export type ScannedRoutes = {
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.index': { paramsTuple?: []; params?: {} }
+    'org.performance.plans.index': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.index': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.activities.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.checkins.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.index': { paramsTuple?: []; params?: {} }
+    'org.performance.reviews.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.feedback.index': { paramsTuple?: []; params?: {} }
+    'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -206,6 +266,19 @@ export type ScannedRoutes = {
     'org.leaves.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.attachment.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.index': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.index': { paramsTuple?: []; params?: {} }
+    'org.performance.plans.index': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.index': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.activities.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.index': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.checkins.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.index': { paramsTuple?: []; params?: {} }
+    'org.performance.reviews.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.feedback.index': { paramsTuple?: []; params?: {} }
+    'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -253,6 +326,24 @@ export type ScannedRoutes = {
     'org.leaves.attachment.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.store': { paramsTuple?: []; params?: {} }
     'org.holidays.import': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.store': { paramsTuple?: []; params?: {} }
+    'org.performance.cycles.open': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.cycles.close': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.plans.store': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.store': { paramsTuple?: []; params?: {} }
+    'org.performance.goals.activities.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.store': { paramsTuple?: []; params?: {} }
+    'org.performance.okrs.submit': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.validate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.requestRevision': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.checkins.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.store': { paramsTuple?: []; params?: {} }
+    'org.performance.reviews.submitSelf': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.validate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.sendBack': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.sign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.feedback.store': { paramsTuple?: []; params?: {} }
+    'org.performance.achievements.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.punch': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.export': { paramsTuple?: []; params?: {} }
@@ -271,6 +362,15 @@ export type ScannedRoutes = {
     'org.skills.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.leaves.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.cycles.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.plans.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.progress': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'activityId': ParamValue} }
+    'org.performance.okrs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.keyResults.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'krId': ParamValue} }
+    'org.performance.reviews.self': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.reviews.manager': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.logs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -285,6 +385,12 @@ export type ScannedRoutes = {
     'org.contracts.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.skills.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.holidays.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.plans.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.goals.activities.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'activityId': ParamValue} }
+    'org.performance.okrs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.feedback.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.achievements.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.logs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.devices.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -293,6 +399,7 @@ export type ScannedRoutes = {
   PUT: {
     'org.settings.update': { paramsTuple?: []; params?: {} }
     'org.employees.skills.replace': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.performance.okrs.keyResults': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
 }
 declare module '@adonisjs/core/types/http' {

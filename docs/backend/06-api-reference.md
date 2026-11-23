@@ -335,10 +335,13 @@ Décisions du 2026-11-20 :
   approuvés commençant dans la période. Séries : `headcountByMonth` sur 12 mois
   `[{ month: 'YYYY-MM', total }]`, `punchesByDay` `[{ day, count }]` (jours sans pointage
   omis), `leavesByType` `[{ type, days }]`.
-- **Modules** : `recruitment` et `performance` valent `null` tant que leurs modules ne sont
-  pas livrés ; un bloc (ou une série) dont le module n'est pas dans les droits de
+- **Modules** : `recruitment` vaut `null` tant que son module n'est pas livré ; un bloc (ou une série) dont le module n'est pas dans les droits de
   l'organisation vaut `null` (`hr` : effectifs, `timeclock` : présence, `leaves` : congés).
   La route n'a donc pas de middleware d'entitlement.
+- **Performance** (2026-11-23) : `reviewsInProgress` = évaluations du périmètre non
+  signées ; `reviewsSigned` = signées dans la période ; `avgGoalProgress` = moyenne
+  arrondie de la progression des objectifs non supprimés et non annulés (`null` sans
+  objectif).
 
 ---
 
@@ -840,6 +843,8 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | GET/PATCH/DELETE | `/org/performance/goals/:id` | O H · M(team) · self |
 | PATCH | `/org/performance/goals/:id/progress` | self · M(team) |
 | GET/POST | `/org/performance/goals/:id/activities` | self · M(team) · O H |
+| PATCH/DELETE | `/org/performance/goals/:id/activities/:activityId` | self · M(team) · O H (ajouté le 2026-11-23, kanban des activités) |
+| GET | `/org/performance/activities` | tous, limité aux objectifs visibles (ajouté le 2026-11-23) |
 | GET/POST | `/org/performance/okrs` | self · O H M |
 | GET/PATCH/DELETE | `/org/performance/okrs/:id` | self (si `draft`/`needs_revision`) · O H |
 | PUT | `/org/performance/okrs/:id/key-results` | self · O H M |
@@ -866,6 +871,90 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | GET | `/org/talents/9box` | O H · M(team) |
 | GET/PUT | `/org/talents/skills-matrix` | O H · M(team lecture) |
 | GET/POST/PATCH/DELETE | `/org/talents/succession` | O H |
+
+### Cycles, plans et objectifs (précisions du 2026-11-23)
+- Listes paginées (`page`, `perPage`, `filter[status]`) ; objectifs filtrables par
+  `employeeId`, `planId`, `status`, `category`, et limités à soi, à l'équipe
+  (manager) ou à tous (O H).
+- `POST /cycles` : `{ name, frequency, periodStart, periodEnd, selfEvalOpensAt?,
+  selfEvalClosesAt? }`, créé en `draft`. `PATCH` refusé une fois `closed` (`409`).
+  `open` : `draft → open` ; `close` : `open → closed` ; sinon `409 E_CONFLICT`.
+- `POST /plans` : `{ name, periodStart, periodEnd, status? }`. Passer un plan à
+  `active` vérifie la pondération de chaque employé (`422 E_WEIGHT_OVERFLOW`).
+  `DELETE` est logique ; les objectifs gardent leur `planId`.
+- `POST /goals` : `{ title, employeeId?, ownerId?, description?, measurement?,
+  category?, weight?, startDate?, dueDate?, planId?, parentGoalId? }` ;
+  `employeeId` vaut par défaut la fiche de l'appelant. Le porteur ne change
+  jamais. `PATCH` accepte les mêmes champs et `status` parmi `not_started`,
+  `in_progress`, `cancelled` (`achieved` suit la progression, `late` le job).
+  Un objectif `cancelled` ne compte pas dans la pondération et ne progresse plus
+  (`409`). `DELETE` est logique.
+- `PATCH /goals/:id/progress` : `{ progress: 0..100 }` ; 100 ⇒ `achieved`.
+- `POST /goals/:id/activities` : `{ title, description?, status?, plannedDate?,
+  employeeId? }` ; `completedAt` est posé si `status = done`.
+- `PATCH /goals/:id/activities/:activityId` : `{ title?, description?, status?,
+  plannedDate? }` ; `completedAt` est posé en passant à `done` et effacé en le
+  quittant. `DELETE` est physique (activité sans historique propre, audité).
+- `GET /activities` : `page`, `perPage` (≤ 200), `filter[goalId|employeeId|status]` ;
+  activités des objectifs non supprimés visibles par l'appelant.
+
+### OKR (précisions du 2026-11-23)
+- Réponses : l'OKR porte ses `keyResults` (ordonnés par `position`) et `progress`
+  (recalculé par trigger).
+- `POST /okrs` : `{ quarter: 'AAAA-Qn', objective, employeeId? }` ; `employeeId`
+  vaut par défaut la fiche de l'appelant, autrui réservé à O H et au manager.
+- `PATCH /okrs/:id` (`quarter`, `objective`) et `PUT /okrs/:id/key-results`
+  (`{ keyResults: [{ title, metric?, targetValue?, currentValue?, unit?, isDone? }] }`,
+  20 au plus, remplace la liste) : seulement en `draft` ou `needs_revision`, sinon `409`.
+- `PATCH /okrs/:id/key-results/:krId` : `{ isDone?, currentValue? }` ; refusé
+  (`409`) quand l'OKR est `pending`, `completed` ou `archived`.
+- `validate` : `{ comment? }` ; l'OKR passe `validated` et `status = active`.
+  `request-revision` : `{ comment }` obligatoire. Personne ne décide de son
+  propre OKR.
+- `DELETE /okrs/:id` : le porteur en `draft`/`needs_revision`, O H toujours.
+- `POST /okrs/:id/checkins` : `{ message }`, sur un OKR `validated` et `active`
+  seulement (`409` sinon) ; `progressSnapshot` fige la progression du moment.
+- `POST /okrs/suggest` : reporté avec les crédits IA (lot facturation).
+
+### Évaluations (décisions du 2026-11-23)
+- `POST /reviews` ⚡ : `{ cycleId, planId?, employeeIds? }` sur un cycle `open`
+  (sinon `409`, `rule = "cycleNotOpen"`). Une évaluation par employé présent
+  (`active`, `on_leave`) ou par employé listé ; `manager_id` = manager actuel.
+  Les évaluations existantes du cycle sont ignorées. Avec `planId`, les objectifs
+  non annulés de l'employé sur ce plan sont rattachés (`goals.review_id`).
+  Réponse `201` : `{ data: { created: [reviewId], skipped } }`. Notification
+  `review.opened` et e-mail `review_opened` à chaque évalué.
+- `GET /reviews` : résumés paginés, `filter[cycleId|employeeId|status]`.
+  `GET /reviews/:id` : détail avec `goals[]` (objectif + `selfComment`,
+  `selfRating`, `managerComment`, `managerRating`).
+- `PATCH /:id/self` : `{ selfScore?: 1..5, selfGlobalComment?, goals?: [{ goalId,
+  comment?, rating? }] }` ; `not_started` passe `in_progress`. `submit-self` :
+  vers `submitted`, notification `review.submitted` au manager (à défaut aux RH).
+- `PATCH /:id/manager` : `{ managerScore?, managerGlobalComment?, goals? }`,
+  seulement en `submitted`. Pour l'évalué, les champs du manager valent `null`
+  tant que l'évaluation n'est pas `sent_back`, `validated` ou `signed`.
+- `validate` exige `managerScore` et `managerGlobalComment` (`422`). `send-back` :
+  `{ comment }` obligatoire. `sign` : l'évalué, sur une évaluation `validated`.
+  Personne n'évalue, ne valide ni ne renvoie sa propre évaluation.
+- `performance_score` et `potential_score` (9-box) ne sont pas exposés en
+  écriture avant le lot talents. `POST /:id/ai-summary` est reporté au lot IA.
+
+### Feedback et réalisations (précisions du 2026-11-23)
+- `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
+  okrId?, goalId?, isPrivate?, visibleToManager? }`. L'auteur est la fiche de
+  l'appelant (`fromEmployeeId`) ; pas de feedback à soi-même (`422`, `rule = "self"`).
+  Notification `feedback.received` au destinataire (auteur masqué si privé) ; un
+  `concern` notifie aussi les `hr_admin` (à défaut les `owner`).
+- `GET /feedback` : `filter[toEmployeeId|kind]`. O H voient tout ; les autres, le
+  reçu et l'émis, plus, pour un manager, le reçu par son équipe quand
+  `visibleToManager`. Un feedback privé renvoie `fromEmployeeId = null` à tous sauf
+  aux RH et à l'auteur.
+- `DELETE /feedback/:id` : suppression logique par l'auteur ou O H, jamais par le
+  destinataire (même RH).
+- `POST /achievements` : `{ title, achievedAt (ISO 8601), employeeId?, goalId?,
+  description?, impact? }` ; `employeeId` vaut par défaut la fiche de l'appelant ;
+  `goalId` doit être un objectif de cet employé. `GET` : `filter[employeeId|goalId]`,
+  limité à soi, l'équipe ou tous. `DELETE` : suppression logique par l'auteur ou O H.
 
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.

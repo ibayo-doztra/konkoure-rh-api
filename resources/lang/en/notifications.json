@@ -18,5 +18,61 @@
   "badgeAssigned": {
     "title": "Timeclock badge assigned",
     "body": "A badge ({uid}) has been assigned to you."
+  },
+  "okrSubmitted": {
+    "title": "OKR to validate",
+    "body": "{employeeName} submitted the OKR \"{objective}\" ({quarter})."
+  },
+  "okrValidated": {
+    "title": "OKR validated",
+    "body": "Your OKR \"{objective}\" ({quarter}) is validated."
+  },
+  "okrNeedsRevision": {
+    "title": "OKR to revise",
+    "body": "Your OKR \"{objective}\" ({quarter}) was sent back for revision."
+  },
+  "okrCheckinReminder": {
+    "title": "Monthly check-in",
+    "body": "Post this month's check-in on your OKR \"{objective}\" ({quarter})."
+  },
+  "reviewOpened": {
+    "title": "Evaluation opened",
+    "body": "Your evaluation for the \"{cycle}\" cycle is open."
+  },
+  "reviewSubmitted": {
+    "title": "Self-evaluation submitted",
+    "body": "{employeeName} submitted their self-evaluation ({cycle})."
+  },
+  "reviewSentBack": {
+    "title": "Evaluation sent back",
+    "body": "Your evaluation ({cycle}) was sent back for correction."
+  },
+  "reviewValidated": {
+    "title": "Evaluation validated",
+    "body": "Your evaluation ({cycle}) is validated: you can sign it."
+  },
+  "reviewSigned": {
+    "title": "Evaluation signed",
+    "body": "{employeeName} signed their evaluation ({cycle})."
+  },
+  "reviewReminderSelf": {
+    "title": "Self-evaluation to finish",
+    "body": "Remember to submit your self-evaluation for the \"{cycle}\" cycle."
+  },
+  "reviewReminderManager": {
+    "title": "Evaluation waiting",
+    "body": "{employeeName}'s evaluation ({cycle}) is waiting for your input."
+  },
+  "feedbackReceived": {
+    "title": "New feedback",
+    "body": "{authorName} gave you feedback."
+  },
+  "feedbackReceivedPrivate": {
+    "title": "New feedback",
+    "body": "You received feedback."
+  },
+  "feedbackConcern": {
+    "title": "Concern to review",
+    "body": "{authorName} raised a concern about {employeeName}."
   }
 }

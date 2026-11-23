@@ -95,6 +95,27 @@ export const jobs = {
     queue: 'maintenance',
     handle: async () => attendance().then((service) => service.closeDay()),
   }),
+  'goals.mark-late': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#modules/performance/services/goal_service')
+      return service.markLate()
+    },
+  }),
+  'okr.checkin-reminder': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#modules/performance/services/okr_service')
+      return service.checkinReminders()
+    },
+  }),
+  'reviews.reminders': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#modules/performance/services/review_service')
+      return service.reminders()
+    },
+  }),
   'contracts.expiring': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -113,6 +134,9 @@ export type JobName = keyof typeof jobs
 export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
   { job: 'leaves.end', pattern: '10 0 * * *' },
+  { job: 'goals.mark-late', pattern: '20 0 * * *' },
+  { job: 'okr.checkin-reminder', pattern: '0 9 25 * *' },
+  { job: 'reviews.reminders', pattern: '0 8 * * 1' },
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
   { job: 'contracts.expiring', pattern: '0 2 * * *' },
   { job: 'notifications.purge', pattern: '0 3 * * *' },
