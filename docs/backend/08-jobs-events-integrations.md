@@ -186,6 +186,11 @@ Accès privé exclusivement par **URL signée TTL 15 min** (1 h pour les envois
 vers n8n), générée après autorisation Bouncer, et journalisée pour les documents
 sensibles.
 
+Hors production, `FILE_STORAGE_DISK=fs` (ajouté le 2026-11-23, refusé au démarrage
+en production) envoie les deux espaces sur le disque local `storage/` et sert les
+liens signés sous `/uploads/*` : environnements sans S3, comme les tests de bout en
+bout du front. Par défaut (`s3`), rien ne change.
+
 Upload : taille et MIME réels vérifiés (05 §3), checksum SHA-256 stocké,
 entrée dans `files`. Les fichiers orphelins (aucun propriétaire après 24 h)
 sont supprimés par le job de maintenance. Analyse antivirus optionnelle

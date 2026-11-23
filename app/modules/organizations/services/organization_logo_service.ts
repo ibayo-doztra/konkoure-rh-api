@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import logger from '@adonisjs/core/services/logger'
 import drive from '@adonisjs/drive/services/main'
+import { diskFor } from '#shared/files/storage_disks'
 import type User from '#models/user'
 import type Organization from '#models/organization'
 import { AppException } from '#shared/exceptions/app_exception'
@@ -15,7 +16,7 @@ import organizations from '#modules/organizations/repositories/organization_repo
 const MAX_LOGO_BYTES = 2 * 1024 * 1024
 
 /** Public bucket of organization logos (docs/backend/08 §6). */
-const logoDisk = () => drive.use('s3Public')
+const logoDisk = () => drive.use(diskFor('public'))
 const keyPrefix = (organizationId: string) => `${organizationId}/organization/${organizationId}/`
 
 /** Logo of the current organization. Storage calls stay outside the transaction. */

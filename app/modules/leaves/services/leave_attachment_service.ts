@@ -2,6 +2,7 @@ import { readFile } from 'node:fs/promises'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
 import logger from '@adonisjs/core/services/logger'
 import drive from '@adonisjs/drive/services/main'
+import { diskFor } from '#shared/files/storage_disks'
 import type LeaveRequest from '#models/leave_request'
 import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
@@ -17,7 +18,7 @@ const MAX_ATTACHMENT_BYTES = 10 * 1024 * 1024
 const ATTACHMENT_URL_TTL_SECONDS = 15 * 60
 
 /** Private bucket (`private-docs`, 08 §6). */
-const privateDisk = () => drive.use('s3')
+const privateDisk = () => drive.use(diskFor('private'))
 const keyPrefix = (organizationId: string, leaveId: string) =>
   `${organizationId}/leave_request/${leaveId}/`
 

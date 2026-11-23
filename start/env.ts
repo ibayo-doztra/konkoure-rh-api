@@ -72,6 +72,8 @@ export default await Env.create(new URL('../', import.meta.url), {
 
   // Stockage (docs/backend/11 §1)
   DRIVE_DISK: Env.schema.enum.optional(['fs', 's3', 's3Public'] as const),
+  /** `fs` stores uploads on the local disk; refused in production (08 §6). */
+  FILE_STORAGE_DISK: Env.schema.enum.optional(['s3', 'fs'] as const),
   S3_ENDPOINT: Env.schema.string.optional({ format: 'url', tld: false }),
   S3_REGION: Env.schema.string.optional(),
   S3_ACCESS_KEY_ID: Env.schema.string.optional(),

@@ -7,12 +7,14 @@ import drive from '@adonisjs/drive/services/main'
 import { AppException } from '#shared/exceptions/app_exception'
 import { newId } from '#shared/utils/crypto'
 
-export type Space = 'private' | 'public'
+import { diskFor, type Space } from '#shared/files/storage_disks'
 
-/** Disks and bucket names of docs/backend/08 §6. */
+export type { Space }
+
+/** Disks and bucket names of docs/backend/08 §6 (local disk outside production, see storage_disks). */
 const SPACES = {
-  private: { disk: 's3', bucket: 'private-docs' },
-  public: { disk: 's3Public', bucket: 'public-assets' },
+  private: { disk: diskFor('private'), bucket: 'private-docs' },
+  public: { disk: diskFor('public'), bucket: 'public-assets' },
 } as const
 
 /** Signed links to private documents last 15 minutes (08 §6). */
