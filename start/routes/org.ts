@@ -6,6 +6,7 @@ const InvitationsController = () =>
   import('#modules/invitations/controllers/invitations_controller')
 
 const EntitlementsController = () => import('#modules/billing/controllers/entitlements_controller')
+const DashboardController = () => import('#modules/dashboard/controllers/dashboard_controller')
 
 const CurrentOrganizationController = () =>
   import('#modules/organizations/controllers/current_organization_controller')
@@ -43,6 +44,8 @@ export function registerOrgRoutes() {
       router.post('logo', [CurrentOrganizationController, 'uploadLogo']).as('logo.store')
 
       router.get('entitlements', [EntitlementsController, 'show']).as('entitlements.show')
+      // Each block checks its own module, so no entitlement middleware here.
+      router.get('dashboard', [DashboardController, 'show']).as('dashboard.show')
 
       router
         .group(() => {

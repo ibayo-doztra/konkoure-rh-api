@@ -10,6 +10,8 @@ import type { TenantContext } from '#shared/tenant/tenant_context'
 import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import { badgesIn, type BadgeRepository } from '#modules/timeclock/repositories/badge_repository'
 import { maskUid, normalizeUid, uidHash } from '#modules/timeclock/timeclock_rules'
+import { membersIn } from '#modules/organizations/repositories/member_repository'
+import notificationService from '#modules/notifications/services/notification_service'
 
 /** Canonical UID, its lookup hash and masked form; a raw UID never goes further. */
 export function badgeIdentity(raw: string) {
@@ -39,7 +41,7 @@ export class BadgeService {
    * Assigns a badge; the employee's previous badge is revoked (`reassigned`).
    * A badge active anywhere else is refused by the global unique index.
    */
-  assign(
+  async assign(
     tenant: TenantContext,
     actor: User,
     employeeId: string,
@@ -51,7 +53,7 @@ export class BadgeService {
       throw AppException.validation('badgeUid', 'format', 'validation.timeclock.badgeUid')
     }
     const { organizationId } = tenant
-    return withTenant(organizationId, async (trx) => {
+    const assigned = await withTenant(organizationId, async (trx) => {
       const employee = await employeesIn(organizationId, trx).find(employeeId)
       if (!employee) throw new AppException('E_NOT_FOUND')
       if (employee.status === 'terminated') {
@@ -106,8 +108,25 @@ export class BadgeService {
       // in the outer one, the only place where it is visible before the commit.
       badge.useTransaction(trx)
       await badge.refresh()
-      return badge
+      return { badge, holder: await membersIn(organizationId, trx).accountOfEmployee(employeeId) }
     })
+    const { badge, holder } = assigned
+    // After the commit: the employee is told, unless they assigned it themselves (07 §8).
+    if (holder) {
+      await notificationService.notify(
+        organizationId,
+        [holder],
+        {
+          type: 'badge.assigned',
+          key: 'badgeAssigned',
+          data: { uid: badge.uidMasked },
+          link: '/timeclock',
+          payload: { badgeId: badge.id },
+        },
+        actor.id
+      )
+    }
+    return badge
   }
 
   async revokeOf(tenant: TenantContext, actor: User, employeeId: string, audit: AuditContext) {

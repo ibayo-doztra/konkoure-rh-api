@@ -33,6 +33,11 @@ export interface ApiDefinition {
     sessions: typeof routes['me.sessions']
     revokeSession: typeof routes['me.revokeSession']
     organizations: typeof routes['me.organizations']
+    notifications: {
+      index: typeof routes['me.notifications.index']
+      readAll: typeof routes['me.notifications.readAll']
+      read: typeof routes['me.notifications.read']
+    }
   }
   organizations: {
     store: typeof routes['organizations.store']
@@ -49,6 +54,9 @@ export interface ApiDefinition {
     }
     entitlements: {
       show: typeof routes['org.entitlements.show']
+    }
+    dashboard: {
+      show: typeof routes['org.dashboard.show']
     }
     members: {
       index: typeof routes['org.members.index']

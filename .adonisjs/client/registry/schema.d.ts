@@ -294,6 +294,45 @@ export interface Registry {
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/users/controllers/me_controller').default['organizations']>>>
     }
   }
+  'me.notifications.index': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/me/notifications'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/notifications/validators/notification_validator').listNotificationsValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['index']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['index']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
+  'me.notifications.readAll': {
+    methods: ["POST"]
+    pattern: '/api/v1/me/notifications/read-all'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: {}
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['readAll']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['readAll']>>>
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['readAll']>>>
+    }
+  }
+  'me.notifications.read': {
+    methods: ["POST"]
+    pattern: '/api/v1/me/notifications/:id/read'
+    types: {
+      body: ExtractBody<InferInput<(typeof import('#modules/notifications/validators/notification_validator').notificationIdValidator)>>
+      paramsTuple: [ParamValue]
+      params: { id: ParamValue }
+      query: ExtractQuery<InferInput<(typeof import('#modules/notifications/validators/notification_validator').notificationIdValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['read']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['read']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/notifications/controllers/notifications_controller').default['read']>>> | { status: 422; response: { errors: SimpleError[] } }
+    }
+  }
   'organizations.store': {
     methods: ["POST"]
     pattern: '/api/v1/organizations'
@@ -383,6 +422,19 @@ export interface Registry {
       response: ExtractResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
       errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
       rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/billing/controllers/entitlements_controller').default['show']>>>
+    }
+  }
+  'org.dashboard.show': {
+    methods: ["GET","HEAD"]
+    pattern: '/api/v1/org/dashboard'
+    types: {
+      body: {}
+      paramsTuple: []
+      params: {}
+      query: ExtractQueryForGet<InferInput<(typeof import('#modules/dashboard/validators/dashboard_validator').dashboardValidator)>>
+      response: ExtractResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>>
+      errorResponse: ExtractErrorResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
+      rawResponse: ExtractRawResponse<Awaited<ReturnType<import('#modules/dashboard/controllers/dashboard_controller').default['show']>>> | { status: 422; response: { errors: SimpleError[] } }
     }
   }
   'org.members.index': {

@@ -1,5 +1,6 @@
 export const policies = {
   ContractPolicy: () => import('#policies/contract_policy'),
+  DashboardPolicy: () => import('#policies/dashboard_policy'),
   DepartmentPolicy: () => import('#policies/department_policy'),
   EmployeePolicy: () => import('#policies/employee_policy'),
   InvitationPolicy: () => import('#policies/invitation_policy'),

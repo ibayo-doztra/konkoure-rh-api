@@ -1,0 +1,22 @@
+{
+  "leaveRequested": {
+    "title": "New leave request",
+    "body": "{employeeName} requests leave from {startDate} to {endDate} ({requestedDays} day(s))."
+  },
+  "leaveApproved": {
+    "title": "Leave approved",
+    "body": "Your leave from {startDate} to {endDate} is approved."
+  },
+  "leaveRejected": {
+    "title": "Leave rejected",
+    "body": "Your leave from {startDate} to {endDate} is rejected."
+  },
+  "contractExpiring": {
+    "title": "Contract ending soon",
+    "body": "The contract of {employeeName} ends on {endDate}."
+  },
+  "badgeAssigned": {
+    "title": "Timeclock badge assigned",
+    "body": "A badge ({uid}) has been assigned to you."
+  }
+}

@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import logger from '@adonisjs/core/services/logger'
+import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import redis from '@adonisjs/redis/services/main'
 import type { AttendanceAnomaly } from '#models/attendance_day'
 import queueService from '#shared/queue/queue_service'
@@ -230,29 +231,42 @@ export class AttendanceService {
     return withTenant(organizationId, async (trx) => {
       const organization = await organizations.findActive(organizationId, trx)
       if (!organization) throw new AppException('E_NOT_FOUND')
-      const date = localDay(DateTime.now(), organization.timezone)
       const scope = await visibleEmployeeIds(tenant, trx)
-      const roster = await employeesIn(organizationId, trx).roster(scope)
-      const ids = roster.map((employee) => employee.id)
-      const days = await attendanceDaysIn(organizationId, trx).forDay(date, ids)
-      const onLeaveIds = new Set(
-        await leaveRequestsIn(organizationId, trx).approvedEmployeeIdsOn(date)
-      )
-      const holidays = await holidaysIn(organizationId, trx).datesWithin(date, date)
-      const byEmployee = new Map(days.map((row) => [row.employeeId, row]))
-
-      const present = []
-      const absent = []
-      const onLeave = []
-      for (const employee of roster) {
-        const day = byEmployee.get(employee.id)
-        if (day) present.push({ employee, day })
-        else if (employee.status === 'on_leave' || onLeaveIds.has(employee.id)) {
-          onLeave.push(employee)
-        } else absent.push(employee)
-      }
-      return { date, isHoliday: holidays.has(date), present, absent, onLeave }
+      return this.board(trx, organizationId, organization.timezone, scope)
     })
+  }
+
+  /**
+   * Today's board among the employees in `scope` (all when undefined), inside
+   * the caller's tenant transaction; also used by the dashboard.
+   */
+  async board(
+    trx: TransactionClientContract,
+    organizationId: string,
+    timezone: string,
+    scope: string[] | undefined
+  ) {
+    const date = localDay(DateTime.now(), timezone)
+    const roster = await employeesIn(organizationId, trx).roster(scope)
+    const ids = roster.map((employee) => employee.id)
+    const days = await attendanceDaysIn(organizationId, trx).forDay(date, ids)
+    const onLeaveIds = new Set(
+      await leaveRequestsIn(organizationId, trx).approvedEmployeeIdsOn(date)
+    )
+    const holidays = await holidaysIn(organizationId, trx).datesWithin(date, date)
+    const byEmployee = new Map(days.map((row) => [row.employeeId, row]))
+
+    const present = []
+    const absent = []
+    const onLeave = []
+    for (const employee of roster) {
+      const day = byEmployee.get(employee.id)
+      if (day) present.push({ employee, day })
+      else if (employee.status === 'on_leave' || onLeaveIds.has(employee.id)) {
+        onLeave.push(employee)
+      } else absent.push(employee)
+    }
+    return { date, isHoliday: holidays.has(date), present, absent, onLeave }
   }
 }
 
