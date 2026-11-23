@@ -291,3 +291,47 @@ export const sendBackReviewValidator = vine.create({
   params: params(),
   comment: vine.string().trim().minLength(1).maxLength(5000),
 })
+
+/* Feedback and achievements (07 §5.9) */
+
+const FEEDBACK_KINDS = ['kudos', 'suggestion', 'concern'] as const
+
+export const listFeedbackValidator = vine.create({
+  ...paging,
+  filter: vine
+    .object({
+      toEmployeeId: vine.string().uuid().optional(),
+      kind: vine.enum(FEEDBACK_KINDS).optional(),
+    })
+    .optional(),
+})
+
+export const createFeedbackValidator = vine.create({
+  toEmployeeId: vine.string().uuid(),
+  kind: vine.enum(FEEDBACK_KINDS),
+  message: vine.string().trim().minLength(1).maxLength(5000),
+  okrId: vine.string().uuid().nullable().optional(),
+  goalId: vine.string().uuid().nullable().optional(),
+  isPrivate: vine.boolean().optional(),
+  visibleToManager: vine.boolean().optional(),
+})
+
+export const listAchievementsValidator = vine.create({
+  ...paging,
+  filter: vine
+    .object({
+      employeeId: vine.string().uuid().optional(),
+      goalId: vine.string().uuid().optional(),
+    })
+    .optional(),
+})
+
+/** POST /achievements: `employeeId` defaults to the caller's record. */
+export const createAchievementValidator = vine.create({
+  employeeId: vine.string().uuid().optional(),
+  goalId: vine.string().uuid().nullable().optional(),
+  title: vine.string().trim().minLength(1).maxLength(500),
+  description: vine.string().trim().maxLength(5000).nullable().optional(),
+  impact: vine.string().trim().maxLength(5000).nullable().optional(),
+  achievedAt: vine.date({ formats: ['iso8601'] }),
+})

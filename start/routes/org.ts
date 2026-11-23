@@ -28,6 +28,7 @@ const PerformanceSetupController = () =>
 const GoalsController = () => import('#modules/performance/controllers/goals_controller')
 const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
 const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
+const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -281,6 +282,24 @@ export function registerOrgRoutes() {
             })
             .prefix('reviews')
             .as('reviews')
+
+          router
+            .group(() => {
+              router.get('/', [FeedbackController, 'index']).as('index')
+              router.post('/', [FeedbackController, 'store']).as('store')
+              router.delete(':id', [FeedbackController, 'destroy']).as('destroy')
+            })
+            .prefix('feedback')
+            .as('feedback')
+
+          router
+            .group(() => {
+              router.get('/', [FeedbackController, 'achievements']).as('index')
+              router.post('/', [FeedbackController, 'storeAchievement']).as('store')
+              router.delete(':id', [FeedbackController, 'destroyAchievement']).as('destroy')
+            })
+            .prefix('achievements')
+            .as('achievements')
         })
         .prefix('performance')
         .as('performance')

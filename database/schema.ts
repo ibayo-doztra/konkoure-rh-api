@@ -7,6 +7,35 @@
 import { BaseModel, column } from '@adonisjs/lucid/orm'
 import { DateTime } from 'luxon'
 
+export class AchievementSchema extends BaseModel {
+  static $columns = ['achievedAt', 'createdAt', 'createdBy', 'deletedAt', 'description', 'employeeId', 'goalId', 'id', 'impact', 'organizationId', 'title', 'updatedAt'] as const
+  $columns = AchievementSchema.$columns
+  @column.dateTime()
+  declare achievedAt: DateTime
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare description: string | null
+  @column()
+  declare employeeId: string | null
+  @column()
+  declare goalId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare impact: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class AttendanceDaySchema extends BaseModel {
   static $columns = ['anomaly', 'createdAt', 'day', 'employeeId', 'firstIn', 'id', 'isComplete', 'lastOut', 'organizationId', 'punchCount', 'updatedAt', 'workedMinutes'] as const
   $columns = AttendanceDaySchema.$columns
@@ -302,6 +331,39 @@ export class EmployeeSchema extends BaseModel {
   declare updatedBy: string | null
   @column()
   declare userId: string | null
+}
+
+export class FeedbackSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'fromEmployeeId', 'goalId', 'id', 'isPrivate', 'kind', 'message', 'okrId', 'organizationId', 'toEmployeeId', 'updatedAt', 'visibleToManager'] as const
+  $columns = FeedbackSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare fromEmployeeId: string | null
+  @column()
+  declare goalId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isPrivate: boolean
+  @column()
+  declare kind: 'kudos' | 'suggestion' | 'concern'
+  @column()
+  declare message: string
+  @column()
+  declare okrId: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare toEmployeeId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare visibleToManager: boolean
 }
 
 export class FileSchema extends BaseModel {

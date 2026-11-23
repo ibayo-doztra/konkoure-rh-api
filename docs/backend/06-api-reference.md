@@ -939,6 +939,23 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `performance_score` et `potential_score` (9-box) ne sont pas exposés en
   écriture avant le lot talents. `POST /:id/ai-summary` est reporté au lot IA.
 
+### Feedback et réalisations (précisions du 2026-11-23)
+- `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
+  okrId?, goalId?, isPrivate?, visibleToManager? }`. L'auteur est la fiche de
+  l'appelant (`fromEmployeeId`) ; pas de feedback à soi-même (`422`, `rule = "self"`).
+  Notification `feedback.received` au destinataire (auteur masqué si privé) ; un
+  `concern` notifie aussi les `hr_admin` (à défaut les `owner`).
+- `GET /feedback` : `filter[toEmployeeId|kind]`. O H voient tout ; les autres, le
+  reçu et l'émis, plus, pour un manager, le reçu par son équipe quand
+  `visibleToManager`. Un feedback privé renvoie `fromEmployeeId = null` à tous sauf
+  aux RH et à l'auteur.
+- `DELETE /feedback/:id` : suppression logique par l'auteur ou O H, jamais par le
+  destinataire (même RH).
+- `POST /achievements` : `{ title, achievedAt (ISO 8601), employeeId?, goalId?,
+  description?, impact? }` ; `employeeId` vaut par défaut la fiche de l'appelant ;
+  `goalId` doit être un objectif de cet employé. `GET` : `filter[employeeId|goalId]`,
+  limité à soi, l'équipe ou tous. `DELETE` : suppression logique par l'auteur ou O H.
+
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.
 Sortie : `{ data: { keyResults: [{ title, metric, targetValue, unit }] } }`.

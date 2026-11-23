@@ -24,6 +24,7 @@ export type NotificationType =
   | 'review.validated'
   | 'review.signed'
   | 'review.reminder'
+  | 'feedback.received'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5

@@ -5,6 +5,8 @@ import type User from '#models/user'
 import type Goal from '#models/goal'
 import type Okr from '#models/okr'
 import type PerformanceReview from '#models/performance_review'
+import type Feedback from '#models/feedback'
+import type Achievement from '#models/achievement'
 
 /**
  * Performance (docs/backend/04 §5 "Performance", 06 §9). `inTeam`: the record
@@ -105,6 +107,24 @@ export default class PerformancePolicy extends BasePolicy {
   manageReview(_user: User, review: PerformanceReview, inTeam: boolean) {
     if (this.isSelf(review)) return false
     return this.isHr() || this.isTeamManager(inTeam)
+  }
+
+  /** The author or O H, never the recipient (04 §5, 07 §5.9). */
+  deleteFeedback(user: User, feedback: Feedback) {
+    const self = this.ctx.tenant.employeeId
+    if (self !== null && feedback.toEmployeeId === self) return false
+    if (this.isHr()) return true
+    return feedback.createdBy === user.id || (self !== null && feedback.fromEmployeeId === self)
+  }
+
+  /** Achievements: self · M(team) · O H (06 §9). */
+  createAchievement(_user: User, employeeId: string, inTeam: boolean) {
+    return this.isHr() || this.ctx.tenant.employeeId === employeeId || this.isTeamManager(inTeam)
+  }
+
+  /** The author or O H (06 §9, added 2026-11-20). */
+  deleteAchievement(user: User, achievement: Achievement) {
+    return this.isHr() || achievement.createdBy === user.id
   }
 
   private isHr() {

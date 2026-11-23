@@ -144,6 +144,9 @@
     "reviewNotSubmitted": "Seule une évaluation soumise par l'employé peut être évaluée, validée ou renvoyée.",
     "reviewNotValidated": "Seule une évaluation validée peut être signée.",
     "reviewManagerIncomplete": "La note et le commentaire global du manager sont requis pour valider.",
-    "reviewGoal": "Un des objectifs n'appartient pas à cette évaluation."
+    "reviewGoal": "Un des objectifs n'appartient pas à cette évaluation.",
+    "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
+    "okr": "Cet OKR n'existe pas.",
+    "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé."
   }
 }
