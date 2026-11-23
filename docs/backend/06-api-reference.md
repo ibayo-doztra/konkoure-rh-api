@@ -830,6 +830,33 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
 - `GET /jobs/:id/qr` : PNG 512 px de `WEB_APP_URL/careers/:orgSlug/:jobSlug`, page
   publique de l'offre côté web (la page de l'organisation est `/careers/:orgSlug`).
 
+### Candidats (décisions du 2026-11-23)
+- `GET /candidates` : `page`, `perPage`, `q` (nom, e-mail), `filter[jobId|stage]`.
+  Réponse candidat : champs IA, `jobTitle`, `documents` = clés des pièces stockées
+  (`cv`, `cover_letter`, clés de l'offre), jamais de chemin.
+- `POST /candidates` (multipart, O H R) : `jobId`, `fullName`, `email?`, `phone?`,
+  `source?` (`referral`, `import`, `social` ; défaut `referral`), `cv?`,
+  `coverLetter?`, `documents[<clé>]?` ; pièces facultatives, anti-doublon identique
+  au public, aucun e-mail envoyé.
+- `PATCH /candidates/:id` : `fullName`, `email`, `phone`, `source`.
+- `DELETE /candidates/:id` : suppression **définitive** (fiche, notes, historique,
+  fichiers effacés après commit) ; `audit_logs` garde l'offre et l'étape, aucune
+  donnée personnelle.
+- `POST /candidates/:id/stage` : `{ stage, reason? }`. Avancer : O H R ; reculer ou
+  sortir de `rejected` : O H seulement (`403`) ; `hired` refusé (`422`, passer par
+  `/hire`) ; même étape ou candidat embauché : `409`. `reason` remplit
+  `rejected_reason` lors d'un refus.
+- `POST /candidates/:id/hire` ⚡ : `{ firstName?, lastName?, hireDate? }` (par défaut :
+  premier mot du nom, le reste, aujourd'hui). Crée l'employé dans la même
+  transaction (quota `403 E_QUOTA_EXCEEDED`, e-mail déjà utilisé `409`), passe le
+  candidat `hired`. L'offre reste publiée : aucun nombre de postes n'existe, le
+  recruteur la ferme lui-même. Un candidat refusé ou déjà embauché : `409`.
+  Réponse : `{ data: { candidate, employeeId } }`.
+- `GET /candidates/:id/documents/:key/url` : URL signée 15 min, journal
+  `sensitive_document.viewed`.
+- Notes : `{ body }` ; suppression logique par O H ou le recruteur auteur, événement
+  `note_deleted`. `GET /candidates/:id/events` : historique, du plus récent au plus ancien.
+
 _Aucun endpoint de relance du scoring._ Le scoring IA est déclenché uniquement à
 la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 `aiScore`, `aiJustification`, `aiStrengths`, `aiWeaknesses`, `aiCandidateName`,
@@ -1041,6 +1068,15 @@ Djomy **et** un appel de vérification serveur.
   brouillon, fermée ou expirée : `404` dans tous les cas.
 
 ### Candidature
+Précisions du 2026-11-23 : `POST /public/careers/:orgSlug/jobs/:jobSlug/apply/check`
+`{ email, phone }` répond `200 { data: { available: true } }` ou `409`
+(`rule = "already_applied"`) et sert au formulaire **avant** l'envoi des fichiers
+(00-HANDOFF §4) ; `/apply` refait le même contrôle avant tout stockage. Doublon =
+même offre et même e-mail (casse ignorée) **ou** même téléphone. Pièces : `cv`,
+`coverLetter?`, `documents[<clé>]` selon `requiredDocuments` (clé inconnue ou pièce
+obligatoire absente : `422`). Champ piège `website` : rempli, `422`. Offre fermée ou
+expirée : `410 E_JOB_CLOSED` ; brouillon ou inconnue : `404`. Les erreurs de
+validation ne consomment pas les budgets 5/h/IP et 3/h/e-mail.
 `multipart/form-data` : `fullName`, `email`, `phone`, `cv` (PDF/DOC/DOCX/JPG/PNG ≤ 2 Mo),
 `coverLetter?`, `documents[<clé>]?` selon `job.required_documents`.
 Contrôles : offre `published` et non expirée, MIME réel, anti-doublon

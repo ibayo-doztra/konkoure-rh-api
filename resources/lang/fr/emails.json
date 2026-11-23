@@ -78,5 +78,13 @@
   "reviewSigned": {
     "subject": "Évaluation signée : {employee}",
     "body": "{employee} a signé son évaluation le {date}."
+  },
+  "candidateApplied": {
+    "subject": "Nouvelle candidature : {candidate}",
+    "body": "{candidate} a postulé à l'offre « {job} »."
+  },
+  "applicationReceived": {
+    "subject": "Candidature reçue : {job}",
+    "body": "{organization} a bien reçu votre candidature à l'offre « {job} ». Nous reviendrons vers vous."
   }
 }

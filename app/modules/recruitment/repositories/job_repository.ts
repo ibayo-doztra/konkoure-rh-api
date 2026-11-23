@@ -56,6 +56,15 @@ export class JobRepository extends TenantRepository<typeof Job> {
     return new Set(rows.map((row) => row.slug))
   }
 
+  /** Any live offer of the organization by slug, whatever its status (applications). */
+  bySlug(slug: string) {
+    return this.query().where('slug', slug).first()
+  }
+
+  titlesOf(ids: string[]) {
+    return this.query().whereIn('id', ids).select('id', 'title')
+  }
+
   /** Offers shown publicly: published and not past their deadline (07 §4.2). */
   publicQuery(now: DateTime) {
     return this.query()

@@ -181,6 +181,7 @@ Erreur (toujours cette forme, produite par l'exception handler) :
 | 409 | `E_BADGE_INACTIVE` | Badge désactivé ou employé suspendu |
 | 409 | `E_DUPLICATE_PUNCH` | Même type de pointage dans la fenêtre anti-doublon |
 | 409 | `E_LEAVE_OVERLAP` | Congé chevauchant une demande en attente ou approuvée (07 §3.2) |
+| 410 | `E_JOB_CLOSED` | Offre fermée ou expirée : candidature refusée (07 §4.2) |
 | 413 | `E_PAYLOAD_TOO_LARGE` | Fichier ou corps trop volumineux |
 | 422 | `E_VALIDATION` | Échec de validation VineJS |
 | 422 | `E_HIERARCHY_CYCLE` | Rattachement créant une boucle hiérarchique |
