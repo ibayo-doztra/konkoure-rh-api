@@ -232,6 +232,11 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
       .select('id', 'first_name', 'last_name', 'department_id', 'status')
   }
 
+  /** Present workforce (`active`, `on_leave`), full records (evaluation opening). */
+  present() {
+    return this.query().whereIn('status', ['active', 'on_leave']).orderBy('id', 'asc')
+  }
+
   /** First and last names of live employee records, by id. */
   async namesOf(ids: string[]) {
     if (ids.length === 0) return new Map<string, string>()

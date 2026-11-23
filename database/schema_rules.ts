@@ -102,6 +102,13 @@ export default {
     goal_activities: {
       columns: { status: { tsType: `'planned' | 'in_progress' | 'done'` } },
     },
+    performance_reviews: {
+      columns: {
+        status: {
+          tsType: `'not_started' | 'in_progress' | 'submitted' | 'sent_back' | 'validated' | 'signed'`,
+        },
+      },
+    },
     okrs: {
       columns: {
         status: { tsType: `'draft' | 'active' | 'completed' | 'archived'` },

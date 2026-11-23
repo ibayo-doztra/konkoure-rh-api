@@ -138,6 +138,12 @@
     "okrLocked": "Cet OKR n'est plus modifiable dans son état actuel.",
     "okrKeyResults": "Ajoutez au moins un résultat clé avant de soumettre l'OKR.",
     "okrNotPending": "Seul un OKR en attente de validation peut être validé ou renvoyé.",
-    "okrNotValidated": "Les check-ins ne concernent qu'un OKR validé et actif."
+    "okrNotValidated": "Les check-ins ne concernent qu'un OKR validé et actif.",
+    "cycle": "Ce cycle n'existe pas.",
+    "reviewSelfLocked": "L'auto-évaluation n'est plus modifiable dans cet état.",
+    "reviewNotSubmitted": "Seule une évaluation soumise par l'employé peut être évaluée, validée ou renvoyée.",
+    "reviewNotValidated": "Seule une évaluation validée peut être signée.",
+    "reviewManagerIncomplete": "La note et le commentaire global du manager sont requis pour valider.",
+    "reviewGoal": "Un des objectifs n'appartient pas à cette évaluation."
   }
 }

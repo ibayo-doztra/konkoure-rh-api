@@ -6,10 +6,11 @@ import cycleService from '#modules/performance/services/cycle_service'
 import planService from '#modules/performance/services/plan_service'
 import goalService from '#modules/performance/services/goal_service'
 import okrService from '#modules/performance/services/okr_service'
+import reviewService from '#modules/performance/services/review_service'
 import { TenantContext } from '#shared/tenant/tenant_context'
 import { createUser, grantRoles } from '#tests/helpers/auth'
 import { createEmployee, createHrOrganization } from '#tests/helpers/hr'
-import { createGoal } from '#tests/helpers/performance'
+import { createCycle, createGoal, createPlan } from '#tests/helpers/performance'
 
 test.group('Performance services under the application role', (group) => {
   group.each.setup(() => testUtils.db().withGlobalTransaction())
@@ -113,5 +114,56 @@ test.group('OKR services under the application role', (group) => {
     await okrService.addCheckin(self, holder, okr.id, 'Point', {})
     const { rows } = await okrService.list(self, {})
     assert.lengthOf(rows, 1)
+  })
+})
+
+test.group('Review services under the application role', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('opening and the full lifecycle work with RLS enforced', async ({ assert }) => {
+    const org = await createHrOrganization('Mienne')
+    const owner = await createUser({ emailVerifiedAt: DateTime.now() })
+    const holder = await createUser({ emailVerifiedAt: DateTime.now() })
+    await grantRoles(owner, org, ['owner'])
+    await grantRoles(holder, org, ['employee'])
+    const employee = await createEmployee(org, { userId: holder.id })
+    const hr = new TenantContext(org.id, ['owner'])
+    const self = new TenantContext(org.id, ['employee'], employee.id)
+    const cycle = await createCycle(org, { status: 'open' })
+    const plan = await createPlan(org)
+    const goal = await createGoal(employee, { planId: plan.id })
+
+    await db.rawQuery('SET LOCAL ROLE konkoure_app')
+
+    const { created } = await reviewService.open(
+      hr,
+      owner,
+      { cycleId: cycle.id, planId: plan.id },
+      {}
+    )
+    const [id] = created
+    await reviewService.saveSelf(
+      self,
+      holder,
+      id,
+      { selfScore: 4, goals: [{ goalId: goal.id, rating: 4 }] },
+      {}
+    )
+    await reviewService.submitSelf(self, holder, id, {})
+    await reviewService.saveManager(
+      hr,
+      owner,
+      id,
+      { managerScore: 4, managerGlobalComment: 'Bien' },
+      {}
+    )
+    await reviewService.validate(hr, owner, id, {})
+    const { review, goals } = await reviewService.sign(self, holder, id, {})
+    assert.equal(review.status, 'signed')
+    assert.deepEqual(
+      goals.map((row) => row.id),
+      [goal.id]
+    )
+    await reviewService.reminders()
   })
 })

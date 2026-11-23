@@ -64,5 +64,19 @@
     "subject": "Votre export des pointages est prêt — Konkouré",
     "body": "L'export de {rows} pointage(s) est prêt. Le lien de téléchargement est valable 24 heures.",
     "action": "Télécharger l'export"
+  },
+  "reviewOpened": {
+    "subject": "Votre évaluation « {cycle} » est ouverte",
+    "body": "Votre évaluation du cycle « {cycle} » est ouverte. Vous pouvez commencer votre auto-évaluation.",
+    "deadline": "Date limite : {date}."
+  },
+  "reviewSentBack": {
+    "subject": "Votre évaluation « {cycle} » vous est renvoyée",
+    "body": "Votre manager vous renvoie votre évaluation du cycle « {cycle} » pour correction.",
+    "comment": "Commentaire : {comment}"
+  },
+  "reviewSigned": {
+    "subject": "Évaluation signée : {employee}",
+    "body": "{employee} a signé son évaluation le {date}."
   }
 }

@@ -27,6 +27,7 @@ const PerformanceSetupController = () =>
   import('#modules/performance/controllers/performance_setup_controller')
 const GoalsController = () => import('#modules/performance/controllers/goals_controller')
 const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
+const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -262,6 +263,24 @@ export function registerOrgRoutes() {
             })
             .prefix('okrs')
             .as('okrs')
+
+          router
+            .group(() => {
+              router.get('/', [ReviewsController, 'index']).as('index')
+              router
+                .post('/', [ReviewsController, 'store'])
+                .as('store')
+                .use(middleware.idempotency())
+              router.get(':id', [ReviewsController, 'show']).as('show')
+              router.patch(':id/self', [ReviewsController, 'saveSelf']).as('self')
+              router.post(':id/submit-self', [ReviewsController, 'submitSelf']).as('submitSelf')
+              router.patch(':id/manager', [ReviewsController, 'saveManager']).as('manager')
+              router.post(':id/validate', [ReviewsController, 'validate']).as('validate')
+              router.post(':id/send-back', [ReviewsController, 'sendBack']).as('sendBack')
+              router.post(':id/sign', [ReviewsController, 'sign']).as('sign')
+            })
+            .prefix('reviews')
+            .as('reviews')
         })
         .prefix('performance')
         .as('performance')

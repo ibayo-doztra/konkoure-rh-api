@@ -230,3 +230,64 @@ export const createCheckinValidator = vine.create({
   params: params(),
   message: vine.string().trim().minLength(1).maxLength(5000),
 })
+
+/* Evaluations (07 §5.7) */
+
+const REVIEW_STATUSES = [
+  'not_started',
+  'in_progress',
+  'submitted',
+  'sent_back',
+  'validated',
+  'signed',
+] as const
+const score = () => vine.number().withoutDecimals().min(1).max(5)
+const globalComment = () => vine.string().trim().maxLength(10_000)
+const goalComments = () =>
+  vine
+    .array(
+      vine.object({
+        goalId: vine.string().uuid(),
+        comment: vine.string().trim().maxLength(5000).nullable().optional(),
+        rating: score().nullable().optional(),
+      })
+    )
+    .maxLength(100)
+
+export const listReviewsValidator = vine.create({
+  ...paging,
+  filter: vine
+    .object({
+      cycleId: vine.string().uuid().optional(),
+      employeeId: vine.string().uuid().optional(),
+      status: vine.enum(REVIEW_STATUSES).optional(),
+    })
+    .optional(),
+})
+
+/** POST /reviews (decision of 2026-11-23): mass opening on an open cycle. */
+export const openReviewsValidator = vine.create({
+  cycleId: vine.string().uuid(),
+  planId: vine.string().uuid().optional(),
+  employeeIds: vine.array(vine.string().uuid()).minLength(1).maxLength(1000).optional(),
+})
+
+export const selfReviewValidator = vine.create({
+  params: params(),
+  selfScore: score().nullable().optional(),
+  selfGlobalComment: globalComment().nullable().optional(),
+  goals: goalComments().optional(),
+})
+
+export const managerReviewValidator = vine.create({
+  params: params(),
+  managerScore: score().nullable().optional(),
+  managerGlobalComment: globalComment().nullable().optional(),
+  goals: goalComments().optional(),
+})
+
+/** The comment of a send-back is mandatory (07 §5.7). */
+export const sendBackReviewValidator = vine.create({
+  params: params(),
+  comment: vine.string().trim().minLength(1).maxLength(5000),
+})

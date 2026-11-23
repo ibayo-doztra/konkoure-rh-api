@@ -5,6 +5,8 @@ import type GoalActivity from '#models/goal_activity'
 import type Okr from '#models/okr'
 import type OkrKeyResult from '#models/okr_key_result'
 import type OkrCheckin from '#models/okr_checkin'
+import type PerformanceReview from '#models/performance_review'
+import type ReviewGoalComment from '#models/review_goal_comment'
 
 export function cycleDto(cycle: PerformanceCycle) {
   return {
@@ -110,5 +112,60 @@ export function okrCheckinDto(checkin: OkrCheckin) {
     message: checkin.message,
     progressSnapshot: checkin.progressSnapshot,
     createdAt: checkin.createdAt.toUTC().toISO(),
+  }
+}
+
+/** The manager's side reaches the evaluated employee only from these states (07 §5.7). */
+const MANAGER_VISIBLE = new Set(['sent_back', 'validated', 'signed'])
+
+export function reviewSummaryDto(review: PerformanceReview) {
+  return {
+    id: review.id,
+    cycleId: review.cycleId,
+    planId: review.planId,
+    employeeId: review.employeeId,
+    managerId: review.managerId,
+    status: review.status,
+    submittedAt: review.submittedAt?.toUTC().toISO() ?? null,
+    validatedAt: review.validatedAt?.toUTC().toISO() ?? null,
+    signedAt: review.signedAt?.toUTC().toISO() ?? null,
+    createdAt: review.createdAt.toISO(),
+    updatedAt: review.updatedAt.toISO(),
+  }
+}
+
+/**
+ * Evaluation detail. `ownView`: the reader is the evaluated employee, who
+ * sees the manager's scores and comments only once sent back, validated or
+ * signed.
+ */
+export function reviewDto(
+  view: { review: PerformanceReview; goals: Goal[]; comments: ReviewGoalComment[] },
+  ownView: boolean
+) {
+  const { review } = view
+  const showManager = !ownView || MANAGER_VISIBLE.has(review.status)
+  const comments = new Map(view.comments.map((row) => [row.goalId, row]))
+  return {
+    ...reviewSummaryDto(review),
+    selfScore: review.selfScore,
+    selfGlobalComment: review.selfGlobalComment,
+    managerScore: showManager ? review.managerScore : null,
+    managerGlobalComment: showManager ? review.managerGlobalComment : null,
+    managerSubmittedAt: showManager ? (review.managerSubmittedAt?.toUTC().toISO() ?? null) : null,
+    sentBackAt: review.sentBackAt?.toUTC().toISO() ?? null,
+    sentBackComment: review.sentBackComment,
+    validatedBy: review.validatedBy,
+    signedBy: review.signedBy,
+    goals: view.goals.map((goal) => {
+      const row = comments.get(goal.id)
+      return {
+        ...goalDto(goal),
+        selfComment: row?.selfComment ?? null,
+        selfRating: row?.selfRating ?? null,
+        managerComment: showManager ? (row?.managerComment ?? null) : null,
+        managerRating: showManager ? (row?.managerRating ?? null) : null,
+      }
+    }),
   }
 }

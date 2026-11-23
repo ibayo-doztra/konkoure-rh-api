@@ -42,7 +42,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 | Le 1er à 00h15 | `ai_credits:reset` | Remet à zéro les compteurs mensuels |
 | Le 25 à 09h00 | `okr:checkin-reminder` | Rappel de check-in mensuel |
 | 1er janvier 00h30 | `leaves:annual-rollover` | Report et réinitialisation des soldes |
-| Lundi 08h00 | `reviews:reminders` | Rappels d'évaluations en retard |
+| Lundi 08h00 | `reviews:reminders` | Rappels d'évaluations en retard : auto-évaluation non soumise dont la fermeture tombe dans les 7 jours ou est passée, et évaluations soumises en attente du manager (cycles ouverts) ; notification `review.reminder` |
 
 Ordonnancement via `@adonisjs/scheduler` ou BullMQ repeatable jobs, avec
 **verrou Redis** pour éviter les exécutions concurrentes en multi-réplicas.
