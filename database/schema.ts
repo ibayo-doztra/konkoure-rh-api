@@ -516,6 +516,51 @@ export class InvitationSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class JobSchema extends BaseModel {
+  static $columns = ['contractType', 'createdAt', 'createdBy', 'deadline', 'deletedAt', 'departmentId', 'description', 'id', 'inclusiveScore', 'location', 'organizationId', 'publishedAt', 'requiredDocuments', 'requirements', 'slug', 'status', 'title', 'updatedAt', 'updatedBy', 'viewsCount'] as const
+  $columns = JobSchema.$columns
+  @column()
+  declare contractType: 'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deadline: DateTime | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare departmentId: string | null
+  @column()
+  declare description: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare inclusiveScore: number | null
+  @column()
+  declare location: string | null
+  @column()
+  declare organizationId: string
+  @column.dateTime()
+  declare publishedAt: DateTime | null
+  @column()
+  declare requiredDocuments: Array<{ key: string; label: string; required: boolean }>
+  @column()
+  declare requirements: string | null
+  @column()
+  declare slug: string
+  @column()
+  declare status: 'draft' | 'published' | 'closed' | 'archived'
+  @column()
+  declare title: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare viewsCount: number
+}
+
 export class LeaveBalanceLedgerSchema extends BaseModel {
   static $columns = ['actorUserId', 'createdAt', 'deltaDays', 'employeeId', 'id', 'leaveRequestId', 'leaveType', 'organizationId', 'reason', 'year'] as const
   $columns = LeaveBalanceLedgerSchema.$columns

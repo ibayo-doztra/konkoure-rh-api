@@ -53,6 +53,7 @@ export type ScannedRoutes = {
     'org.employees.index': { paramsTuple?: []; params?: {} }
     'org.employees.store': { paramsTuple?: []; params?: {} }
     'org.employees.managers': { paramsTuple?: []; params?: {} }
+    'org.employees.directory': { paramsTuple?: []; params?: {} }
     'org.employees.import.preview': { paramsTuple?: []; params?: {} }
     'org.employees.import.commit': { paramsTuple?: []; params?: {} }
     'org.employees.export': { paramsTuple?: []; params?: {} }
@@ -189,6 +190,7 @@ export type ScannedRoutes = {
     'org.departments.employees': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.index': { paramsTuple?: []; params?: {} }
     'org.employees.managers': { paramsTuple?: []; params?: {} }
+    'org.employees.directory': { paramsTuple?: []; params?: {} }
     'org.employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -249,6 +251,7 @@ export type ScannedRoutes = {
     'org.departments.employees': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.index': { paramsTuple?: []; params?: {} }
     'org.employees.managers': { paramsTuple?: []; params?: {} }
+    'org.employees.directory': { paramsTuple?: []; params?: {} }
     'org.employees.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.salary': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.team': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

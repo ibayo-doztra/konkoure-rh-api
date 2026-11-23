@@ -84,6 +84,17 @@ export default {
     attendance_days: {
       columns: { anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate'` } },
     },
+    jobs: {
+      columns: {
+        contract_type: {
+          tsType: `'cdi' | 'cdd' | 'stage' | 'freelance' | 'apprenticeship' | 'daily'`,
+        },
+        status: { tsType: `'draft' | 'published' | 'closed' | 'archived'` },
+        required_documents: {
+          tsType: 'Array<{ key: string; label: string; required: boolean }>',
+        },
+      },
+    },
     performance_cycles: {
       columns: {
         frequency: { tsType: `'annual' | 'semestrial' | 'quarterly' | 'custom'` },

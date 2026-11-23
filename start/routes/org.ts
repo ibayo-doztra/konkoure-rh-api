@@ -29,6 +29,7 @@ const GoalsController = () => import('#modules/performance/controllers/goals_con
 const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
 const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
 const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
+const JobsController = () => import('#modules/recruitment/controllers/jobs_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -305,6 +306,27 @@ export function registerOrgRoutes() {
         .prefix('performance')
         .as('performance')
         .use(middleware.entitlement({ module: 'performance' }))
+
+      router
+        .group(() => {
+          router
+            .group(() => {
+              router.get('/', [JobsController, 'index']).as('index')
+              router.post('/', [JobsController, 'store']).as('store')
+              router.get(':id', [JobsController, 'show']).as('show')
+              router.patch(':id', [JobsController, 'update']).as('update')
+              router.delete(':id', [JobsController, 'destroy']).as('destroy')
+              router.post(':id/publish', [JobsController, 'publish']).as('publish')
+              router.post(':id/close', [JobsController, 'close']).as('close')
+              router.post(':id/duplicate', [JobsController, 'duplicate']).as('duplicate')
+              router.get(':id/qr', [JobsController, 'qr']).as('qr')
+            })
+            .prefix('jobs')
+            .as('jobs')
+        })
+        .prefix('recruitment')
+        .as('recruitment')
+        .use(middleware.entitlement({ module: 'recruitment' }))
 
       router
         .group(() => {
