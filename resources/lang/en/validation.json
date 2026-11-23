@@ -148,5 +148,13 @@
     "feedbackSelf": "You cannot give feedback to yourself.",
     "okr": "This OKR does not exist.",
     "goal": "This goal does not exist or does not belong to this employee."
+  },
+  "recruitment": {
+    "jobNotPublishable": "Only a draft or closed offer can be published.",
+    "jobNotPublished": "Only a published offer can be closed.",
+    "deadline": "The deadline of a published offer must be in the future.",
+    "department": "This department does not exist.",
+    "documentKeys": "Each requested document must have a distinct key.",
+    "descriptionRequired": "A published offer must have a description."
   }
 }

@@ -376,6 +376,9 @@ ouvrés et des anomalies de pointage.
 `required_documents jsonb NOT NULL DEFAULT '[]'`, `inclusive_score smallint NULL`,
 `views_count int NOT NULL DEFAULT 0`, `deleted_at`.
 `UNIQUE(organization_id, slug)`. Index `(organization_id, status, published_at DESC)`.
+`required_documents` (décision du 2026-11-23) : tableau
+`[{ key, label, required }]` des pièces en plus du CV, `key` en
+`^[a-z][a-z0-9_]{0,39}$`, unique dans l'offre, 10 au plus.
 
 ### `candidates`
 `id`, `organization_id`, `job_id NOT NULL`, `full_name text NOT NULL`,

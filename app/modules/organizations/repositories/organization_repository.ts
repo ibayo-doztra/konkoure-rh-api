@@ -18,6 +18,11 @@ export class OrganizationRepository {
     return Organization.query({ client: trx }).where('id', id).whereNull('deleted_at').first()
   }
 
+  /** Public careers pages resolve the organization by its slug (06 §11). */
+  findActiveBySlug(slug: string) {
+    return Organization.query().where('slug', slug).whereNull('deleted_at').first()
+  }
+
   /** Locks the tenant root: serializes the changes of its settings and members. */
   findActiveForUpdate(id: string, trx: TransactionClientContract) {
     return Organization.query({ client: trx })

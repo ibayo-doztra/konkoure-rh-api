@@ -148,5 +148,13 @@
     "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
     "okr": "Cet OKR n'existe pas.",
     "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé."
+  },
+  "recruitment": {
+    "jobNotPublishable": "Seule une offre en brouillon ou fermée peut être publiée.",
+    "jobNotPublished": "Seule une offre publiée peut être fermée.",
+    "deadline": "La date limite d'une offre publiée doit être dans le futur.",
+    "department": "Ce département n'existe pas.",
+    "documentKeys": "Chaque pièce demandée doit avoir une clé distincte.",
+    "descriptionRequired": "Une offre publiée doit avoir une description."
   }
 }

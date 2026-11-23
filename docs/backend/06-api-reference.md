@@ -810,11 +810,25 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
 | POST | `/org/recruitment/jobs/:id/close` | O H R |
 | POST | `/org/recruitment/jobs/:id/duplicate` | O H R |
 | GET | `/org/recruitment/jobs/:id/qr` | O H R | QR de la page publique |
-| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce |
+| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce (reportée au lot IA, décision du 2026-11-23) |
 | GET | `/org/recruitment/candidates` | O H R |
 | POST | `/org/recruitment/candidates` | O H R |
 | GET/PATCH/DELETE | `/org/recruitment/candidates/:id` | O H R |
 | POST | `/org/recruitment/candidates/:id/stage` | O H R |
+### Offres (précisions du 2026-11-23)
+- `POST /jobs` : `{ title, contractType, departmentId?, location?, description?,
+  requirements?, deadline?, requiredDocuments? }`, créée en `draft`. Le `slug` est
+  généré par le serveur depuis le titre (suffixe `-2`, `-3`… en cas de collision,
+  offres supprimées comprises) et ne suit jamais un changement de titre.
+- Listes : `page`, `perPage`, `q` (titre), `filter[status|departmentId]`. Un manager
+  ne lit que les offres de son département (04 §5).
+- `publish` : `draft | closed → published`, exige une description et une
+  `deadline` future ou absente (`422`) ; sinon `409`. `close` : `published → closed`.
+  Une offre publiée ne peut pas perdre sa description.
+- `duplicate` : copie en `draft`, nouveau slug, sans `deadline` ni vues (`201`).
+  `DELETE` est logique.
+- `GET /jobs/:id/qr` : PNG 512 px de `WEB_APP_URL/careers/:orgSlug/jobs/:jobSlug`.
+
 _Aucun endpoint de relance du scoring._ Le scoring IA est déclenché uniquement à
 la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 `aiScore`, `aiJustification`, `aiStrengths`, `aiWeaknesses`, `aiCandidateName`,
@@ -1013,6 +1027,17 @@ Djomy **et** un appel de vérification serveur.
 | POST | `/public/payments/checkout` ⚡ | Paiement avant création de compte |
 | GET | `/public/payments/:merchantReference` | Suivi (référence opaque) |
 | POST | `/public/payments/:merchantReference/claim` | Rattache le paiement à un compte |
+
+### Pages carrières (précisions du 2026-11-23)
+- `GET /public/careers/:orgSlug` : `{ data: { organization: { name, slug, logoUrl },
+  jobs: [{ slug, title, department, location, contractType, publishedAt, deadline }] } }`,
+  offres `published` sans `deadline` dépassée, cache Redis 60 s vidé à chaque
+  changement d'offre, 60 requêtes/min/IP.
+- `GET /public/careers/:orgSlug/jobs/:jobSlug` : `{ data: { organization, job } }`,
+  `job` ajoute `description`, `requirements`, `requiredDocuments` ; chaque lecture
+  incrémente `views_count`.
+- Organisation supprimée, sans module `recruitment` ou sans abonnement, offre en
+  brouillon, fermée ou expirée : `404` dans tous les cas.
 
 ### Candidature
 `multipart/form-data` : `fullName`, `email`, `phone`, `cv` (PDF/DOC/DOCX/JPG/PNG ≤ 2 Mo),
