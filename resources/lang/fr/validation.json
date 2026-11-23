@@ -134,6 +134,10 @@
     "parentCycle": "Cet objectif parent créerait une boucle.",
     "plan": "Ce plan n'existe pas.",
     "dueDate": "L'échéance ne peut pas précéder la date de début.",
-    "goalCancelled": "Un objectif annulé ne peut plus progresser."
+    "goalCancelled": "Un objectif annulé ne peut plus progresser.",
+    "okrLocked": "Cet OKR n'est plus modifiable dans son état actuel.",
+    "okrKeyResults": "Ajoutez au moins un résultat clé avant de soumettre l'OKR.",
+    "okrNotPending": "Seul un OKR en attente de validation peut être validé ou renvoyé.",
+    "okrNotValidated": "Les check-ins ne concernent qu'un OKR validé et actif."
   }
 }

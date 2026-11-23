@@ -626,6 +626,99 @@ export class NotificationSchema extends BaseModel {
   declare userId: string
 }
 
+export class OkrCheckinSchema extends BaseModel {
+  static $columns = ['authorEmployeeId', 'createdAt', 'createdBy', 'id', 'message', 'okrId', 'organizationId', 'progressSnapshot', 'updatedAt'] as const
+  $columns = OkrCheckinSchema.$columns
+  @column()
+  declare authorEmployeeId: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare message: string
+  @column()
+  declare okrId: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare progressSnapshot: number
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class OkrKeyResultSchema extends BaseModel {
+  static $columns = ['createdAt', 'currentValue', 'doneAt', 'id', 'isDone', 'metric', 'okrId', 'organizationId', 'position', 'targetValue', 'title', 'unit', 'updatedAt'] as const
+  $columns = OkrKeyResultSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currentValue: string | null
+  @column.dateTime()
+  declare doneAt: DateTime | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isDone: boolean
+  @column()
+  declare metric: string | null
+  @column()
+  declare okrId: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare position: number
+  @column()
+  declare targetValue: string | null
+  @column()
+  declare title: string
+  @column()
+  declare unit: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class OkrSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'deletedAt', 'employeeId', 'id', 'managerComment', 'objective', 'organizationId', 'progress', 'quarter', 'reviewStatus', 'status', 'submittedAt', 'updatedAt', 'updatedBy', 'validatedAt', 'validatedBy'] as const
+  $columns = OkrSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column.dateTime()
+  declare deletedAt: DateTime | null
+  @column()
+  declare employeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerComment: string | null
+  @column()
+  declare objective: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare progress: number
+  @column()
+  declare quarter: string
+  @column()
+  declare reviewStatus: 'draft' | 'pending' | 'validated' | 'needs_revision'
+  @column()
+  declare status: 'draft' | 'active' | 'completed' | 'archived'
+  @column.dateTime()
+  declare submittedAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column.dateTime()
+  declare validatedAt: DateTime | null
+  @column()
+  declare validatedBy: string | null
+}
+
 export class OrganizationSchema extends BaseModel {
   static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns

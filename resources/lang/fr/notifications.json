@@ -18,5 +18,21 @@
   "badgeAssigned": {
     "title": "Badge de pointage attribué",
     "body": "Un badge ({uid}) vous a été attribué."
+  },
+  "okrSubmitted": {
+    "title": "OKR à valider",
+    "body": "{employeeName} a soumis l'OKR « {objective} » ({quarter})."
+  },
+  "okrValidated": {
+    "title": "OKR validé",
+    "body": "Votre OKR « {objective} » ({quarter}) est validé."
+  },
+  "okrNeedsRevision": {
+    "title": "OKR à revoir",
+    "body": "Votre OKR « {objective} » ({quarter}) vous est renvoyé pour révision."
+  },
+  "okrCheckinReminder": {
+    "title": "Check-in mensuel",
+    "body": "Faites le point ce mois-ci sur votre OKR « {objective} » ({quarter})."
   }
 }

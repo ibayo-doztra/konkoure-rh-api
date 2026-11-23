@@ -26,6 +26,7 @@ const HolidaysController = () => import('#modules/leaves/controllers/holidays_co
 const PerformanceSetupController = () =>
   import('#modules/performance/controllers/performance_setup_controller')
 const GoalsController = () => import('#modules/performance/controllers/goals_controller')
+const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
 const TimeclockSetupController = () =>
@@ -228,9 +229,39 @@ export function registerOrgRoutes() {
               router
                 .post(':id/activities', [GoalsController, 'storeActivity'])
                 .as('activities.store')
+              router
+                .patch(':id/activities/:activityId', [GoalsController, 'updateActivity'])
+                .as('activities.update')
+              router
+                .delete(':id/activities/:activityId', [GoalsController, 'destroyActivity'])
+                .as('activities.destroy')
             })
             .prefix('goals')
             .as('goals')
+
+          router.get('activities', [GoalsController, 'allActivities']).as('activities.index')
+
+          router
+            .group(() => {
+              router.get('/', [OkrsController, 'index']).as('index')
+              router.post('/', [OkrsController, 'store']).as('store')
+              router.get(':id', [OkrsController, 'show']).as('show')
+              router.patch(':id', [OkrsController, 'update']).as('update')
+              router.delete(':id', [OkrsController, 'destroy']).as('destroy')
+              router.put(':id/key-results', [OkrsController, 'replaceKeyResults']).as('keyResults')
+              router
+                .patch(':id/key-results/:krId', [OkrsController, 'updateKeyResult'])
+                .as('keyResults.update')
+              router.post(':id/submit', [OkrsController, 'submit']).as('submit')
+              router.post(':id/validate', [OkrsController, 'validate']).as('validate')
+              router
+                .post(':id/request-revision', [OkrsController, 'requestRevision'])
+                .as('requestRevision')
+              router.get(':id/checkins', [OkrsController, 'checkins']).as('checkins.index')
+              router.post(':id/checkins', [OkrsController, 'storeCheckin']).as('checkins.store')
+            })
+            .prefix('okrs')
+            .as('okrs')
         })
         .prefix('performance')
         .as('performance')

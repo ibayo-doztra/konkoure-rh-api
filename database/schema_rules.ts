@@ -102,6 +102,12 @@ export default {
     goal_activities: {
       columns: { status: { tsType: `'planned' | 'in_progress' | 'done'` } },
     },
+    okrs: {
+      columns: {
+        status: { tsType: `'draft' | 'active' | 'completed' | 'archived'` },
+        review_status: { tsType: `'draft' | 'pending' | 'validated' | 'needs_revision'` },
+      },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

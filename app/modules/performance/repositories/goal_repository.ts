@@ -1,7 +1,7 @@
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { ModelAttributes } from '@adonisjs/lucid/types/model'
 import Goal, { type GoalCategory, type GoalStatus } from '#models/goal'
-import GoalActivity from '#models/goal_activity'
+import GoalActivity, { type GoalActivityStatus } from '#models/goal_activity'
 import { TenantRepository } from '#shared/base/tenant_repository'
 
 export interface GoalListFilters {
@@ -12,6 +12,16 @@ export interface GoalListFilters {
   status?: GoalStatus
   category?: GoalCategory
   /** Restricts the list to these employees (team, self). */
+  employeeIds?: string[]
+}
+
+export interface ActivityListFilters {
+  page: number
+  perPage: number
+  goalId?: string
+  employeeId?: string
+  status?: GoalActivityStatus
+  /** Restricts the list to the goals of these employees (team, self). */
   employeeIds?: string[]
 }
 
@@ -129,6 +139,44 @@ export class GoalRepository extends TenantRepository<typeof Goal> {
       .where('goal_id', goalId)
       .orderByRaw('planned_date ASC NULLS LAST')
       .orderBy('id', 'asc')
+  }
+
+  /**
+   * Activities across goals: only those of goals the viewer sees (live goal,
+   * holder in `employeeIds` when given).
+   */
+  paginateActivities(filters: ActivityListFilters) {
+    const goals = this.query().select('id')
+    if (filters.employeeIds) goals.whereIn('employee_id', filters.employeeIds)
+    if (filters.employeeId) goals.where('employee_id', filters.employeeId)
+    if (filters.goalId) goals.where('id', filters.goalId)
+    const query = GoalActivity.query({ client: this.trx })
+      .where('organization_id', this.organizationId)
+      .whereIn('goal_id', goals)
+    if (filters.status) query.where('status', filters.status)
+    return query
+      .orderByRaw('planned_date ASC NULLS LAST')
+      .orderBy('id', 'asc')
+      .paginate(filters.page, filters.perPage)
+  }
+
+  findActivityForUpdate(goalId: string, activityId: string) {
+    return GoalActivity.query({ client: this.trx })
+      .where('organization_id', this.organizationId)
+      .where('goal_id', goalId)
+      .where('id', activityId)
+      .forUpdate()
+      .first()
+  }
+
+  saveActivity(activity: GoalActivity) {
+    activity.useTransaction(this.trx)
+    return activity.save()
+  }
+
+  deleteActivity(activity: GoalActivity) {
+    activity.useTransaction(this.trx)
+    return activity.delete()
   }
 
   createActivity(data: Partial<ModelAttributes<GoalActivity>>) {

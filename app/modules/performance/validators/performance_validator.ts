@@ -129,3 +129,104 @@ export const createActivityValidator = vine.create({
   plannedDate: vine.date().nullable().optional(),
   employeeId: vine.string().uuid().nullable().optional(),
 })
+
+/** PATCH /goals/:id/activities/:activityId (added 2026-11-23). */
+export const updateActivityValidator = vine.create({
+  params: vine.object({ id: vine.string().uuid(), activityId: vine.string().uuid() }),
+  title: vine.string().trim().minLength(1).maxLength(500).optional(),
+  description: vine.string().trim().maxLength(5000).nullable().optional(),
+  status: vine.enum(ACTIVITY_STATUSES).optional(),
+  plannedDate: vine.date().nullable().optional(),
+})
+
+export const activityIdValidator = vine.create({
+  params: vine.object({ id: vine.string().uuid(), activityId: vine.string().uuid() }),
+})
+
+/** GET /performance/activities (added 2026-11-23). */
+export const listActivitiesValidator = vine.create({
+  page: vine.number().withoutDecimals().min(1).max(10_000).optional(),
+  perPage: vine.number().withoutDecimals().min(1).max(200).optional(),
+  filter: vine
+    .object({
+      goalId: vine.string().uuid().optional(),
+      employeeId: vine.string().uuid().optional(),
+      status: vine.enum(ACTIVITY_STATUSES).optional(),
+    })
+    .optional(),
+})
+
+/* OKR (07 §5.3) */
+
+const OKR_STATUSES = ['draft', 'active', 'completed', 'archived'] as const
+const OKR_REVIEW_STATUSES = ['draft', 'pending', 'validated', 'needs_revision'] as const
+const quarter = () =>
+  vine
+    .string()
+    .trim()
+    .regex(/^\d{4}-Q[1-4]$/)
+const objective = () => vine.string().trim().minLength(1).maxLength(1000)
+const amount = () => vine.number().min(-1_000_000_000_000).max(1_000_000_000_000)
+
+export const listOkrsValidator = vine.create({
+  ...paging,
+  filter: vine
+    .object({
+      employeeId: vine.string().uuid().optional(),
+      quarter: quarter().optional(),
+      status: vine.enum(OKR_STATUSES).optional(),
+      reviewStatus: vine.enum(OKR_REVIEW_STATUSES).optional(),
+    })
+    .optional(),
+})
+
+/** POST /okrs: `employeeId` defaults to the caller's record. */
+export const createOkrValidator = vine.create({
+  employeeId: vine.string().uuid().optional(),
+  quarter: quarter(),
+  objective: objective(),
+})
+
+export const updateOkrValidator = vine.create({
+  params: params(),
+  quarter: quarter().optional(),
+  objective: objective().optional(),
+})
+
+export const replaceKeyResultsValidator = vine.create({
+  params: params(),
+  keyResults: vine
+    .array(
+      vine.object({
+        title: vine.string().trim().minLength(1).maxLength(500),
+        metric: vine.string().trim().maxLength(200).nullable().optional(),
+        targetValue: amount().nullable().optional(),
+        currentValue: amount().nullable().optional(),
+        unit: vine.string().trim().maxLength(50).nullable().optional(),
+        isDone: vine.boolean().optional(),
+      })
+    )
+    .maxLength(20),
+})
+
+export const updateKeyResultValidator = vine.create({
+  params: vine.object({ id: vine.string().uuid(), krId: vine.string().uuid() }),
+  isDone: vine.boolean().optional(),
+  currentValue: amount().nullable().optional(),
+})
+
+export const validateOkrValidator = vine.create({
+  params: params(),
+  comment: vine.string().trim().minLength(1).maxLength(2000).optional(),
+})
+
+/** The comment of a send-back is mandatory (07 §5.3). */
+export const requestRevisionValidator = vine.create({
+  params: params(),
+  comment: vine.string().trim().minLength(1).maxLength(2000),
+})
+
+export const createCheckinValidator = vine.create({
+  params: params(),
+  message: vine.string().trim().minLength(1).maxLength(5000),
+})

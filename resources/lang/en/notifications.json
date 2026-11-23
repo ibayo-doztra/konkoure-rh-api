@@ -18,5 +18,21 @@
   "badgeAssigned": {
     "title": "Timeclock badge assigned",
     "body": "A badge ({uid}) has been assigned to you."
+  },
+  "okrSubmitted": {
+    "title": "OKR to validate",
+    "body": "{employeeName} submitted the OKR \"{objective}\" ({quarter})."
+  },
+  "okrValidated": {
+    "title": "OKR validated",
+    "body": "Your OKR \"{objective}\" ({quarter}) is validated."
+  },
+  "okrNeedsRevision": {
+    "title": "OKR to revise",
+    "body": "Your OKR \"{objective}\" ({quarter}) was sent back for revision."
+  },
+  "okrCheckinReminder": {
+    "title": "Monthly check-in",
+    "body": "Post this month's check-in on your OKR \"{objective}\" ({quarter})."
   }
 }

@@ -3,6 +3,7 @@ import { HttpContext } from '@adonisjs/core/http'
 import { BasePolicy } from '@adonisjs/bouncer'
 import type User from '#models/user'
 import type Goal from '#models/goal'
+import type Okr from '#models/okr'
 
 /**
  * Performance (docs/backend/04 §5 "Performance", 06 §9). `inTeam`: the record
@@ -51,12 +52,46 @@ export default class PerformancePolicy extends BasePolicy {
     return this.isSelf(goal) || this.isTeamManager(inTeam)
   }
 
+  /** OKRs: everyone for themselves, O H for anyone, a manager for the team (06 §9). */
+  createOkr(_user: User, employeeId: string, inTeam: boolean) {
+    return this.isHr() || this.ctx.tenant.employeeId === employeeId || this.isTeamManager(inTeam)
+  }
+
+  viewOkr(_user: User, okr: Okr, inTeam: boolean) {
+    return this.isHr() || this.isSelf(okr) || this.isTeamManager(inTeam)
+  }
+
+  /** Objective, quarter and deletion: the holder (state checked by the service) or O H. */
+  editOkr(_user: User, okr: Okr) {
+    return this.isHr() || this.isSelf(okr)
+  }
+
+  /** `PUT /okrs/:id/key-results`: self · O H · M(team). */
+  editKeyResults(_user: User, okr: Okr, inTeam: boolean) {
+    return this.isHr() || this.isSelf(okr) || this.isTeamManager(inTeam)
+  }
+
+  /** `PATCH /okrs/:id/key-results/:krId`: self · M(team). */
+  progressKeyResult(_user: User, okr: Okr, inTeam: boolean) {
+    return this.isSelf(okr) || this.isTeamManager(inTeam)
+  }
+
+  submitOkr(_user: User, okr: Okr) {
+    return this.isSelf(okr)
+  }
+
+  /** Validate or send back: O H or the manager, never on one's own OKR. */
+  decideOkr(_user: User, okr: Okr, inTeam: boolean) {
+    if (this.isSelf(okr)) return false
+    return this.isHr() || this.isTeamManager(inTeam)
+  }
+
   private isHr() {
     return this.ctx.tenant.hasRole('owner', 'hr_admin')
   }
 
-  private isSelf(goal: Goal) {
-    return goal.employeeId !== null && this.ctx.tenant.employeeId === goal.employeeId
+  private isSelf(record: Goal | Okr) {
+    return record.employeeId !== null && this.ctx.tenant.employeeId === record.employeeId
   }
 
   private isTeamManager(inTeam: boolean) {
