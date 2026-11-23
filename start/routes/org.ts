@@ -95,6 +95,7 @@ export function registerOrgRoutes() {
               router.post('/', [EmployeesController, 'store']).as('store')
               // Before `:id`, which would otherwise capture it.
               router.get('managers', [EmployeesController, 'managers']).as('managers')
+              router.get('directory', [EmployeesController, 'directory']).as('directory')
               router
                 .post('import/preview', [EmployeeTransfersController, 'preview'])
                 .as('import.preview')
