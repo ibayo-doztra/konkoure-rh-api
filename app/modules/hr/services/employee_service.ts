@@ -143,6 +143,15 @@ export class EmployeeService {
     })
   }
 
+  /** `GET /employees/directory`: reduced fields of present staff, for every member. */
+  directory(
+    tenant: TenantContext,
+    filters: { page: number; perPage: number; q?: string; departmentId?: string }
+  ) {
+    const { organizationId } = tenant
+    return withTenant(organizationId, (trx) => employeesIn(organizationId, trx).directory(filters))
+  }
+
   managers(tenant: TenantContext, filters: { page: number; perPage: number }) {
     const { organizationId } = tenant
     return withTenant(organizationId, (trx) =>

@@ -39,6 +39,11 @@ export default class EmployeePolicy extends BasePolicy {
     )
   }
 
+  /** The directory is open to every member (decision of 2026-11-23, 04 §5). */
+  listDirectory(_user: User) {
+    return true
+  }
+
   listManagers(_user: User) {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager')
   }

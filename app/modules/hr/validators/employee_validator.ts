@@ -92,6 +92,14 @@ export const nestedEmployeesValidator = vine.create({ params: params(), ...listF
 
 export const paginationValidator = vine.create({ page: page(), perPage: perPage() })
 
+/** GET /org/employees/directory: name search and department only. */
+export const directoryValidator = vine.create({
+  page: page(),
+  perPage: perPage(),
+  q: vine.string().trim().minLength(1).maxLength(100).optional(),
+  filter: vine.object({ departmentId: vine.string().uuid().optional() }).optional(),
+})
+
 const DOCUMENT_CATEGORIES = [
   'passport',
   'national_id',
