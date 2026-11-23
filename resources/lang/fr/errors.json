@@ -24,5 +24,6 @@
   "E_DUPLICATE_PUNCH": "Ce pointage vient déjà d’être enregistré.",
   "E_OUT_OF_ZONE": "Vous êtes hors de toute zone de travail autorisée.",
   "E_MANUAL_PUNCH_DISABLED": "Le pointage manuel est désactivé pour cette organisation.",
-  "E_WEIGHT_OVERFLOW": "La somme des pondérations des objectifs de cet employé sur ce plan dépasserait 100."
+  "E_WEIGHT_OVERFLOW": "La somme des pondérations des objectifs de cet employé sur ce plan dépasserait 100.",
+  "E_JOB_CLOSED": "Cette offre n'accepte plus de candidatures."
 }

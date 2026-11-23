@@ -78,5 +78,13 @@
   "reviewSigned": {
     "subject": "Evaluation signed: {employee}",
     "body": "{employee} signed their evaluation on {date}."
+  },
+  "candidateApplied": {
+    "subject": "New application: {candidate}",
+    "body": "{candidate} applied to \"{job}\"."
+  },
+  "applicationReceived": {
+    "subject": "Application received: {job}",
+    "body": "{organization} received your application to \"{job}\". We will get back to you."
   }
 }

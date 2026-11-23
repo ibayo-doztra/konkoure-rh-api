@@ -12,6 +12,10 @@ export function registerPublicRoutes() {
     .group(() => {
       router.get(':orgSlug', [CareersController, 'page']).as('show')
       router.get(':orgSlug/jobs/:jobSlug', [CareersController, 'job']).as('jobs.show')
+      router
+        .post(':orgSlug/jobs/:jobSlug/apply/check', [CareersController, 'check'])
+        .as('jobs.apply.check')
+      router.post(':orgSlug/jobs/:jobSlug/apply', [CareersController, 'apply']).as('jobs.apply')
     })
     .prefix('public/careers')
     .as('public.careers')

@@ -178,29 +178,50 @@ export class EmployeeService {
   ): Promise<Employee> {
     const { organizationId } = tenant
     const limit = await this.maxEmployees(organizationId)
-    const result = await withTenant(organizationId, async (trx) => {
-      const employees = employeesIn(organizationId, trx)
-      await employees.lockHierarchy()
-      if (input.status !== 'terminated') await this.assertQuota(employees, limit)
-      await this.assertUnique(employees, input)
-      await this.assertReferences(employees, trx, input)
-
-      const employee = await employees.create({
-        ...columns(input),
-        createdBy: actor.id,
-        updatedBy: actor.id,
-      })
-      await auditService.record(trx, this.context(tenant, audit), {
-        action: 'employee.created',
-        targetType: 'employee',
-        targetId: employee.id,
-        after: { status: input.status ?? 'active', departmentId: input.departmentId ?? null },
-      })
-      await employee.refresh()
-      return employee
-    })
+    const result = await withTenant(organizationId, (trx) =>
+      this.createWithin(trx, tenant, actor, input, limit, audit)
+    )
     await teamCache.invalidate(organizationId)
     return result
+  }
+
+  /**
+   * Creation inside a tenant transaction opened by the caller (hiring,
+   * 07 §4.6): quota, uniqueness and references are checked there. The caller
+   * invalidates the team cache after its commit.
+   */
+  async createWithin(
+    trx: TransactionClientContract,
+    tenant: TenantContext,
+    actor: User,
+    input: EmployeeInput & { firstName: string; lastName: string },
+    limit: number,
+    audit: AuditContext
+  ): Promise<Employee> {
+    const employees = employeesIn(tenant.organizationId, trx)
+    await employees.lockHierarchy()
+    if (input.status !== 'terminated') await this.assertQuota(employees, limit)
+    await this.assertUnique(employees, input)
+    await this.assertReferences(employees, trx, input)
+
+    const employee = await employees.create({
+      ...columns(input),
+      createdBy: actor.id,
+      updatedBy: actor.id,
+    })
+    await auditService.record(trx, this.context(tenant, audit), {
+      action: 'employee.created',
+      targetType: 'employee',
+      targetId: employee.id,
+      after: { status: input.status ?? 'active', departmentId: input.departmentId ?? null },
+    })
+    await employee.refresh()
+    return employee
+  }
+
+  /** Maximum headcount of the organization's plan (07 §6.3). */
+  employeeLimit(organizationId: string) {
+    return this.maxEmployees(organizationId)
   }
 
   async update(

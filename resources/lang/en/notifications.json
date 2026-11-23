@@ -74,5 +74,9 @@
   "feedbackConcern": {
     "title": "Concern to review",
     "body": "{authorName} raised a concern about {employeeName}."
+  },
+  "candidateApplied": {
+    "title": "New application",
+    "body": "{candidateName} applied to \"{jobTitle}\"."
   }
 }

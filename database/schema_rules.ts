@@ -95,6 +95,25 @@ export default {
         },
       },
     },
+    candidates: {
+      columns: {
+        stage: {
+          tsType: `'new' | 'screening' | 'interview' | 'offer' | 'hired' | 'rejected'`,
+        },
+        source: { tsType: `'careers' | 'referral' | 'import' | 'social'` },
+        documents: { tsType: 'Record<string, string>' },
+        ai_strengths: { tsType: 'string[]' },
+        ai_weaknesses: { tsType: 'string[]' },
+      },
+    },
+    candidate_events: {
+      columns: {
+        type: {
+          tsType: `'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'`,
+        },
+        payload: JSON_OBJECT,
+      },
+    },
     performance_cycles: {
       columns: {
         frequency: { tsType: `'annual' | 'semestrial' | 'quarterly' | 'custom'` },

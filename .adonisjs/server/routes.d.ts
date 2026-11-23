@@ -147,6 +147,27 @@ export type ScannedRoutes = {
     'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
     'org.performance.achievements.store': { paramsTuple?: []; params?: {} }
     'org.performance.achievements.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.store': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.publish': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.close': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.duplicate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.qr': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.candidates.store': { paramsTuple?: []; params?: {} }
+    'org.recruitment.candidates.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.stage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.hire': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.documents.url': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'key': ParamValue} }
+    'org.recruitment.candidates.notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.notes.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'noteId': ParamValue} }
+    'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -168,6 +189,10 @@ export type ScannedRoutes = {
     'org.employees.badge.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.scan': { paramsTuple?: []; params?: {} }
     'org.timeclock.sync': { paramsTuple?: []; params?: {} }
+    'public.careers.show': { paramsTuple: [ParamValue]; params: {'orgSlug': ParamValue} }
+    'public.careers.jobs.show': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
+    'public.careers.jobs.apply.check': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
+    'public.careers.jobs.apply': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
   }
   GET: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -221,6 +246,14 @@ export type ScannedRoutes = {
     'org.performance.reviews.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.feedback.index': { paramsTuple?: []; params?: {} }
     'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.qr': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.candidates.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.documents.url': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'key': ParamValue} }
+    'org.recruitment.candidates.notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -229,6 +262,8 @@ export type ScannedRoutes = {
     'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.badge.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'public.careers.show': { paramsTuple: [ParamValue]; params: {'orgSlug': ParamValue} }
+    'public.careers.jobs.show': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
   }
   HEAD: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -282,6 +317,14 @@ export type ScannedRoutes = {
     'org.performance.reviews.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.feedback.index': { paramsTuple?: []; params?: {} }
     'org.performance.achievements.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.qr': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.index': { paramsTuple?: []; params?: {} }
+    'org.recruitment.candidates.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.documents.url': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'key': ParamValue} }
+    'org.recruitment.candidates.notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -290,6 +333,8 @@ export type ScannedRoutes = {
     'org.timeclock.devices.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.devices.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.employees.badge.show': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'public.careers.show': { paramsTuple: [ParamValue]; params: {'orgSlug': ParamValue} }
+    'public.careers.jobs.show': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
   }
   POST: {
     'auth.register': { paramsTuple?: []; params?: {} }
@@ -347,6 +392,14 @@ export type ScannedRoutes = {
     'org.performance.reviews.sign': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.feedback.store': { paramsTuple?: []; params?: {} }
     'org.performance.achievements.store': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.store': { paramsTuple?: []; params?: {} }
+    'org.recruitment.jobs.publish': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.close': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.duplicate': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.store': { paramsTuple?: []; params?: {} }
+    'org.recruitment.candidates.stage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.hire': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.punch': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.export': { paramsTuple?: []; params?: {} }
@@ -354,6 +407,8 @@ export type ScannedRoutes = {
     'org.employees.badge.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.scan': { paramsTuple?: []; params?: {} }
     'org.timeclock.sync': { paramsTuple?: []; params?: {} }
+    'public.careers.jobs.apply.check': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
+    'public.careers.jobs.apply': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
@@ -374,6 +429,8 @@ export type ScannedRoutes = {
     'org.performance.okrs.keyResults.update': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'krId': ParamValue} }
     'org.performance.reviews.self': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.reviews.manager': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.logs.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
   }
@@ -394,6 +451,9 @@ export type ScannedRoutes = {
     'org.performance.okrs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.feedback.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.achievements.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.jobs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.candidates.notes.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'noteId': ParamValue} }
     'org.timeclock.zones.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.logs.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.timeclock.devices.destroy': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }

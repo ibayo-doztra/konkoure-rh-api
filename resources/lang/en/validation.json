@@ -155,6 +155,16 @@
     "deadline": "The deadline of a published offer must be in the future.",
     "department": "This department does not exist.",
     "documentKeys": "Each requested document must have a distinct key.",
-    "descriptionRequired": "A published offer must have a description."
+    "descriptionRequired": "A published offer must have a description.",
+    "cvRequired": "Attach your CV.",
+    "documentUnknown": "This document is not requested by the offer.",
+    "documentRequired": "This document is required for this offer.",
+    "documentType": "The file must be a PDF, DOC, DOCX, JPG or PNG.",
+    "alreadyApplied": "An application already exists for this offer with this e-mail or phone.",
+    "job": "This offer does not exist.",
+    "useHire": "Hiring goes through the \"Hire\" action, which creates the employee record.",
+    "hiredTerminal": "A hired candidate no longer changes stage.",
+    "sameStage": "The candidate is already at this stage.",
+    "hireRejected": "A rejected candidate cannot be hired."
   }
 }
