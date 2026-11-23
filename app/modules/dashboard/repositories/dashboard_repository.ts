@@ -119,6 +119,41 @@ export class DashboardRepository {
     }
   }
 
+  /**
+   * Performance block (06 §3, decision of 2026-11-23): evaluations not signed
+   * yet, evaluations signed in the period, mean progress of the live goals
+   * that are not cancelled (null without any).
+   */
+  async performance(scope: Scope, period: Period) {
+    const reviews = await this.trx
+      .from('performance_reviews')
+      .where('organization_id', this.organizationId)
+      .whereIn('employee_id', this.scopeIds(scope))
+      .select(
+        this.trx.raw(`count(*) FILTER (WHERE status <> 'signed') AS in_progress`),
+        this.trx.raw(`count(*) FILTER (WHERE signed_at >= ? AND signed_at < ?) AS signed`, [
+          period.start.toJSDate(),
+          period.end.toJSDate(),
+        ])
+      )
+      .first()
+    const goals = await this.trx
+      .from('goals')
+      .where('organization_id', this.organizationId)
+      .whereNull('deleted_at')
+      .whereNot('status', 'cancelled')
+      .whereIn('employee_id', this.scopeIds(scope))
+      .avg('progress as progress')
+      .first()
+    const progress = goals?.progress
+    return {
+      reviewsInProgress: num(reviews?.in_progress),
+      reviewsSigned: num(reviews?.signed),
+      avgGoalProgress:
+        progress === null || progress === undefined ? null : Math.round(Number(progress)),
+    }
+  }
+
   /** Staff of each month: hired by its end, not gone before it started. */
   async headcountByMonth(scope: Scope, first: string, last: string) {
     const scopeSql = scope ? 'AND e.id = ANY(?::uuid[])' : ''

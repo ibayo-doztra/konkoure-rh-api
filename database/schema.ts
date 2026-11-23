@@ -831,6 +831,63 @@ export class PerformancePlanSchema extends BaseModel {
   declare updatedBy: string | null
 }
 
+export class PerformanceReviewSchema extends BaseModel {
+  static $columns = ['aiSummary', 'createdAt', 'createdBy', 'cycleId', 'employeeId', 'id', 'managerGlobalComment', 'managerId', 'managerScore', 'managerSubmittedAt', 'organizationId', 'performanceScore', 'planId', 'potentialScore', 'selfGlobalComment', 'selfScore', 'sentBackAt', 'sentBackComment', 'signedAt', 'signedBy', 'status', 'submittedAt', 'updatedAt', 'updatedBy', 'validatedAt', 'validatedBy'] as const
+  $columns = PerformanceReviewSchema.$columns
+  @column()
+  declare aiSummary: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare cycleId: string | null
+  @column()
+  declare employeeId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerGlobalComment: string | null
+  @column()
+  declare managerId: string | null
+  @column()
+  declare managerScore: number | null
+  @column.dateTime()
+  declare managerSubmittedAt: DateTime | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare performanceScore: number | null
+  @column()
+  declare planId: string | null
+  @column()
+  declare potentialScore: number | null
+  @column()
+  declare selfGlobalComment: string | null
+  @column()
+  declare selfScore: number | null
+  @column.dateTime()
+  declare sentBackAt: DateTime | null
+  @column()
+  declare sentBackComment: string | null
+  @column.dateTime()
+  declare signedAt: DateTime | null
+  @column()
+  declare signedBy: string | null
+  @column()
+  declare status: 'not_started' | 'in_progress' | 'submitted' | 'sent_back' | 'validated' | 'signed'
+  @column.dateTime()
+  declare submittedAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column.dateTime()
+  declare validatedAt: DateTime | null
+  @column()
+  declare validatedBy: string | null
+}
+
 export class PlanSchema extends BaseModel {
   static $columns = ['aiCreditsPerMonth', 'code', 'createdAt', 'deletedAt', 'features', 'id', 'isPublic', 'maxEmployees', 'modules', 'name', 'priceGnf', 'priceYearlyGnf', 'sortOrder', 'updatedAt'] as const
   $columns = PlanSchema.$columns
@@ -900,6 +957,31 @@ export class PublicHolidaySchema extends BaseModel {
   declare name: string
   @column()
   declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class ReviewGoalCommentSchema extends BaseModel {
+  static $columns = ['createdAt', 'goalId', 'id', 'managerComment', 'managerRating', 'organizationId', 'reviewId', 'selfComment', 'selfRating', 'updatedAt'] as const
+  $columns = ReviewGoalCommentSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare goalId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare managerComment: string | null
+  @column()
+  declare managerRating: number | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare reviewId: string
+  @column()
+  declare selfComment: string | null
+  @column()
+  declare selfRating: number | null
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 }

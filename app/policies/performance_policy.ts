@@ -4,6 +4,7 @@ import { BasePolicy } from '@adonisjs/bouncer'
 import type User from '#models/user'
 import type Goal from '#models/goal'
 import type Okr from '#models/okr'
+import type PerformanceReview from '#models/performance_review'
 
 /**
  * Performance (docs/backend/04 §5 "Performance", 06 §9). `inTeam`: the record
@@ -86,11 +87,31 @@ export default class PerformancePolicy extends BasePolicy {
     return this.isHr() || this.isTeamManager(inTeam)
   }
 
+  /** `POST /reviews`: opening a cycle's evaluations is HR's (06 §9). */
+  openReviews(_user: User) {
+    return this.isHr()
+  }
+
+  viewReview(_user: User, review: PerformanceReview, inTeam: boolean) {
+    return this.isHr() || this.isSelf(review) || this.isTeamManager(inTeam)
+  }
+
+  /** Self-evaluation, its submission and the signature: the evaluated employee only. */
+  selfReview(_user: User, review: PerformanceReview) {
+    return this.isSelf(review)
+  }
+
+  /** Manager side, validation and send-back: O H or the manager, never on one's own. */
+  manageReview(_user: User, review: PerformanceReview, inTeam: boolean) {
+    if (this.isSelf(review)) return false
+    return this.isHr() || this.isTeamManager(inTeam)
+  }
+
   private isHr() {
     return this.ctx.tenant.hasRole('owner', 'hr_admin')
   }
 
-  private isSelf(record: Goal | Okr) {
+  private isSelf(record: { employeeId: string | null }) {
     return record.employeeId !== null && this.ctx.tenant.employeeId === record.employeeId
   }
 

@@ -64,5 +64,19 @@
     "subject": "Your punch export is ready — Konkouré",
     "body": "The export of {rows} punch(es) is ready. The download link is valid for 24 hours.",
     "action": "Download the export"
+  },
+  "reviewOpened": {
+    "subject": "Your \"{cycle}\" evaluation is open",
+    "body": "Your evaluation for the \"{cycle}\" cycle is open. You can start your self-evaluation.",
+    "deadline": "Deadline: {date}."
+  },
+  "reviewSentBack": {
+    "subject": "Your \"{cycle}\" evaluation was sent back",
+    "body": "Your manager sent back your evaluation for the \"{cycle}\" cycle for correction.",
+    "comment": "Comment: {comment}"
+  },
+  "reviewSigned": {
+    "subject": "Evaluation signed: {employee}",
+    "body": "{employee} signed their evaluation on {date}."
   }
 }

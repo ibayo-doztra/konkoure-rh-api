@@ -18,6 +18,12 @@ export type NotificationType =
   | 'okr.validated'
   | 'okr.needs_revision'
   | 'okr.checkin_reminder'
+  | 'review.opened'
+  | 'review.submitted'
+  | 'review.sent_back'
+  | 'review.validated'
+  | 'review.signed'
+  | 'review.reminder'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5
