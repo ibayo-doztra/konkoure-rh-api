@@ -165,6 +165,9 @@
     "useHire": "L'embauche passe par l'action « Embaucher », qui crée la fiche employé.",
     "hiredTerminal": "Un candidat embauché ne change plus d'étape.",
     "sameStage": "Le candidat est déjà à cette étape.",
-    "hireRejected": "Un candidat refusé ne peut pas être embauché."
+    "hireRejected": "Un candidat refusé ne peut pas être embauché.",
+    "webhookUrl": "L'URL du webhook doit être en https, sur le port 443, avec un nom de domaine public.",
+    "webhookEnvUrl": "Renseignez l'URL de cet environnement avant de l'activer.",
+    "webhookNotConfigured": "Aucun webhook n'est configuré pour cet environnement."
   }
 }

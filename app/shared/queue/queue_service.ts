@@ -38,8 +38,15 @@ const BACKOFF_MAX_MS = 60 * 60 * 1000
 /** A Redis outage must not hold an HTTP request: the caller gets an error instead. */
 const ENQUEUE_TIMEOUT_MS = 2000
 
-/** Exponential backoff, 30 s base, capped at one hour (08 §1). */
-export function backoffDelay(attemptsMade: number): number {
+/**
+ * Exponential backoff, 30 s base, capped at one hour (08 §1), unless the job
+ * declares its own delays (`retry.delaysMs`).
+ */
+export function backoffDelay(attemptsMade: number, jobName?: string): number {
+  const delays = jobName ? jobs[jobName as JobName]?.retry?.delaysMs : undefined
+  if (delays && delays.length > 0) {
+    return delays[Math.min(Math.max(attemptsMade - 1, 0), delays.length - 1)]
+  }
   return Math.min(BACKOFF_BASE_MS * 2 ** Math.max(attemptsMade - 1, 0), BACKOFF_MAX_MS)
 }
 
@@ -57,7 +64,7 @@ function connection(extra: Record<string, unknown>): ConnectionOptions {
 export function jobOptions(name: JobName): JobsOptions {
   const definition = jobs[name]
   return {
-    attempts: ATTEMPTS,
+    attempts: 'retry' in definition && definition.retry ? definition.retry.attempts : ATTEMPTS,
     backoff: { type: 'custom' },
     priority: QUEUES[definition.queue].priority,
     removeOnComplete: definition.sensitive ? true : 1000,
@@ -120,7 +127,10 @@ export class QueueService {
       const worker = new Worker(name, (job) => this.run(job.name as JobName, job.data), {
         connection: connection({ maxRetriesPerRequest: null }),
         concurrency: QUEUES[name].concurrency,
-        settings: { backoffStrategy: backoffDelay },
+        settings: {
+          backoffStrategy: (attemptsMade, _type, _error, job) =>
+            backoffDelay(attemptsMade, job?.name),
+        },
       })
       worker.on('error', (error) => logger.error({ err: error, queue: name }, 'worker.error'))
       worker.on('failed', (job, error) => {

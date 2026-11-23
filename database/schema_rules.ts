@@ -106,6 +106,12 @@ export default {
         ai_weaknesses: { tsType: 'string[]' },
       },
     },
+    recruitment_webhook_configs: {
+      columns: { active_env: { tsType: `'off' | 'test' | 'prod'` } },
+    },
+    webhook_receipts: {
+      columns: { payload: { tsType: 'unknown' } },
+    },
     candidate_events: {
       columns: {
         type: {

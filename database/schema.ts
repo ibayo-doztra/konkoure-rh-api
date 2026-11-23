@@ -1165,6 +1165,27 @@ export class PublicHolidaySchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class RecruitmentWebhookConfigSchema extends BaseModel {
+  static $columns = ['activeEnv', 'createdAt', 'organizationId', 'prodWebhookUrl', 'secretEncrypted', 'testWebhookUrl', 'updatedAt', 'updatedBy'] as const
+  $columns = RecruitmentWebhookConfigSchema.$columns
+  @column()
+  declare activeEnv: 'off' | 'test' | 'prod'
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare organizationId: string
+  @column()
+  declare prodWebhookUrl: string | null
+  @column()
+  declare secretEncrypted: string | null
+  @column()
+  declare testWebhookUrl: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
 export class ReviewGoalCommentSchema extends BaseModel {
   static $columns = ['createdAt', 'goalId', 'id', 'managerComment', 'managerRating', 'organizationId', 'reviewId', 'selfComment', 'selfRating', 'updatedAt'] as const
   $columns = ReviewGoalCommentSchema.$columns
@@ -1354,6 +1375,27 @@ export class UserSchema extends BaseModel {
   declare preferredLanguage: string
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
+}
+
+export class WebhookReceiptSchema extends BaseModel {
+  static $columns = ['createdAt', 'error', 'eventId', 'id', 'payload', 'processedAt', 'provider', 'signatureValid'] as const
+  $columns = WebhookReceiptSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare error: string | null
+  @column()
+  declare eventId: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare payload: unknown
+  @column.dateTime()
+  declare processedAt: DateTime | null
+  @column()
+  declare provider: string
+  @column()
+  declare signatureValid: boolean
 }
 
 export class WorkZoneSchema extends BaseModel {

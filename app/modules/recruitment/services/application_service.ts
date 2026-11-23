@@ -10,6 +10,7 @@ import { jobsIn } from '#modules/recruitment/repositories/job_repository'
 import { candidatesIn } from '#modules/recruitment/repositories/candidate_repository'
 import careersService from '#modules/recruitment/services/careers_service'
 import applicationNotifier from '#modules/recruitment/services/application_notifier'
+import scoringService from '#modules/recruitment/services/scoring_service'
 import candidateFiles, { type ApplicationUploads } from '#modules/recruitment/candidate_files'
 
 export interface ApplicationInput extends ApplicationUploads {
@@ -93,6 +94,7 @@ export class ApplicationService {
       throw error
     }
     await applicationNotifier.applied(organization, job, candidate)
+    await scoringService.schedule(organization.id, candidate.id)
     return candidate
   }
 
