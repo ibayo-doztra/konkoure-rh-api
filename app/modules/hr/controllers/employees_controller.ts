@@ -15,6 +15,7 @@ import {
   addDocumentValidator,
   createEmployeeValidator,
   documentIdValidator,
+  directoryValidator,
   employeeIdValidator,
   listEmployeesValidator,
   nestedEmployeesValidator,
@@ -43,6 +44,19 @@ export default class EmployeesController {
     const page = await employeeService.managers(ctx.tenant, {
       page: query.page ?? 1,
       perPage: query.perPage ?? 25,
+    })
+    return { data: page.all().map(employeeReducedDto), meta: pageMetaDto(page.getMeta()) }
+  }
+
+  @ApiOperation({ summary: 'Directory of present staff, reduced fields, for every member' })
+  async directory(ctx: HttpContext) {
+    const query = await ctx.request.validateUsing(directoryValidator)
+    await ctx.bouncer.with(EmployeePolicy).authorize('listDirectory')
+    const page = await employeeService.directory(ctx.tenant, {
+      page: query.page ?? 1,
+      perPage: query.perPage ?? 25,
+      q: query.q,
+      departmentId: query.filter?.departmentId,
     })
     return { data: page.all().map(employeeReducedDto), meta: pageMetaDto(page.getMeta()) }
   }

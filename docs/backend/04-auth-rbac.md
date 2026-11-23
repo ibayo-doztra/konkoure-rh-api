@@ -117,6 +117,7 @@ Légende : ✔ tout · **S** soi-même · **T** son équipe (descendance managé
 |---|---|---|---|---|---|---|
 | employees.list | ✔ | ✔ | T | S | ✔ (champs réduits) | ✔ (champs réduits) |
 | employees.view | ✔ | ✔ | T | S | champs réduits | champs réduits |
+| employees.directory (champs réduits, ajouté le 2026-11-23) | ✔ | ✔ | ✔ | ✔ | ✔ | ✔ |
 | employees.create/update | ✔ | ✔ | ✖ | ✖ | ✖ | ✖ |
 | employees.delete | ✔ | ✔ | ✖ | ✖ | ✖ | ✖ |
 | employees.viewSalary | ✔ | ✔ | ✖ | S | ✖ | ✖ |

@@ -144,6 +144,23 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
   }
 
   /** Active department heads, existing supervisors and `manager` role holders (07 §1.4). */
+  /**
+   * Directory of every member (decision of 2026-11-23): present staff
+   * (`active`, `on_leave`), searchable by name only.
+   */
+  directory(filters: { page: number; perPage: number; q?: string; departmentId?: string }) {
+    const query = this.query().whereIn('status', ['active', 'on_leave'])
+    if (filters.q) {
+      query.whereRaw(`lower(first_name || ' ' || last_name) like ?`, [likePattern(filters.q)])
+    }
+    if (filters.departmentId) query.where('department_id', filters.departmentId)
+    return query
+      .orderBy('last_name', 'asc')
+      .orderBy('first_name', 'asc')
+      .orderBy('id', 'asc')
+      .paginate(filters.page, filters.perPage)
+  }
+
   eligibleManagers(filters: { page: number; perPage: number }) {
     const scoped = (table: string) =>
       this.trx.from(table).where('organization_id', this.organizationId)

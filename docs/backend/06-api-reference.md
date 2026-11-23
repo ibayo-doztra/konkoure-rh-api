@@ -363,6 +363,7 @@ Décisions du 2026-11-20 :
 | POST | `/org/employees/:id/photo` | O H · self |
 | GET | `/org/employees/:id/team` | O H · M(team) |
 | GET | `/org/employees/managers` | O H M | Liste des responsables éligibles N+1 |
+| GET | `/org/employees/directory` | tous | Annuaire en champs réduits (ajouté le 2026-11-23) |
 | POST | `/org/employees/import/preview` | O H | Analyse d'un fichier Excel/CSV |
 | POST | `/org/employees/import/commit` ⚡ | O H | Import effectif |
 | POST | `/org/employees/export` | O H | CSV/XLSX asynchrone, `202 { jobId }` (5/h, 08 §9) |
@@ -455,9 +456,14 @@ l'organisation ; `403 E_QUOTA_EXCEEDED` si le nombre d'employés actifs atteint
 responsables d'un département, déjà `manager_id` d'au moins un employé ou
 porteurs du rôle `manager` (règle métier 07 §1.4), en champs réduits.
 
+`GET /org/employees/directory` (décision du 2026-11-23, sélecteurs de collègue
+comme le destinataire d'un feedback) : tout membre lit les employés `active` et
+`on_leave` en champs réduits, triés par nom ; `page`, `perPage`, `q` (nom seul),
+`filter[departmentId]`. Le périmètre de `GET /org/employees` ne change pas.
+
 ### Réponses employé
 Les champs dépendent du lecteur (04 §5, 05 §5) :
-- **réduits** (`recruiter`, `security_agent`, `/managers`) : `id`, `firstName`,
+- **réduits** (`recruiter`, `security_agent`, `/managers`, `/directory`) : `id`, `firstName`,
   `lastName`, `jobTitle`, `departmentId`, `photoUrl` ;
 - **équipe** (`manager` sur son équipe) : réduits + `userId`, `employeeNumber`,
   `email`, `phone`, `managerId`, `hireDate`, `endDate`, `status`, `leaveBalance`,
