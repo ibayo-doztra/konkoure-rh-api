@@ -867,6 +867,27 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | GET/PUT | `/org/talents/skills-matrix` | O H · M(team lecture) |
 | GET/POST/PATCH/DELETE | `/org/talents/succession` | O H |
 
+### Cycles, plans et objectifs (précisions du 2026-11-23)
+- Listes paginées (`page`, `perPage`, `filter[status]`) ; objectifs filtrables par
+  `employeeId`, `planId`, `status`, `category`, et limités à soi, à l'équipe
+  (manager) ou à tous (O H).
+- `POST /cycles` : `{ name, frequency, periodStart, periodEnd, selfEvalOpensAt?,
+  selfEvalClosesAt? }`, créé en `draft`. `PATCH` refusé une fois `closed` (`409`).
+  `open` : `draft → open` ; `close` : `open → closed` ; sinon `409 E_CONFLICT`.
+- `POST /plans` : `{ name, periodStart, periodEnd, status? }`. Passer un plan à
+  `active` vérifie la pondération de chaque employé (`422 E_WEIGHT_OVERFLOW`).
+  `DELETE` est logique ; les objectifs gardent leur `planId`.
+- `POST /goals` : `{ title, employeeId?, ownerId?, description?, measurement?,
+  category?, weight?, startDate?, dueDate?, planId?, parentGoalId? }` ;
+  `employeeId` vaut par défaut la fiche de l'appelant. Le porteur ne change
+  jamais. `PATCH` accepte les mêmes champs et `status` parmi `not_started`,
+  `in_progress`, `cancelled` (`achieved` suit la progression, `late` le job).
+  Un objectif `cancelled` ne compte pas dans la pondération et ne progresse plus
+  (`409`). `DELETE` est logique.
+- `PATCH /goals/:id/progress` : `{ progress: 0..100 }` ; 100 ⇒ `achieved`.
+- `POST /goals/:id/activities` : `{ title, description?, status?, plannedDate?,
+  employeeId? }` ; `completedAt` est posé si `status = done`.
+
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.
 Sortie : `{ data: { keyResults: [{ title, metric, targetValue, unit }] } }`.

@@ -84,6 +84,24 @@ export default {
     attendance_days: {
       columns: { anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate'` } },
     },
+    performance_cycles: {
+      columns: {
+        frequency: { tsType: `'annual' | 'semestrial' | 'quarterly' | 'custom'` },
+        status: { tsType: `'draft' | 'open' | 'closed'` },
+      },
+    },
+    performance_plans: {
+      columns: { status: { tsType: `'draft' | 'active' | 'closed'` } },
+    },
+    goals: {
+      columns: {
+        category: { tsType: `'business' | 'development' | 'behavioral'` },
+        status: { tsType: `'not_started' | 'in_progress' | 'achieved' | 'late' | 'cancelled'` },
+      },
+    },
+    goal_activities: {
+      columns: { status: { tsType: `'planned' | 'in_progress' | 'done'` } },
+    },
     plans: {
       columns: { modules: { tsType: 'string[]' }, features: { tsType: 'string[]' } },
     },

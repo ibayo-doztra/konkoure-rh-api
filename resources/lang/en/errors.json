@@ -23,5 +23,6 @@
   "E_BADGE_INACTIVE": "This badge is not active.",
   "E_DUPLICATE_PUNCH": "This punch has just been recorded already.",
   "E_OUT_OF_ZONE": "You are outside every authorized work zone.",
-  "E_MANUAL_PUNCH_DISABLED": "Manual punching is disabled for this organization."
+  "E_MANUAL_PUNCH_DISABLED": "Manual punching is disabled for this organization.",
+  "E_WEIGHT_OVERFLOW": "The total weight of this employee's goals on this plan would exceed 100."
 }
