@@ -119,5 +119,21 @@
   },
   "pagination": {
     "cursor": "Invalid pagination cursor."
+  },
+  "performance": {
+    "cycleClosed": "A closed cycle can no longer be changed.",
+    "cycleNotDraft": "Only a draft cycle can be opened.",
+    "cycleNotOpen": "Only an open cycle can be closed.",
+    "periodEnd": "The end of the period cannot precede its start.",
+    "selfEvalCloses": "The self-evaluation cannot close before it opens.",
+    "planOverflow": "The goals of at least one employee weigh more than 100 in total on this plan.",
+    "weightOverflow": "The total weight of the goals on this plan cannot exceed 100.",
+    "employee": "This employee does not exist.",
+    "holder": "Specify the employee who holds the goal.",
+    "parent": "The parent goal does not exist.",
+    "parentCycle": "This parent goal would create a loop.",
+    "plan": "This plan does not exist.",
+    "dueDate": "The due date cannot precede the start date.",
+    "goalCancelled": "A cancelled goal can no longer progress."
   }
 }

@@ -186,6 +186,7 @@ Erreur (toujours cette forme, produite par l'exception handler) :
 | 422 | `E_HIERARCHY_CYCLE` | Rattachement créant une boucle hiérarchique |
 | 422 | `E_OUT_OF_ZONE` | Hors de toute zone active avec `requireZone` |
 | 422 | `E_INSUFFICIENT_BALANCE` | Solde de congés insuffisant (07 §3.4) |
+| 422 | `E_WEIGHT_OVERFLOW` | Pondération des objectifs d'un employé > 100 sur un plan actif (07 §5.2) |
 | 423 | `E_ACCOUNT_LOCKED` | Compte verrouillé après tentatives échouées |
 | 429 | `E_RATE_LIMITED` | Quota dépassé (en-tête `Retry-After`) |
 | 500 | `E_INTERNAL` | Erreur inattendue (message générique, jamais de stack) |
