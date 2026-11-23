@@ -827,7 +827,8 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
   Une offre publiée ne peut pas perdre sa description.
 - `duplicate` : copie en `draft`, nouveau slug, sans `deadline` ni vues (`201`).
   `DELETE` est logique.
-- `GET /jobs/:id/qr` : PNG 512 px de `WEB_APP_URL/careers/:orgSlug/jobs/:jobSlug`.
+- `GET /jobs/:id/qr` : PNG 512 px de `WEB_APP_URL/careers/:orgSlug/:jobSlug`, page
+  publique de l'offre côté web (la page de l'organisation est `/careers/:orgSlug`).
 
 _Aucun endpoint de relance du scoring._ Le scoring IA est déclenché uniquement à
 la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
