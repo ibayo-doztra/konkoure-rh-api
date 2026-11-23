@@ -78,5 +78,9 @@
   "candidateApplied": {
     "title": "New application",
     "body": "{candidateName} applied to \"{jobTitle}\"."
+  },
+  "candidateScored": {
+    "title": "Application analysed",
+    "body": "{candidateName}'s CV scored {score}/100."
   }
 }

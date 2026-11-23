@@ -39,6 +39,11 @@ export default class RecruitmentPolicy extends BasePolicy {
     return this.ctx.tenant.hasRole('recruiter') && note.authorId === user.id
   }
 
+  /** n8n webhook settings and ping: owner and hr_admin (04 §5 `webhookConfig.*`). */
+  manageWebhooks(_user: User) {
+    return this.ctx.tenant.hasRole('owner', 'hr_admin')
+  }
+
   private isStaff() {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'recruiter')
   }

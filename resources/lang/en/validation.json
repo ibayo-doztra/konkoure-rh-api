@@ -165,6 +165,9 @@
     "useHire": "Hiring goes through the \"Hire\" action, which creates the employee record.",
     "hiredTerminal": "A hired candidate no longer changes stage.",
     "sameStage": "The candidate is already at this stage.",
-    "hireRejected": "A rejected candidate cannot be hired."
+    "hireRejected": "A rejected candidate cannot be hired.",
+    "webhookUrl": "The webhook URL must use https, port 443 and a public domain name.",
+    "webhookEnvUrl": "Set the URL of this environment before activating it.",
+    "webhookNotConfigured": "No webhook is configured for this environment."
   }
 }

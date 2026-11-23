@@ -26,6 +26,7 @@ export type NotificationType =
   | 'review.reminder'
   | 'feedback.received'
   | 'candidate.applied'
+  | 'candidate.scored'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5
