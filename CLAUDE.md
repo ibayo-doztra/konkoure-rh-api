@@ -48,6 +48,7 @@ pnpm build && pnpm start     # build de prod puis node bin/server.js
 node ace migration:run       # migre ET régénère database/schema.ts (exclu d'ESLint/Prettier)
 node ace make:<controller|model|migration|validator|transformer|test|…> <nom>
 node ace list:routes
+node ace subscription:grant <organizationId> pro --days=30   # plan actif hors paiement (e2e, support local), refusé en production
 ```
 
 `node ace check`, cité dans `docs/backend/10` et `13`, **n'existe pas** : utiliser `pnpm typecheck && pnpm lint`.
