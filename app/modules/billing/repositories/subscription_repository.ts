@@ -15,6 +15,29 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
     return this.query().preload('plan').orderBy('created_at', 'desc').orderBy('id', 'desc').first()
   }
 
+  /** Ends the current subscription: only one non-expired row per organization (index). */
+  async expireCurrent() {
+    await Subscription.query({ client: this.trx })
+      .where('organization_id', this.organizationId)
+      .whereNot('status', 'expired')
+      .update({ status: 'expired' })
+  }
+
+  /** Active paid-like period on a plan, granted outside Djomy (`subscription:grant`). */
+  createGranted(planId: string, startsAt: DateTime, endsAt: DateTime) {
+    return Subscription.create(
+      {
+        organizationId: this.organizationId,
+        planId,
+        status: 'active',
+        cycle: 'monthly',
+        currentPeriodStart: startsAt,
+        currentPeriodEnd: endsAt,
+      },
+      { client: this.trx }
+    )
+  }
+
   createTrial(planId: string, startsAt: DateTime, endsAt: DateTime) {
     return Subscription.create(
       {
