@@ -127,7 +127,7 @@ export class SubscriptionLifecycleService {
         type: 'trial.ending',
         key: 'trialEnding',
         data: { daysLeft: String(notice.daysLeft), endDate: notice.endDate },
-        link: '/settings/billing',
+        link: '/billing',
         payload: { daysLeft: notice.daysLeft, trialEndsAt: notice.endDate },
       },
       null

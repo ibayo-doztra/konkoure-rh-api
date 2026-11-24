@@ -211,7 +211,7 @@ export class CheckoutService {
 
   /** Calls Djomy after the commit; a provider failure fails the payment (no money moved). */
   private async charge(tenant: TenantContext, payment: Payment, plan: Plan, input: CheckoutInput) {
-    const returnUrl = `${env.get('WEB_APP_URL')}/settings/billing?payment=${payment.id}`
+    const returnUrl = `${env.get('WEB_APP_URL')}/app/billing/return?payment=${payment.id}`
     const { transactionId, redirectUrl } = await chargeWithDjomy(
       payment,
       plan,
