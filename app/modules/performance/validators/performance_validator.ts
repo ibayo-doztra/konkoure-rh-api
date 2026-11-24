@@ -292,6 +292,15 @@ export const sendBackReviewValidator = vine.create({
   comment: vine.string().trim().minLength(1).maxLength(5000),
 })
 
+const talentScore = () => vine.number().withoutDecimals().min(1).max(5).nullable().optional()
+
+/** 9-box scores, set by HR (07 §5.10, decision of 2026-11-24); `null` clears. */
+export const talentReviewValidator = vine.create({
+  params: params(),
+  performanceScore: talentScore(),
+  potentialScore: talentScore(),
+})
+
 /* Feedback and achievements (07 §5.9) */
 
 const FEEDBACK_KINDS = ['kudos', 'suggestion', 'concern'] as const

@@ -935,6 +935,7 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | POST | `/org/performance/reviews/:id/send-back` | M(team) · O H | commentaire obligatoire |
 | POST | `/org/performance/reviews/:id/sign` | self |
 | POST | `/org/performance/reviews/:id/ai-summary` | O H · M(team) |
+| PATCH | `/org/performance/reviews/:id/talent` | O H (module `talents`, ajouté le 2026-11-24) |
 | GET/POST | `/org/performance/feedback` | tous |
 | DELETE | `/org/performance/feedback/:id` | auteur · O H |
 | GET/POST | `/org/performance/achievements` | self · M(team) · O H |
@@ -1007,8 +1008,13 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `validate` exige `managerScore` et `managerGlobalComment` (`422`). `send-back` :
   `{ comment }` obligatoire. `sign` : l'évalué, sur une évaluation `validated`.
   Personne n'évalue, ne valide ni ne renvoie sa propre évaluation.
-- `performance_score` et `potential_score` (9-box) ne sont pas exposés en
-  écriture avant le lot talents. `POST /:id/ai-summary` est reporté au lot IA.
+- `PATCH /:id/talent` (décision du 2026-11-24) : `{ performanceScore?: 1..5 | null,
+  potentialScore?: 1..5 | null }`, O H seulement (jamais sur sa propre évaluation),
+  module `talents` requis, sur une évaluation `validated` ou `signed` (`409`,
+  `rule = "notValidated"` sinon) : ce sont des champs RH hors du contenu signé.
+  Audit `review.talent_scored`. Le détail expose `performanceScore` et
+  `potentialScore`, toujours `null` pour l'évalué.
+  `POST /:id/ai-summary` est reporté au lot IA.
 
 ### Feedback et réalisations (précisions du 2026-11-23)
 - `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
@@ -1029,6 +1035,15 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 
 ### Talents (décisions du 2026-11-24)
 Module `talents` requis (absent de l'essai, 07 §6.2 : `403 E_MODULE_NOT_INCLUDED`).
+- `GET /talents/9box?cycleId=` (`cycleId` obligatoire, cycle d'une autre organisation :
+  `404`) : évaluations du cycle, toutes pour O H, l'équipe (sans soi) pour un manager.
+  Axe performance = `performanceScore`, sinon `managerScore` d'une évaluation
+  `signed` ; axe potentiel = `potentialScore`. Niveaux `low|medium|high` par les
+  seuils `settings.talents.nineBox`. Réponse : `{ data: { cycleId, thresholds:
+  { lowMax, mediumMax }, cells: [{ performance, potential, employees: [...] }] (9),
+  unplaced: [...] } }`, chaque employé `{ employeeId, name, reviewId, reviewStatus,
+  performanceScore, potentialScore }` ; une évaluation sans l'un des deux axes va
+  dans `unplaced`.
 - `GET /talents/succession` : paginé, `filter[readiness]`, `filter[employeeId]`
   (titulaire ou successeur). `POST` : `{ positionTitle, currentEmployeeId?,
   successorEmployeeId?, readiness?: ready_now|1_2_years|3_plus_years, notes? }` ;

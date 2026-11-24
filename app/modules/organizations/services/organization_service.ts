@@ -120,6 +120,15 @@ export class OrganizationService {
     settings: Record<string, unknown>,
     audit: AuditContext
   ): Promise<Organization> {
+    const nineBox = (settings.talents as { nineBox?: { lowMax: number; mediumMax: number } })
+      ?.nineBox
+    if (nineBox && nineBox.lowMax >= nineBox.mediumMax) {
+      throw AppException.validation(
+        'talents.nineBox.mediumMax',
+        'gt',
+        'validation.organization.nineBoxThresholds'
+      )
+    }
     return withTenant(tenant.organizationId, async (trx) => {
       const organization = await this.lock(tenant, trx)
       const before = organization.settings
