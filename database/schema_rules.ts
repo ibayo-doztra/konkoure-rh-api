@@ -188,6 +188,22 @@ export default {
     usage_events: {
       columns: { metadata: JSON_OBJECT },
     },
+    system_logs: {
+      columns: {
+        level: { tsType: `'debug' | 'info' | 'warn' | 'error' | 'fatal'` },
+        context: JSON_OBJECT,
+      },
+    },
+    platform_settings: {
+      columns: { value: { tsType: 'unknown' } },
+    },
+    demo_requests: {
+      columns: {
+        status: { tsType: `'new' | 'contacted' | 'scheduled' | 'done' | 'rejected'` },
+        email_status: { tsType: `'pending' | 'sent' | 'failed'` },
+        source_ip: { tsType: 'string' },
+      },
+    },
     // text column with a CHECK constraint (0094), not a PostgreSQL enum.
     usage_counters: {
       columns: { metric: { tsType: `'ai_credits' | 'active_employees' | 'sms'` } },

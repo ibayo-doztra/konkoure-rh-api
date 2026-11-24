@@ -124,3 +124,73 @@ export const grantAdminValidator = vine.create({
 export const adminUserIdValidator = vine.create({
   params: vine.object({ userId: vine.string().uuid() }),
 })
+
+/** PUT /platform/settings (root): known keys only, value checked per key. */
+export const updateSettingsValidator = vine.create({
+  settings: vine
+    .array(vine.object({ key: vine.string().trim().maxLength(100), value: vine.any() }))
+    .minLength(1)
+    .maxLength(50),
+})
+
+const PAYMENT_STATUSES = [
+  'pending',
+  'processing',
+  'succeeded',
+  'failed',
+  'expired',
+  'refunded',
+] as const
+
+export const listPlatformPaymentsValidator = vine.create({
+  ...paging,
+  filter: vine
+    .object({
+      status: vine.enum(PAYMENT_STATUSES).optional(),
+      failureReason: vine.string().trim().maxLength(60).optional(),
+      organizationId: vine.string().uuid().optional(),
+    })
+    .optional(),
+})
+
+const DEMO_STATUSES = ['new', 'contacted', 'scheduled', 'done', 'rejected'] as const
+
+export const listDemoRequestsValidator = vine.create({
+  ...paging,
+  filter: vine.object({ status: vine.enum(DEMO_STATUSES).optional() }).optional(),
+})
+
+export const updateDemoRequestValidator = vine.create({
+  params: params(),
+  status: vine.enum(DEMO_STATUSES).optional(),
+  assignedTo: vine.string().uuid().nullable().optional(),
+})
+
+/** POST /public/demo-requests (06 §11). */
+export const createDemoRequestValidator = vine.create({
+  fullName: vine.string().trim().minLength(2).maxLength(120),
+  email: vine.string().trim().email().maxLength(254),
+  phone: vine.string().trim().minLength(6).maxLength(30),
+  companyName: vine.string().trim().minLength(2).maxLength(160),
+  companySize: vine.string().trim().minLength(1).maxLength(40),
+  message: vine.string().trim().maxLength(2000).optional(),
+})
+
+/** GET /platform/logs/:kind (06 §13): cursor pagination, 500 rows at most. */
+export const logsValidator = vine.create({
+  params: vine.object({ kind: vine.enum(['audit', 'system', 'usage'] as const) }),
+  cursor: vine.string().trim().maxLength(500).optional(),
+  limit: vine.number().withoutDecimals().min(1).max(500).optional(),
+  filter: vine
+    .object({
+      organizationId: vine.string().uuid().optional(),
+      from: vine.date({ formats: ['iso8601'] }).optional(),
+      to: vine.date({ formats: ['iso8601'] }).optional(),
+      actorUserId: vine.string().uuid().optional(),
+      action: vine.string().trim().maxLength(100).optional(),
+      channel: vine.string().trim().maxLength(60).optional(),
+      level: vine.enum(['debug', 'info', 'warn', 'error', 'fatal'] as const).optional(),
+      module: vine.string().trim().maxLength(60).optional(),
+    })
+    .optional(),
+})

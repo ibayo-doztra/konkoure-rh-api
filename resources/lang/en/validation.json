@@ -203,6 +203,10 @@
     "notBanned": "This account is not banned.",
     "unknownUser": "No account uses this address.",
     "lastRoot": "The platform must keep at least one root administrator.",
-    "impersonation": "This action is forbidden during an impersonation."
+    "impersonation": "This action is forbidden during an impersonation.",
+    "unknownSetting": "This setting does not exist.",
+    "noTransaction": "This payment has no Djomy transaction to check.",
+    "notPaid": "Djomy does not confirm this payment.",
+    "assignee": "The assignee must be an active platform administrator."
   }
 }

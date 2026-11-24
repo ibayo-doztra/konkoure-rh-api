@@ -171,6 +171,14 @@ export class QueueService {
     payload: JobPayload<Name>,
     error: unknown
   ) {
+    // The back office sees every job given up (02 §10 `system_logs`).
+    const { default: systemLogService } = await import('#shared/logging/system_log_service')
+    await systemLogService.write({
+      channel: 'jobs',
+      level: 'error',
+      message: `Job ${name} given up`,
+      context: { job: name, error: error instanceof Error ? error.message : String(error) },
+    })
     const hook = jobs[name]?.failed as
       ((data: JobPayload<Name>, error: unknown) => Promise<void>) | undefined
     if (!hook) return

@@ -46,6 +46,11 @@ export const throttlePublicPayments = limiter.define('public_payments_ip', (ctx)
   limiter.allowRequests(30).every('1 minute').usingKey(`public_payments:${ctx.request.ip()}`)
 )
 
+/** Demo requests (06 §11): 10 per hour per IP, enough for a person, not for a bot. */
+export const throttleDemoRequests = limiter.define('demo_requests_ip', (ctx) =>
+  limiter.allowRequests(10).every('1 hour').usingKey(`demo_requests:${ctx.request.ip()}`)
+)
+
 /** Authenticated budget: 600 requests / minute / user. */
 export const throttleUser = limiter.define('global_user', (ctx) =>
   limiter

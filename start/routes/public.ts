@@ -1,10 +1,17 @@
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
-import { throttleCareers, throttlePublicPayments, throttleUser } from '#start/limiter'
+import {
+  throttleCareers,
+  throttleDemoRequests,
+  throttlePublicPayments,
+  throttleUser,
+} from '#start/limiter'
 
 const CareersController = () => import('#modules/recruitment/controllers/careers_controller')
 const N8nWebhookController = () => import('#modules/recruitment/controllers/n8n_webhook_controller')
 const DjomyWebhookController = () => import('#modules/billing/controllers/djomy_webhook_controller')
+const DemoRequestsController = () =>
+  import('#modules/platform/controllers/demo_requests_controller')
 const PublicPaymentsController = () =>
   import('#modules/billing/controllers/public_payments_controller')
 
@@ -25,6 +32,11 @@ export function registerPublicRoutes() {
     .prefix('public/careers')
     .as('public.careers')
     .use(throttleCareers)
+
+  router
+    .post('public/demo-requests', [DemoRequestsController, 'store'])
+    .as('public.demoRequests.store')
+    .use(throttleDemoRequests)
 
   /** Payment before sign-up (06 §11, 07 §7.7). The claim needs the signed-up payer. */
   router
