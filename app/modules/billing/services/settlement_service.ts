@@ -320,7 +320,7 @@ export class SettlementService {
         type: outcome === 'succeeded' ? 'payment.succeeded' : 'payment.failed',
         key: outcome === 'succeeded' ? 'paymentSucceeded' : 'paymentFailed',
         data: { plan: plan?.name ?? '', amount },
-        link: '/settings/billing',
+        link: '/billing',
         payload: { paymentId, invoiceId: invoice?.id ?? null },
       },
       null

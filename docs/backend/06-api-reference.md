@@ -1157,6 +1157,8 @@ Précisions du 2026-11-24 :
 - `payerPhone` obligatoire pour `orange_money` et `mtn_momo` (`422`) ; offre
   inconnue, non publique ou `free` : `422`. `instructions` (texte traduit) pour le
   mobile money, `redirectUrl` (portail Djomy) pour la carte ; l'autre vaut `null`.
+- Retour du portail carte : `<WEB_APP_URL>/app/billing/return?payment=<paymentId>`
+  (route du front, confirmée le 2026-11-24).
 - Djomy injoignable ou non configuré : `503 E_DEPENDENCY_UNAVAILABLE`, le paiement
   créé passe `failed` (`failureReason = 'provider_unavailable'`).
 - `GET /org/billing/invoices/:id/pdf` : `{ data: { url, expiresIn: 900 } }` (lien
