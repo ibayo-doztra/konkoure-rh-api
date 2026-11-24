@@ -14,6 +14,7 @@ import {
   openReviewsValidator,
   selfReviewValidator,
   sendBackReviewValidator,
+  talentReviewValidator,
 } from '#modules/performance/validators/performance_validator'
 import { auditContext } from '#modules/auth/http_helpers'
 
@@ -137,6 +138,22 @@ export default class ReviewsController {
       ctx.tenant,
       ctx.auth.getUserOrFail(),
       params.id,
+      auditContext(ctx)
+    )
+    return this.render(ctx, view)
+  }
+
+  @ApiOperation({ summary: '9-box scores of a validated or signed evaluation (HR)' })
+  @ApiBody({ type: () => talentReviewValidator })
+  async talent(ctx: HttpContext) {
+    const { params, ...scores } = await ctx.request.validateUsing(talentReviewValidator)
+    const { review } = await reviewService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(PerformancePolicy).authorize('scoreTalent', review)
+    const view = await reviewService.scoreTalent(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      params.id,
+      scores,
       auditContext(ctx)
     )
     return this.render(ctx, view)

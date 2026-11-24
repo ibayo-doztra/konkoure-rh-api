@@ -4,6 +4,7 @@ import type { ModelAttributes } from '@adonisjs/lucid/types/model'
 import EmployeeSkill from '#models/employee_skill'
 import Skill from '#models/skill'
 import { TenantRepository } from '#shared/base/tenant_repository'
+import { newId } from '#shared/utils/crypto'
 
 export interface EmployeeSkillRow {
   skillId: string
@@ -40,6 +41,13 @@ export class SkillRepository extends TenantRepository<typeof Skill> {
     const query = this.query().whereRaw('lower(name) = lower(?)', [name])
     if (exceptId) query.whereNot('id', exceptId)
     return Boolean(await query.first())
+  }
+
+  /** Whole catalog by name, or the listed skills only (skills matrix columns). */
+  list(ids?: string[]) {
+    const query = this.query()
+    if (ids) query.whereIn('id', ids)
+    return query.orderBy('name', 'asc').orderBy('id', 'asc')
   }
 
   async existingIds(ids: string[]) {
@@ -94,6 +102,59 @@ export class SkillRepository extends TenantRepository<typeof Skill> {
       })),
       { client: this.trx }
     )
+  }
+
+  /** Levels of these employees, optionally limited to some skills (skills matrix cells). */
+  async levelsOf(employeeIds: string[], skillIds?: string[]) {
+    if (employeeIds.length === 0) return []
+    const query = this.assessments().whereIn('employee_id', employeeIds)
+    if (skillIds) query.whereIn('skill_id', skillIds)
+    return query.select('employee_id', 'skill_id', 'level')
+  }
+
+  /** Current level of each (employee, skill) pair among the listed ones, locked. */
+  async lockCells(cells: Array<{ employeeId: string; skillId: string }>) {
+    if (cells.length === 0) return []
+    return this.assessments()
+      .whereIn(
+        ['employee_id', 'skill_id'],
+        cells.map((cell) => [cell.employeeId, cell.skillId])
+      )
+      .forUpdate()
+  }
+
+  /** Sets the level of each cell, creating the assessment when it does not exist. */
+  async upsertLevels(
+    cells: Array<{ employeeId: string; skillId: string; level: number }>,
+    actorId: string
+  ) {
+    if (cells.length === 0) return
+    await this.trx
+      .insertQuery()
+      .table('employee_skills')
+      .insert(
+        cells.map((cell) => ({
+          id: newId(),
+          organization_id: this.organizationId,
+          employee_id: cell.employeeId,
+          skill_id: cell.skillId,
+          level: cell.level,
+          created_by: actorId,
+          updated_by: actorId,
+        }))
+      )
+      .onConflict(['employee_id', 'skill_id'])
+      .merge(['level', 'updated_by'])
+  }
+
+  async removeCells(cells: Array<{ employeeId: string; skillId: string }>) {
+    if (cells.length === 0) return
+    await this.assessments()
+      .whereIn(
+        ['employee_id', 'skill_id'],
+        cells.map((cell) => [cell.employeeId, cell.skillId])
+      )
+      .delete()
   }
 }
 

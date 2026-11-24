@@ -935,6 +935,7 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 | POST | `/org/performance/reviews/:id/send-back` | M(team) · O H | commentaire obligatoire |
 | POST | `/org/performance/reviews/:id/sign` | self |
 | POST | `/org/performance/reviews/:id/ai-summary` | O H · M(team) |
+| PATCH | `/org/performance/reviews/:id/talent` | O H (module `talents`, ajouté le 2026-11-24) |
 | GET/POST | `/org/performance/feedback` | tous |
 | DELETE | `/org/performance/feedback/:id` | auteur · O H |
 | GET/POST | `/org/performance/achievements` | self · M(team) · O H |
@@ -1007,8 +1008,13 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `validate` exige `managerScore` et `managerGlobalComment` (`422`). `send-back` :
   `{ comment }` obligatoire. `sign` : l'évalué, sur une évaluation `validated`.
   Personne n'évalue, ne valide ni ne renvoie sa propre évaluation.
-- `performance_score` et `potential_score` (9-box) ne sont pas exposés en
-  écriture avant le lot talents. `POST /:id/ai-summary` est reporté au lot IA.
+- `PATCH /:id/talent` (décision du 2026-11-24) : `{ performanceScore?: 1..5 | null,
+  potentialScore?: 1..5 | null }`, O H seulement (jamais sur sa propre évaluation),
+  module `talents` requis, sur une évaluation `validated` ou `signed` (`409`,
+  `rule = "notValidated"` sinon) : ce sont des champs RH hors du contenu signé.
+  Audit `review.talent_scored`. Le détail expose `performanceScore` et
+  `potentialScore`, toujours `null` pour l'évalué.
+  `POST /:id/ai-summary` est reporté au lot IA.
 
 ### Feedback et réalisations (précisions du 2026-11-23)
 - `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
@@ -1026,6 +1032,37 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
   description?, impact? }` ; `employeeId` vaut par défaut la fiche de l'appelant ;
   `goalId` doit être un objectif de cet employé. `GET` : `filter[employeeId|goalId]`,
   limité à soi, l'équipe ou tous. `DELETE` : suppression logique par l'auteur ou O H.
+
+### Talents (décisions du 2026-11-24)
+Module `talents` requis (absent de l'essai, 07 §6.2 : `403 E_MODULE_NOT_INCLUDED`).
+- `GET /talents/9box?cycleId=` (`cycleId` obligatoire, cycle d'une autre organisation :
+  `404`) : évaluations du cycle, toutes pour O H, l'équipe (sans soi) pour un manager.
+  Axe performance = `performanceScore`, sinon `managerScore` d'une évaluation
+  `signed` ; axe potentiel = `potentialScore`. Niveaux `low|medium|high` par les
+  seuils `settings.talents.nineBox`. Réponse : `{ data: { cycleId, thresholds:
+  { lowMax, mediumMax }, cells: [{ performance, potential, employees: [...] }] (9),
+  unplaced: [...] } }`, chaque employé `{ employeeId, name, reviewId, reviewStatus,
+  performanceScore, potentialScore }` ; une évaluation sans l'un des deux axes va
+  dans `unplaced`.
+- `GET /talents/succession` : paginé, `filter[readiness]`, `filter[employeeId]`
+  (titulaire ou successeur). `POST` : `{ positionTitle, currentEmployeeId?,
+  successorEmployeeId?, readiness?: ready_now|1_2_years|3_plus_years, notes? }` ;
+  `PATCH /:id` accepte les mêmes champs (`null` efface). Employé inconnu ou d'une
+  autre organisation : `422`. `DELETE /:id` est physique (rien ne référence un plan),
+  audité. Réponse : `{ id, positionTitle, currentEmployee: { id, name } | null,
+  successorEmployee, readiness, notes, createdAt, updatedAt }`.
+- `GET /talents/skills-matrix` : `page`, `perPage` (≤ 100, pagine les employés),
+  `filter[departmentId]`, `filter[skillId][]` (colonnes affichées), `filter[status]`
+  (sans statut, les employés partis sont exclus). O H voient tous les employés, un
+  manager son équipe. Réponse : `{ data: { skills: [{ id, name, category }],
+  employees: [{ id, firstName, lastName, jobTitle, departmentId, levels: { [skillId]:
+  level } }] }, meta }`.
+- `PUT /talents/skills-matrix` (O H) : `{ entries: [{ employeeId, skillId, level:
+  1..5 | null }] }`, 1 à 500 cellules distinctes (`422`, `rule = "distinct"`).
+  Un niveau crée ou met à jour l'évaluation, `null` la supprime ; employé ou
+  compétence inconnus : `422`, rien n'est appliqué. Réponse : `{ data: { updated,
+  removed } }` ; audit `talents.skills_matrix_updated` avec l'avant/après des
+  cellules modifiées.
 
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.

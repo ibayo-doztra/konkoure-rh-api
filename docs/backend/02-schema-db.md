@@ -497,6 +497,8 @@ Contrainte applicative : la somme des `weight` d'un employé sur un plan ≤ 100
 `id`, `organization_id`, `position_title text NOT NULL`,
 `current_employee_id uuid NULL`, `successor_employee_id uuid NULL`,
 `readiness text NULL` (`ready_now`, `1_2_years`, `3_plus_years`), `notes text`.
+`readiness` est contraint par un `CHECK` ; employés en `ON DELETE SET NULL`.
+Pas de `deleted_at` : aucune table ne référence un plan, la suppression est physique.
 
 ## 9. Facturation
 
@@ -630,10 +632,14 @@ Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
                  "duplicateWindowSeconds": 120 },
   "performance": { "ratingScale": 5, "requireSignature": true },
   "recruitment": { "autoScore": true, "notifyOnApplication": true },
+  "talents": { "nineBox": { "lowMax": 2, "mediumMax": 3 } },
   "branding": { "primaryColor": "#0F7A5A" }
 }
 ```
 Toute clé absente prend la valeur par défaut définie dans `config/tenant.ts`.
+`talents.nineBox` (ajouté le 2026-11-24) : seuils des axes de la 9-box (07 §5.10),
+`lowMax` 1..3 et `mediumMax` 2..4, `lowMax < mediumMax` (`422` sinon) ; les deux
+champs sont requis quand `nineBox` est envoyé.
 Le JSON est validé par un schéma VineJS à chaque écriture.
 
 ## 12. Écarts assumés avec le schéma Supabase actuel

@@ -19,6 +19,8 @@ export interface EmployeeListFilters {
   /** Search e-mail and employee number too, for viewers allowed to read them. */
   searchPrivateFields: boolean
   status?: EmployeeStatus
+  /** Leaves departed employees out when no status is requested. */
+  excludeTerminated?: boolean
   departmentId?: string
   managerId?: string
   /** Type of the employee's active contract. */
@@ -112,6 +114,7 @@ export class EmployeeRepository extends TenantRepository<typeof Employee> {
     const query = this.query()
     if (filters.ids) query.whereIn('id', filters.ids)
     if (filters.status) query.where('status', filters.status)
+    else if (filters.excludeTerminated) query.whereNot('status', 'terminated')
     if (filters.departmentId) query.where('department_id', filters.departmentId)
     if (filters.managerId) query.where('manager_id', filters.managerId)
     if (filters.contractType) {

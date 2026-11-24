@@ -20,7 +20,8 @@
   "organization": {
     "timezone": "Ce fuseau horaire n'est pas reconnu.",
     "logo": "Le logo doit être une image PNG, JPEG ou WebP.",
-    "confirmName": "Le nom saisi ne correspond pas à celui de l'organisation."
+    "confirmName": "Le nom saisi ne correspond pas à celui de l'organisation.",
+    "nineBoxThresholds": "Le seuil moyen doit être supérieur au seuil bas."
   },
   "member": {
     "lastOwner": "L'organisation doit conserver au moins un propriétaire actif."
@@ -147,7 +148,8 @@
     "reviewGoal": "Un des objectifs n'appartient pas à cette évaluation.",
     "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
     "okr": "Cet OKR n'existe pas.",
-    "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé."
+    "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé.",
+    "reviewNotScorable": "Les scores 9-box ne se saisissent que sur une évaluation validée ou signée."
   },
   "recruitment": {
     "jobNotPublishable": "Seule une offre en brouillon ou fermée peut être publiée.",
@@ -169,5 +171,8 @@
     "webhookUrl": "L'URL du webhook doit être en https, sur le port 443, avec un nom de domaine public.",
     "webhookEnvUrl": "Renseignez l'URL de cet environnement avant de l'activer.",
     "webhookNotConfigured": "Aucun webhook n'est configuré pour cet environnement."
+  },
+  "skillsMatrix": {
+    "duplicate": "Une même cellule (employé, compétence) apparaît plusieurs fois."
   }
 }

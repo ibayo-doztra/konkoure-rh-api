@@ -54,6 +54,16 @@ export const updateOrganizationSettingsValidator = vine.create({
       notifyOnApplication: vine.boolean().optional(),
     })
     .optional(),
+  talents: vine
+    .object({
+      nineBox: vine
+        .object({
+          lowMax: vine.number().withoutDecimals().min(1).max(3),
+          mediumMax: vine.number().withoutDecimals().min(2).max(4),
+        })
+        .optional(),
+    })
+    .optional(),
   branding: vine
     .object({
       primaryColor: vine
