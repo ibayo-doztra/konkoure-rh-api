@@ -52,4 +52,5 @@ export const middleware = router.named({
   idempotency: () => import('#middleware/idempotency_middleware'),
   timeclockActor: () => import('#middleware/timeclock_actor_middleware'),
   platform: () => import('#middleware/platform_middleware'),
+  notImpersonating: () => import('#middleware/not_impersonating_middleware'),
 })

@@ -11,10 +11,16 @@ export function registerMeRoutes() {
   router
     .group(() => {
       router.get('/', [MeController, 'show']).as('show')
-      router.patch('/', [MeController, 'update']).as('update')
-      router.post('password', [MeController, 'changePassword']).as('changePassword')
+      router.patch('/', [MeController, 'update']).as('update').use(middleware.notImpersonating())
+      router
+        .post('password', [MeController, 'changePassword'])
+        .as('changePassword')
+        .use(middleware.notImpersonating())
       router.get('sessions', [MeController, 'sessions']).as('sessions')
-      router.delete('sessions/:id', [MeController, 'revokeSession']).as('revokeSession')
+      router
+        .delete('sessions/:id', [MeController, 'revokeSession'])
+        .as('revokeSession')
+        .use(middleware.notImpersonating())
       router.get('organizations', [MeController, 'organizations']).as('organizations')
       // Notifications of the current organization: `X-Organization-Id` is required.
       router

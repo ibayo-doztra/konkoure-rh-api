@@ -130,10 +130,11 @@ export class MemberService {
     added: AppRole[],
     removed: AppRole[]
   ) {
+    // A platform root acting on the organization keeps its own role in the journal.
     const context = {
       ...audit,
       organizationId: tenant.organizationId,
-      actorRole: tenant.primaryRole,
+      actorRole: audit.actorRole ?? tenant.primaryRole,
     }
     for (const role of added) {
       await auditService.record(trx, context, {

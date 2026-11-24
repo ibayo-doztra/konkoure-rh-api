@@ -6,6 +6,8 @@ const PlatformOrganizationsController = () =>
   import('#modules/platform/controllers/platform_organizations_controller')
 const PlatformPlansController = () =>
   import('#modules/platform/controllers/platform_plans_controller')
+const PlatformUsersController = () =>
+  import('#modules/platform/controllers/platform_users_controller')
 
 /**
  * `/api/v1/platform/*` — back office (06 §13). `auth` then `platform` (active
@@ -40,8 +42,28 @@ export function registerPlatformRoutes() {
         })
         .prefix('plans')
         .as('plans')
+
+      router
+        .group(() => {
+          router.get('/', [PlatformUsersController, 'index']).as('index')
+          router.patch(':id/roles', [PlatformUsersController, 'updateRoles']).as('roles.update')
+          router.post(':id/ban', [PlatformUsersController, 'ban']).as('ban')
+          router.post(':id/unban', [PlatformUsersController, 'unban']).as('unban')
+          router.post(':id/impersonate', [PlatformUsersController, 'impersonate']).as('impersonate')
+        })
+        .prefix('users')
+        .as('users')
+
+      router
+        .group(() => {
+          router.get('/', [PlatformUsersController, 'admins']).as('index')
+          router.post('/', [PlatformUsersController, 'grantAdmin']).as('store')
+          router.delete(':userId', [PlatformUsersController, 'revokeAdmin']).as('destroy')
+        })
+        .prefix('admins')
+        .as('admins')
     })
     .prefix('platform')
     .as('platform')
-    .use([middleware.auth(), throttleUser, middleware.platform()])
+    .use([middleware.auth(), throttleUser, middleware.notImpersonating(), middleware.platform()])
 }
