@@ -29,6 +29,8 @@ const GoalsController = () => import('#modules/performance/controllers/goals_con
 const OkrsController = () => import('#modules/performance/controllers/okrs_controller')
 const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
 const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
+const SuccessionController = () => import('#modules/talents/controllers/succession_controller')
+const SkillsMatrixController = () => import('#modules/talents/controllers/skills_matrix_controller')
 const JobsController = () => import('#modules/recruitment/controllers/jobs_controller')
 const RecruitmentWebhooksController = () =>
   import('#modules/recruitment/controllers/recruitment_webhooks_controller')
@@ -309,6 +311,24 @@ export function registerOrgRoutes() {
         .prefix('performance')
         .as('performance')
         .use(middleware.entitlement({ module: 'performance' }))
+
+      router
+        .group(() => {
+          router.get('skills-matrix', [SkillsMatrixController, 'show']).as('skillsMatrix.show')
+          router.put('skills-matrix', [SkillsMatrixController, 'update']).as('skillsMatrix.update')
+          router
+            .group(() => {
+              router.get('/', [SuccessionController, 'index']).as('index')
+              router.post('/', [SuccessionController, 'store']).as('store')
+              router.patch(':id', [SuccessionController, 'update']).as('update')
+              router.delete(':id', [SuccessionController, 'destroy']).as('destroy')
+            })
+            .prefix('succession')
+            .as('succession')
+        })
+        .prefix('talents')
+        .as('talents')
+        .use(middleware.entitlement({ module: 'talents' }))
 
       router
         .group(() => {

@@ -1265,6 +1265,33 @@ export class SubscriptionSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class SuccessionPlanSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'currentEmployeeId', 'id', 'notes', 'organizationId', 'positionTitle', 'readiness', 'successorEmployeeId', 'updatedAt', 'updatedBy'] as const
+  $columns = SuccessionPlanSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare currentEmployeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare notes: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare positionTitle: string
+  @column()
+  declare readiness: 'ready_now' | '1_2_years' | '3_plus_years' | null
+  @column()
+  declare successorEmployeeId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+}
+
 export class TimeLogClientIdSchema extends BaseModel {
   static $columns = ['clientPunchId', 'createdAt', 'employeeId', 'organizationId', 'punchedAt', 'timeLogId'] as const
   $columns = TimeLogClientIdSchema.$columns
