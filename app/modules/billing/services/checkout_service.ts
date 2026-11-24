@@ -170,7 +170,7 @@ export class CheckoutService {
     let redirectUrl: string | null = null
     try {
       if (input.method === 'card') {
-        const returnUrl = `${env.get('WEB_APP_URL')}/settings/billing?payment=${payment.id}`
+        const returnUrl = `${env.get('WEB_APP_URL')}/app/billing/return?payment=${payment.id}`
         const result = await djomyClient.gateway({
           amount,
           merchantReference: payment.merchantReference,
