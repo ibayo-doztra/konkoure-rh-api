@@ -51,4 +51,5 @@ export const middleware = router.named({
   entitlement: () => import('#middleware/entitlement_middleware'),
   idempotency: () => import('#middleware/idempotency_middleware'),
   timeclockActor: () => import('#middleware/timeclock_actor_middleware'),
+  platform: () => import('#middleware/platform_middleware'),
 })

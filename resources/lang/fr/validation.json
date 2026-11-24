@@ -190,5 +190,11 @@
       "email": "Ce paiement a été fait avec une autre adresse e-mail.",
       "notPaid": "Ce paiement n'est pas encore confirmé."
     }
+  },
+  "platform": {
+    "notSuspendable": "Cet abonnement est déjà suspendu ou expiré.",
+    "notSuspended": "Seul un abonnement suspendu peut être réactivé.",
+    "planCodeTaken": "Une offre porte déjà ce code.",
+    "planInUse": "Cette offre est encore utilisée par un abonnement."
   }
 }

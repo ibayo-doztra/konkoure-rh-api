@@ -190,5 +190,11 @@
       "email": "This payment was made with another e-mail address.",
       "notPaid": "This payment is not confirmed yet."
     }
+  },
+  "platform": {
+    "notSuspendable": "This subscription is already suspended or expired.",
+    "notSuspended": "Only a suspended subscription can be reactivated.",
+    "planCodeTaken": "A plan already has this code.",
+    "planInUse": "This plan is still used by a subscription."
   }
 }

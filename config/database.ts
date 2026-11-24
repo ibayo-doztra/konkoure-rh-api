@@ -45,22 +45,37 @@ const appRole = app.getEnvironment() === 'web' ? env.get('DB_APP_ROLE') : undefi
 
 type PgConnection = { query(sql: string, done: (error: Error | null) => void): void }
 
+/** A pool whose connections take `role` (no-op without the application role, e.g. tests). */
+function poolAs(role: string | undefined) {
+  return {
+    min: env.get('DB_POOL_MIN', 2),
+    max: env.get('DB_POOL_MAX', 20),
+    ...(role && {
+      afterCreate(connection: PgConnection, done: (e: Error | null, c: PgConnection) => void) {
+        connection.query(`SET ROLE ${role}`, (error) => done(error, connection))
+      },
+    }),
+  }
+}
+
 const dbConfig = defineConfig({
   connection: 'pg',
 
   connections: {
+    /**
+     * Back-office reads across organizations (docs/backend/05 §1: platform
+     * tasks use `konkoure_worker`, BYPASSRLS). Only when the web server runs
+     * under the application role; otherwise the default connection is used.
+     */
+    platform: {
+      client: 'pg',
+      connection: pgConnection,
+      pool: { ...poolAs(appRole ? 'konkoure_worker' : undefined), min: 0, max: 5 },
+    },
     pg: {
       client: 'pg',
       connection: pgConnection,
-      pool: {
-        min: env.get('DB_POOL_MIN', 2),
-        max: env.get('DB_POOL_MAX', 20),
-        ...(appRole && {
-          afterCreate(connection: PgConnection, done: (e: Error | null, c: PgConnection) => void) {
-            connection.query(`SET ROLE ${appRole}`, (error) => done(error, connection))
-          },
-        }),
-      },
+      pool: poolAs(appRole),
       migrations: {
         naturalSort: true,
         paths: ['database/migrations'],

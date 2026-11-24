@@ -1297,6 +1297,36 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 Toutes les listes de journaux sont paginées **par curseur** et plafonnées à
 500 éléments par page.
 
+### Organisations, abonnements et offres (décisions du 2026-11-24)
+Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif compris) ;
+`support` lit, `root` écrit (`403`). Chaque action `root` est auditée
+(`actorRole = 'platform_root'`).
+- `GET /platform/dashboard` : `{ organizations: { live, paying }, subscriptions: {
+  trialing, active, past_due, canceled, suspended, expired } (statuts effectifs),
+  mrrGnf, churn30d }`. MRR = somme mensualisée (annuel / 12) des abonnements payants
+  en cours (`active`, `past_due`, `canceled` avant échéance) ; churn = offres payantes
+  dont l'accès a pris fin dans les 30 derniers jours.
+- `GET /platform/organizations` : `page`, `perPage`, `q` (nom ou slug),
+  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code) ;
+  lignes `{ id, name, slug, createdAt, employees, subscription: { status, cycle,
+  planCode, planName, trialEndsAt, currentPeriodEnd } | null }`.
+- `GET /platform/organizations/:id` : organisation, `subscription` (forme de
+  `GET /org/billing/subscription` + `storedStatus`, `maxEmployeesOverride`,
+  `modulesOverride`), `usage`, `counts: { members, employees }`, `owners: [{ id,
+  email, fullName }]`.
+- `PATCH /platform/organizations/:id/subscription` (root) : `{ planId?, status?, cycle?,
+  currentPeriodEnd?, trialEndsAt?, maxEmployeesOverride?, modulesOverride? }` ; cache
+  des droits invalidé. `POST suspend` : `suspended` (`hr` en lecture seule), `409` si
+  déjà suspendu ou expiré ; `POST reactivate` : depuis `suspended` seulement, statut
+  recalculé depuis l'échéance (`409` sinon). Réponse : le détail.
+- `GET /platform/plans` : toutes les offres, supprimées comprises (`planDto` +
+  `priceGnf`, `explicitYearlyPriceGnf`, `sortOrder`, `isPublic`, `deletedAt`).
+  `POST` (root) : `{ code (a-z, 0-9, -, _), name, priceGnf, priceYearlyGnf?,
+  maxEmployees, aiCreditsPerMonth?, modules[], features?, sortOrder?, isPublic? }`,
+  code unique (`409`). `PATCH /:id` : mêmes champs sauf `code`, qui ne change jamais.
+  `DELETE /:id` : logique, `409` (`rule = "inUse"`) si un abonnement non expiré
+  l'utilise ou la programme.
+
 ---
 
 ## 14. Santé
