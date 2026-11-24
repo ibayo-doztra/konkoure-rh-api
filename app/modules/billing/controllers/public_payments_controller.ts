@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import presignupService, { maskEmail } from '#modules/billing/services/presignup_service'
+import billingService from '#modules/billing/services/billing_service'
+import { planDto } from '#modules/billing/transformers/billing_transformer'
 import {
   claimValidator,
   presignupCheckoutValidator,
@@ -11,6 +13,13 @@ import { auditContext } from '#modules/auth/http_helpers'
 
 /** `/api/v1/public/payments` (06 §11, 07 §7.7, decisions of 2026-11-24). */
 export default class PublicPaymentsController {
+  /** `GET /public/plans` (06 §11): same shape as `GET /org/billing/plans`. */
+  @ApiOperation({ summary: 'Public plan catalogue' })
+  async plans(_ctx: HttpContext) {
+    const plans = await billingService.plans()
+    return { data: plans.map(planDto) }
+  }
+
   @ApiOperation({ summary: 'Pay before sign-up (claim code returned once)' })
   @ApiBody({ type: () => presignupCheckoutValidator })
   async checkout(ctx: HttpContext) {

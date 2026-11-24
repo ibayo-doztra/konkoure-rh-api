@@ -211,3 +211,24 @@ test.group('Payment before sign-up', (group) => {
     djomy.restore()
   })
 })
+
+test.group('GET /public/plans', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+  group.each.setup(() => limiter.clear(['memory']))
+
+  test('lists the public plans without authentication', async ({ client, assert }) => {
+    await Plan.create({
+      code: 'hidden',
+      name: 'Cachée',
+      priceGnf: '1',
+      maxEmployees: 1,
+      isPublic: false,
+    })
+    const response = await expectStatus(client.get('/api/v1/public/plans'), 200)
+    const codes = response.body().data.map((plan: { code: string }) => plan.code)
+    assert.includeMembers(codes, ['free', 'starter', 'pro', 'enterprise'])
+    assert.notInclude(codes, 'hidden')
+    const pro = response.body().data.find((plan: { code: string }) => plan.code === 'pro')
+    assert.deepInclude(pro, { priceMonthlyGnf: 1_490_000, priceYearlyGnf: 14_900_000 })
+  })
+})
