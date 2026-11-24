@@ -26,6 +26,11 @@ export function registerPublicRoutes() {
     .as('public.careers')
     .use(throttleCareers)
 
+  router
+    .get('public/plans', [PublicPaymentsController, 'plans'])
+    .as('public.plans')
+    .use(throttleCareers)
+
   /** Payment before sign-up (06 §11, 07 §7.7). The claim needs the signed-up payer. */
   router
     .group(() => {

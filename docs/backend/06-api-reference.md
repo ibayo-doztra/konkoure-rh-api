@@ -1221,6 +1221,9 @@ de relance manuelle.
 l'organisation est créée, l'abonnement activé, `claimed_at` renseigné.
 Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 
+`GET /public/plans` (livré le 2026-11-24, limiteur des pages carrières, 60/min/IP) :
+offres publiques non supprimées, même forme que `GET /org/billing/plans`.
+
 Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) :
 - `POST /public/payments/checkout` : `{ planId, cycle, method, payerPhone?, email }`
   (téléphone obligatoire pour le mobile money). Montant plein, sans prorata. `201` :
