@@ -177,6 +177,11 @@
   },
   "billing": {
     "notCancelable": "Only a running paid subscription can be canceled.",
-    "notResumable": "Only a canceled subscription whose period is still running can be resumed."
+    "notResumable": "Only a canceled subscription whose period is still running can be resumed.",
+    "payerPhone": "The payer's number is required for Orange Money and MTN MoMo.",
+    "plan": "This plan does not exist or cannot be subscribed to.",
+    "downgradeQuota": "The headcount exceeds the number of employees of the target plan.",
+    "nothingToPay": "The credit of the current period already covers this plan.",
+    "noPdf": "The PDF of this invoice is not available yet."
   }
 }

@@ -45,6 +45,12 @@ async function attendance() {
   return service
 }
 
+/** Djomy settlement service, loaded on use. */
+async function settlement() {
+  const { default: service } = await import('#modules/billing/services/settlement_service')
+  return service
+}
+
 /** Every background job. Handlers are idempotent or safe to retry (08 §1). */
 export const jobs = {
   'mail.send': defineJob<SendMailPayload>({
@@ -141,6 +147,41 @@ export const jobs = {
       return service.processReceipt(payload)
     },
   }),
+  'payments.settle': defineJob<{ receiptId: string }>({
+    queue: 'critical',
+    handle: async (payload) => {
+      const service = await settlement()
+      return service.processReceipt(payload)
+    },
+  }),
+  'payments.poll-pending': defineJob<Record<string, never>>({
+    queue: 'critical',
+    handle: async () => {
+      const service = await settlement()
+      return service.pollPending()
+    },
+  }),
+  'payments.expire': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const service = await settlement()
+      return service.expirePending()
+    },
+  }),
+  'payments.reconcile': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const service = await settlement()
+      return service.reconcile()
+    },
+  }),
+  'invoices.render': defineJob<{ organizationId: string; invoiceId: string }>({
+    queue: 'default',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/billing/services/invoice_pdf_service')
+      return service.render(payload)
+    },
+  }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -167,6 +208,9 @@ export type JobName = keyof typeof jobs
 export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
   { job: 'subscriptions.lifecycle', pattern: '0 1 * * *' },
+  { job: 'payments.poll-pending', pattern: '*/5 * * * *' },
+  { job: 'payments.expire', pattern: '10 * * * *' },
+  { job: 'payments.reconcile', pattern: '40 * * * *' },
   { job: 'leaves.end', pattern: '10 0 * * *' },
   { job: 'goals.mark-late', pattern: '20 0 * * *' },
   { job: 'jobs.auto-close', pattern: '30 0 * * *' },

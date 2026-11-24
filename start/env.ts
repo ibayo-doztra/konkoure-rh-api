@@ -82,6 +82,13 @@ export default await Env.create(new URL('../', import.meta.url), {
   S3_BUCKET_PRIVATE: Env.schema.string.optional(),
   S3_PUBLIC_BASE_URL: Env.schema.string.optional({ format: 'url', tld: false }),
 
+  // Paiements Djomy (docs/backend/07 §7, décision du 2026-11-24). Sans identifiants,
+  // le paiement renvoie 503 E_DEPENDENCY_UNAVAILABLE.
+  DJOMY_BASE_URL: Env.schema.string.optional({ format: 'url', tld: false }),
+  DJOMY_CLIENT_ID: Env.schema.string.optional(),
+  DJOMY_CLIENT_SECRET: Env.schema.secret.optional(),
+  DJOMY_WEBHOOK_PATH_TOKEN: Env.schema.secret.optional(),
+
   // E-mail (Resend). Sans clé, les e-mails ne partent pas (dev local).
   MAIL_MAILER: Env.schema.enum(['resend'] as const),
   MAIL_FROM_NAME: Env.schema.string(),

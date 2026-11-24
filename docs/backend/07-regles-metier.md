@@ -375,7 +375,11 @@ remet `cancel_at_period_end = false`.
 6.7 **Changement de plan** — montée en gamme immédiate avec prorata calculé sur
 les jours restants ; descente en gamme effective à l'échéance. Une descente est
 refusée si l'effectif dépasse le `max_employees` du plan cible
-(`409 E_QUOTA_EXCEEDED`, message listant le nombre d'employés à retirer).
+(`E_QUOTA_EXCEEDED`, `403` selon le catalogue des codes, avec le nombre d'employés
+à retirer dans `details[0].rule`). Mise en œuvre (décision du 2026-11-24) :
+`subscriptions.scheduled_plan_id` / `scheduled_cycle`, appliqués par
+`subscriptions:lifecycle` ; la montée paie la période visée moins le crédit des
+jours restants et démarre une nouvelle période au paiement.
 
 6.8 **Crédits IA** — décrémentés dans `usage_counters` à chaque appel IA
 (génération d'annonce, scoring, suggestion OKR, synthèse). Quota épuisé ⇒
@@ -399,7 +403,8 @@ Le serveur ne fait jamais confiance au polling seul.
 7.4 **Confirmation** — un paiement passe à `succeeded` uniquement si :
 webhook signé reçu **et** vérification serveur auprès de Djomy
 (`GET /transactions/:id`) confirmant l'état et le montant.
-`paid_amount < expected_amount` ⇒ `status='failed'`, alerte plateforme.
+`paid_amount < expected_amount` ⇒ `status='failed'`, alerte plateforme
+(`failure_reason = 'amount_mismatch'`).
 
 7.5 **Activation** — à `succeeded` : création ou mise à jour de `subscriptions`
 (`status='active'`, `current_period_start=now()`,

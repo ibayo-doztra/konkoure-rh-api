@@ -177,6 +177,11 @@
   },
   "billing": {
     "notCancelable": "Seul un abonnement payant en cours peut être annulé.",
-    "notResumable": "Seul un abonnement annulé dont la période court encore peut être réactivé."
+    "notResumable": "Seul un abonnement annulé dont la période court encore peut être réactivé.",
+    "payerPhone": "Le numéro du payeur est obligatoire pour Orange Money et MTN MoMo.",
+    "plan": "Cette offre n'existe pas ou ne peut pas être souscrite.",
+    "downgradeQuota": "L'effectif dépasse le nombre d'employés de l'offre visée.",
+    "nothingToPay": "Le crédit de la période en cours couvre déjà cette offre.",
+    "noPdf": "Le PDF de cette facture n'est pas encore disponible."
   }
 }

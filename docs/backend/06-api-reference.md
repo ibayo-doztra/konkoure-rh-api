@@ -1121,6 +1121,24 @@ Le client interroge ensuite `GET /org/billing/payments/:id` toutes les 3 s
 (60 tentatives maximum) ; le passage à `succeeded` est confirmé par le webhook
 Djomy **et** un appel de vérification serveur.
 
+Précisions du 2026-11-24 :
+- Montant calculé par le serveur : prix mensuel, ou annuel (10 mois si l'offre n'a
+  pas de prix annuel). Montée de gamme depuis une offre payante en cours : prix de
+  la période visée moins le crédit des jours restants de la période actuelle ; la
+  nouvelle période commence au paiement. Crédit couvrant tout : `409`,
+  `rule = "nothingToPay"`.
+- Descente de gamme depuis une offre payante en cours : aucun paiement, l'offre est
+  programmée à l'échéance. Réponse `200` : `{ data: { scheduled: true, planId, cycle,
+  effectiveAt } }`. Effectif supérieur au `max_employees` visé :
+  `403 E_QUOTA_EXCEEDED`, `details[0] = { field: 'employees', rule: <nombre à retirer> }`.
+- `payerPhone` obligatoire pour `orange_money` et `mtn_momo` (`422`) ; offre
+  inconnue, non publique ou `free` : `422`. `instructions` (texte traduit) pour le
+  mobile money, `redirectUrl` (portail Djomy) pour la carte ; l'autre vaut `null`.
+- Djomy injoignable ou non configuré : `503 E_DEPENDENCY_UNAVAILABLE`, le paiement
+  créé passe `failed` (`failureReason = 'provider_unavailable'`).
+- `GET /org/billing/invoices/:id/pdf` : `{ data: { url, expiresIn: 900 } }` (lien
+  signé 15 min) ; `409`, `rule = "notReady"`, tant que le PDF n'est pas généré.
+
 ---
 
 ## 11. Public `/public` (non authentifié)
@@ -1184,10 +1202,16 @@ Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 
 | Méthode | Chemin | Sécurité |
 |---|---|---|
-| POST | `/webhooks/djomy` | HMAC `X-Djomy-Signature` + horodatage + anti-rejeu |
+| POST | `/webhooks/djomy/:token` | jeton de chemin `DJOMY_WEBHOOK_PATH_TOKEN` + `X-Webhook-Signature: v1:<HMAC>` + anti-rejeu (décision du 2026-11-24) |
 | POST | `/webhooks/n8n/scoring` | HMAC `X-Konkoure-Signature` par organisation |
 
 Précisions du 2026-11-23 : les webhooks sont servis sous `/api/v1/webhooks/*`.
+Djomy (décision du 2026-11-24, format réel de l'intégration existante) :
+`X-Webhook-Signature` = `v1:` + HMAC-SHA256 hexadécimal du corps brut avec
+`DJOMY_CLIENT_SECRET` ; jeton ou signature faux : `401`. `event_id` = `eventId` de
+l'événement, sinon SHA-256 du corps ; un rejeu répond `200 { received: true,
+duplicate: true }`. Le statut annoncé n'est jamais cru : le job `payments.settle`
+interroge `GET /v1/payments/:id/status` chez Djomy.
 `/webhooks/n8n/scoring?organizationId=…&candidateId=…` (l'URL de rappel transmise
 à n8n) : corps = la réponse n8n telle quelle (tableau à un élément ou objet),
 `X-Konkoure-Signature` = HMAC-SHA256 hexadécimal du corps brut avec le secret de

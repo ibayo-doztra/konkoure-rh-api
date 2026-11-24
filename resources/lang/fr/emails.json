@@ -86,5 +86,9 @@
   "applicationReceived": {
     "subject": "Candidature reçue : {job}",
     "body": "{organization} a bien reçu votre candidature à l'offre « {job} ». Nous reviendrons vers vous."
+  },
+  "paymentSucceeded": {
+    "subject": "Paiement confirmé — Konkouré {plan}",
+    "body": "Votre paiement de {amount} GNF pour l'offre {plan} est confirmé. Votre abonnement court jusqu'au {end}. Facture : {invoice}."
   }
 }

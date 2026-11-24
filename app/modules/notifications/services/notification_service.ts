@@ -28,6 +28,8 @@ export type NotificationType =
   | 'candidate.applied'
   | 'candidate.scored'
   | 'trial.ending'
+  | 'payment.succeeded'
+  | 'payment.failed'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5

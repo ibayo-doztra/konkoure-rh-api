@@ -1,7 +1,9 @@
 import type { HttpContext } from '@adonisjs/core/http'
-import { ApiOperation } from '@foadonis/openapi/decorators'
+import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import BillingPolicy from '#policies/billing_policy'
 import billingService from '#modules/billing/services/billing_service'
+import checkoutService from '#modules/billing/services/checkout_service'
+import invoicePdfService from '#modules/billing/services/invoice_pdf_service'
 import {
   invoiceDto,
   paymentDto,
@@ -9,6 +11,8 @@ import {
   subscriptionDto,
 } from '#modules/billing/transformers/billing_transformer'
 import {
+  checkoutValidator,
+  invoiceIdValidator,
   listInvoicesValidator,
   listPaymentsValidator,
   paymentIdValidator,
@@ -69,6 +73,49 @@ export default class BillingController {
       perPage: query.perPage ?? 25,
     })
     return { data: page.all().map(invoiceDto), meta: pageMetaDto(page.getMeta()) }
+  }
+
+  @ApiOperation({ summary: 'Signed link to the invoice PDF (15 min)' })
+  async invoicePdf(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(invoiceIdValidator)
+    await ctx.bouncer.with(BillingPolicy).authorize('manage')
+    return ctx.serialize(await invoicePdfService.url(ctx.tenant, params.id))
+  }
+
+  /**
+   * Opens a Djomy payment (07 §7.1-7.2), or schedules a downgrade at the term
+   * (07 §6.7), which needs no payment.
+   */
+  @ApiOperation({ summary: 'Open a payment (Orange Money, MTN MoMo, card)' })
+  @ApiBody({ type: () => checkoutValidator })
+  async checkout(ctx: HttpContext) {
+    const input = await ctx.request.validateUsing(checkoutValidator)
+    await ctx.bouncer.with(BillingPolicy).authorize('manage')
+    const result = await checkoutService.checkout(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      input,
+      auditContext(ctx)
+    )
+    if (result.kind === 'scheduled') {
+      return ctx.serialize({
+        scheduled: true,
+        planId: result.plan.id,
+        cycle: result.cycle,
+        effectiveAt: result.effectiveAt.toUTC().toISO(),
+      })
+    }
+    const { payment, redirectUrl } = result
+    ctx.response.status(201)
+    return ctx.serialize({
+      paymentId: payment.id,
+      merchantReference: payment.merchantReference,
+      status: payment.status,
+      expectedAmount: Number(payment.expectedAmount),
+      currency: payment.currency,
+      instructions: redirectUrl ? null : ctx.i18n.t('billing.instructions.mobileMoney'),
+      redirectUrl,
+    })
   }
 
   @ApiOperation({ summary: 'Cancel at the end of the period' })

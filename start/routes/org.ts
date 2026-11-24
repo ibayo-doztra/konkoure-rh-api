@@ -68,6 +68,11 @@ export function registerOrgRoutes() {
           router.get('payments', [BillingController, 'payments']).as('payments.index')
           router.get('payments/:id', [BillingController, 'payment']).as('payments.show')
           router.get('invoices', [BillingController, 'invoices']).as('invoices.index')
+          router.get('invoices/:id/pdf', [BillingController, 'invoicePdf']).as('invoices.pdf')
+          router
+            .post('checkout', [BillingController, 'checkout'])
+            .as('checkout')
+            .use(middleware.idempotency())
           router.post('cancel', [BillingController, 'cancel']).as('cancel')
           router.post('resume', [BillingController, 'resume']).as('resume')
         })
