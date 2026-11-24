@@ -149,7 +149,8 @@
     "feedbackSelf": "You cannot give feedback to yourself.",
     "okr": "This OKR does not exist.",
     "goal": "This goal does not exist or does not belong to this employee.",
-    "reviewNotScorable": "9-box scores can only be set on a validated or signed evaluation."
+    "reviewNotScorable": "9-box scores can only be set on a validated or signed evaluation.",
+    "reviewNotStarted": "The AI synthesis needs a started evaluation."
   },
   "recruitment": {
     "jobNotPublishable": "Only a draft or closed offer can be published.",

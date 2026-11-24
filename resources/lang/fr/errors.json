@@ -26,5 +26,7 @@
   "E_MANUAL_PUNCH_DISABLED": "Le pointage manuel est désactivé pour cette organisation.",
   "E_WEIGHT_OVERFLOW": "La somme des pondérations des objectifs de cet employé sur ce plan dépasserait 100.",
   "E_JOB_CLOSED": "Cette offre n'accepte plus de candidatures.",
-  "E_CLAIM_INVALID": "Ce code de rattachement est invalide, expiré ou déjà utilisé."
+  "E_CLAIM_INVALID": "Ce code de rattachement est invalide, expiré ou déjà utilisé.",
+  "E_AI_QUOTA_EXCEEDED": "Les crédits IA du mois sont épuisés pour votre offre.",
+  "E_AI_UNAVAILABLE": "Le service d'IA est indisponible pour le moment."
 }

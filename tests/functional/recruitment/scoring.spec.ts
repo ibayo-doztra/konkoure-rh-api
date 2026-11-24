@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 import drive from '@adonisjs/drive/services/main'
 import testUtils from '@adonisjs/core/services/test_utils'
 import limiter from '@adonisjs/limiter/services/main'
@@ -180,9 +181,11 @@ test.group('n8n scoring (07 §4.4)', (group) => {
       const other = await createPublishedJob(org)
       const response = await expectStatus(applyOnce(client, org, other.slug), 201)
       const [scheduled] = network.dispatched.filter((d) => d.name === 'candidates.score')
+      // One AI credit of the month is reserved with the scoring (07 §6.8).
       assert.deepEqual(scheduled.payload, {
         organizationId: org.id,
         candidateId: response.body().data.candidateId,
+        creditPeriod: DateTime.now().toUTC().toFormat('yyyy-MM'),
       })
     } finally {
       network.restore()

@@ -301,6 +301,13 @@ export const talentReviewValidator = vine.create({
   potentialScore: talentScore(),
 })
 
+/** POST /okrs/suggest (06 §9): 3 to 5 key results, 3 by default. */
+export const suggestOkrValidator = vine.create({
+  objective: vine.string().trim().minLength(10).maxLength(500),
+  context: vine.string().trim().maxLength(2000).optional(),
+  count: vine.number().withoutDecimals().min(3).max(5).optional(),
+})
+
 /* Feedback and achievements (07 §5.9) */
 
 const FEEDBACK_KINDS = ['kudos', 'suggestion', 'concern'] as const

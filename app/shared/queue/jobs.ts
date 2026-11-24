@@ -5,6 +5,8 @@ export type QueueName = 'critical' | 'default' | 'ai' | 'outbound' | 'maintenanc
 
 import type { ExportJob } from '#modules/hr/services/employee_export_service'
 import type { TimeLogExportJob } from '#modules/timeclock/services/time_log_export_service'
+import type { UsageRecord } from '#modules/billing/services/ai_credit_service'
+import type { ScoreJob } from '#modules/recruitment/services/scoring_service'
 
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
 
@@ -23,6 +25,8 @@ interface JobDefinition<Payload> {
   /** Own retry schedule, instead of the default 5 attempts with exponential backoff. */
   retry?: { attempts: number; delaysMs: number[] }
   handle(payload: Payload): Promise<unknown>
+  /** Runs once the last attempt has failed (e.g. to give back an AI credit). Never throws. */
+  failed?(payload: Payload, error: unknown): Promise<void>
 }
 
 function defineJob<Payload>(definition: JobDefinition<Payload>) {
@@ -132,12 +136,16 @@ export const jobs = {
     },
   }),
   /** n8n scoring call (07 §4.4): 3 attempts, 30 s, 5 min, 30 min, no side effect after. */
-  'candidates.score': defineJob<{ organizationId: string; candidateId: string }>({
+  'candidates.score': defineJob<ScoreJob>({
     queue: 'ai',
     retry: { attempts: 3, delaysMs: [30_000, 5 * 60_000, 30 * 60_000] },
     handle: async (payload) => {
       const { default: service } = await import('#modules/recruitment/services/scoring_service')
       return service.run(payload)
+    },
+    failed: async (payload) => {
+      const { default: service } = await import('#modules/recruitment/services/scoring_service')
+      await service.giveUp(payload)
     },
   }),
   'candidates.score-result': defineJob<{ receiptId: string }>({
@@ -180,6 +188,13 @@ export const jobs = {
     handle: async (payload) => {
       const { default: service } = await import('#modules/billing/services/invoice_pdf_service')
       return service.render(payload)
+    },
+  }),
+  'usage.record': defineJob<UsageRecord>({
+    queue: 'maintenance',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/billing/services/ai_credit_service')
+      return service.write(payload)
     },
   }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({

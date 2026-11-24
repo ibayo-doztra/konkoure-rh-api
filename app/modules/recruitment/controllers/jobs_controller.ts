@@ -6,6 +6,7 @@ import { jobDto } from '#modules/recruitment/transformers/recruitment_transforme
 import { pageMetaDto } from '#modules/hr/transformers/hr_transformer'
 import {
   createJobValidator,
+  generateJobValidator,
   jobIdValidator,
   listJobsValidator,
   updateJobValidator,
@@ -106,6 +107,15 @@ export default class JobsController {
     )
     ctx.response.status(201)
     return ctx.serialize(jobDto(job))
+  }
+
+  @ApiOperation({ summary: 'AI description and requirements of the offer (one AI credit)' })
+  @ApiBody({ type: () => generateJobValidator })
+  async generate(ctx: HttpContext) {
+    const { params, ...input } = await ctx.request.validateUsing(generateJobValidator)
+    await ctx.bouncer.with(RecruitmentPolicy).authorize('manageJobs')
+    const result = await jobService.generate(ctx.tenant, ctx.auth.getUserOrFail(), params.id, input)
+    return ctx.serialize(result)
   }
 
   @ApiOperation({ summary: 'QR code (PNG) of the public page of the offer' })

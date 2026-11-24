@@ -16,6 +16,8 @@ import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import { jobsIn, type JobRepository } from '#modules/recruitment/repositories/job_repository'
 import careersService from '#modules/recruitment/services/careers_service'
 import { careersJobUrl } from '#modules/recruitment/careers_urls'
+import aiService from '#modules/integrations/services/ai_service'
+import { jobGenerateTask } from '#modules/integrations/prompts/job_generate'
 
 export interface JobInput {
   title?: string
@@ -68,6 +70,41 @@ export class JobService {
   }
 
   /** The offer and whether it belongs to the viewer's department, for the policy. */
+  /**
+   * `POST /jobs/:id/generate` (decision of 2026-11-24): AI description and
+   * requirements, returned for the client to apply; one credit, nothing
+   * stored. Only the offer's public facts reach the model (08 §7).
+   */
+  async generate(
+    tenant: TenantContext,
+    actor: User,
+    id: string,
+    input: { notes?: string; language?: 'fr' | 'en' }
+  ) {
+    const { organizationId } = tenant
+    const facts = await withTenant(organizationId, async (trx) => {
+      const job = await jobsIn(organizationId, trx).findOrFail(id)
+      const department = job.departmentId
+        ? await departmentsIn(organizationId, trx).find(job.departmentId)
+        : null
+      const organization = await organizations.findActive(organizationId, trx)
+      return {
+        language: input.language ?? (organization?.defaultLanguage === 'en' ? 'en' : 'fr'),
+        title: job.title,
+        contractType: job.contractType,
+        department: department?.name ?? null,
+        location: job.location,
+        notes: input.notes ?? null,
+      } as const
+    })
+    return aiService.run(jobGenerateTask(facts), {
+      organizationId,
+      userId: actor.id,
+      module: 'recruitment',
+      path: `/org/recruitment/jobs/${id}/generate`,
+    })
+  }
+
   find(tenant: TenantContext, id: string) {
     const { organizationId } = tenant
     return withTenant(organizationId, async (trx) => {

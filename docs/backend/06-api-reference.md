@@ -810,7 +810,7 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
 | POST | `/org/recruitment/jobs/:id/close` | O H R |
 | POST | `/org/recruitment/jobs/:id/duplicate` | O H R |
 | GET | `/org/recruitment/jobs/:id/qr` | O H R | QR de la page publique |
-| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce (reportée au lot IA, décision du 2026-11-23) |
+| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce (livrée le 2026-11-24, voir « IA ») |
 | GET | `/org/recruitment/candidates` | O H R |
 | POST | `/org/recruitment/candidates` | O H R |
 | GET/PATCH/DELETE | `/org/recruitment/candidates/:id` | O H R |
@@ -986,7 +986,8 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `DELETE /okrs/:id` : le porteur en `draft`/`needs_revision`, O H toujours.
 - `POST /okrs/:id/checkins` : `{ message }`, sur un OKR `validated` et `active`
   seulement (`409` sinon) ; `progressSnapshot` fige la progression du moment.
-- `POST /okrs/suggest` : reporté avec les crédits IA (lot facturation).
+- `POST /okrs/suggest` : livré le 2026-11-24 (voir plus bas). Tout membre ayant une
+  fiche employé ; `count` vaut 3 par défaut.
 
 ### Évaluations (décisions du 2026-11-23)
 - `POST /reviews` ⚡ : `{ cycleId, planId?, employeeIds? }` sur un cycle `open`
@@ -1014,7 +1015,13 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
   `rule = "notValidated"` sinon) : ce sont des champs RH hors du contenu signé.
   Audit `review.talent_scored`. Le détail expose `performanceScore` et
   `potentialScore`, toujours `null` pour l'évalué.
-  `POST /:id/ai-summary` est reporté au lot IA.
+  `POST /:id/ai-summary` (décision du 2026-11-24) : sans corps, O H ou manager de
+  l'équipe (jamais sur soi), refusé en `not_started` (`409`, `rule = "notStarted"`).
+  Entrées de l'IA : auto-évaluation, évaluation du manager, objectifs et leurs
+  commentaires, feedbacks non privés et visibles du manager reçus sur la période du
+  cycle (12 derniers mois sans cycle). Le résultat (≤ 250 mots) est écrit dans
+  `ai_summary` et la réponse est le détail de l'évaluation ; `aiSummary` y vaut
+  toujours `null` pour l'évalué.
 
 ### Feedback et réalisations (précisions du 2026-11-23)
 - `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
@@ -1068,6 +1075,22 @@ Module `talents` requis (absent de l'essai, 07 §6.2 : `403 E_MODULE_NOT_INCLUDE
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.
 Sortie : `{ data: { keyResults: [{ title, metric, targetValue, unit }] } }`.
 Consomme un crédit IA ; `403 E_AI_QUOTA_EXCEEDED` si le quota du plan est épuisé.
+
+### IA : règles communes (décisions du 2026-11-24)
+- Fournisseur OpenAI (`AI_PROVIDER=openai`, `AI_API_KEY`, `AI_MODEL`). Sans clé ou
+  sans modèle : `503 E_AI_UNAVAILABLE`, aucun crédit consommé.
+- Un crédit est réservé avant l'appel (`usage_counters`, période `AAAA-MM`, limite
+  `plans.ai_credits_per_month`), rendu si la réponse reste non conforme après un
+  nouvel essai (`503 E_AI_UNAVAILABLE`). Chaque appel réussi écrit un `usage_events`
+  (`kind = 'ai'`) par la file.
+- `POST /org/recruitment/jobs/:id/generate` (O H R) : `{ notes?: 0..2000, language?:
+  fr|en }` (défaut : langue de l'organisation). Envoie titre, type de contrat,
+  département, lieu et notes, jamais de salaire. Réponse `{ data: { description,
+  requirements } }` ; **rien n'est enregistré**, le client applique par `PATCH`.
+- Scoring n8n des candidatures : un crédit est réservé au déclenchement ; quota épuisé
+  ⇒ pas d'appel au workflow et événement candidat `scoring_skipped`
+  (`payload.reason = 'ai_quota'`) ; échec définitif après les 3 tentatives ⇒ crédit
+  rendu.
 
 ---
 

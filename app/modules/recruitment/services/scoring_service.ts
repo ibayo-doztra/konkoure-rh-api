@@ -7,6 +7,8 @@ import { withTenant } from '#shared/tenant/with_tenant'
 import fileStorage from '#shared/files/file_storage'
 import outbound, { signBody } from '#shared/http/outbound'
 import queueService from '#shared/queue/queue_service'
+import { AppException } from '#shared/exceptions/app_exception'
+import aiCreditService from '#modules/billing/services/ai_credit_service'
 import notificationService from '#modules/notifications/services/notification_service'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import { membersIn, type MailAccount } from '#modules/organizations/repositories/member_repository'
@@ -27,6 +29,8 @@ export const N8N_PROVIDER = 'n8n_scoring'
 export interface ScoreJob {
   organizationId: string
   candidateId: string
+  /** Month of the AI credit reserved for this scoring, to give it back on failure. */
+  creditPeriod?: string
 }
 
 export type InboundOutcome = 'accepted' | 'duplicate' | 'invalid_signature'
@@ -38,9 +42,9 @@ export type InboundOutcome = 'accepted' | 'duplicate' | 'invalid_signature'
  */
 export class ScoringService {
   /**
-   * After the commit of a public application. AI credits (07 §6.8) are not
-   * checked until the billing lot (decision of 2026-11-23): this is the one
-   * place where the quota will be enforced.
+   * After the commit of a public application. One AI credit (07 §6.8) is
+   * reserved here; with the month's credits used up, the workflow is not
+   * called and a `scoring_skipped` event says why (decision of 2026-11-24).
    */
   async schedule(organizationId: string, candidateId: string) {
     try {
@@ -49,7 +53,21 @@ export class ScoringService {
       )
       if (!config || config.activeEnv === 'off') return
       if (!webhookConfigService.urlOf(config, config.activeEnv)) return
-      await queueService.dispatch('candidates.score', { organizationId, candidateId })
+      let creditPeriod: string
+      try {
+        const reservation = await aiCreditService.reserve(organizationId)
+        creditPeriod = reservation.period
+      } catch (error) {
+        if (!(error instanceof AppException) || error.code !== 'E_AI_QUOTA_EXCEEDED') throw error
+        await withTenant(organizationId, (trx) =>
+          candidatesIn(organizationId, trx).recordEvent(candidateId, 'scoring_skipped', null, {
+            reason: 'ai_quota',
+          })
+        )
+        logger.warn({ organizationId, candidateId }, 'candidate.scoring_skipped_quota')
+        return
+      }
+      await queueService.dispatch('candidates.score', { organizationId, candidateId, creditPeriod })
     } catch (error) {
       logger.error({ err: error, candidateId }, 'candidate.scoring_schedule_failed')
     }
@@ -61,7 +79,8 @@ export class ScoringService {
    * (30 s, 5 min, 30 min); a 2xx answer carrying a result is applied at once,
    * otherwise n8n answers later on `/webhooks/n8n/scoring`.
    */
-  async run({ organizationId, candidateId }: ScoreJob) {
+  async run(payload: ScoreJob) {
+    const { organizationId, candidateId } = payload
     const context = await withTenant(organizationId, async (trx) => {
       const config = await webhookConfigIn(organizationId, trx).find()
       const candidate = await candidatesIn(organizationId, trx).find(candidateId)
@@ -71,12 +90,18 @@ export class ScoringService {
       if (!job || !organization) return null
       return { config, candidate, job, organization }
     })
-    if (!context) return 'skipped'
+    if (!context) {
+      await this.giveUp(payload)
+      return 'skipped'
+    }
     const { config, candidate, job, organization } = context
     const environment = config.activeEnv as 'test' | 'prod'
     const url = webhookConfigService.urlOf(config, environment)
     const secret = webhookConfigService.secretOf(config)
-    if (!url || !secret) return 'skipped'
+    if (!url || !secret) {
+      await this.giveUp(payload)
+      return 'skipped'
+    }
 
     const pieces: Array<[string, string | null]> = [
       [CV_KEY, candidate.cvPath],
@@ -116,6 +141,16 @@ export class ScoringService {
     if (result.error || result.status === null || result.status >= 300) {
       throw new Error(`n8n scoring call failed: ${result.error ?? result.status}`)
     }
+    if (payload.creditPeriod) {
+      await aiCreditService.record({
+        organizationId,
+        userId: null,
+        kind: 'ai',
+        module: 'recruitment',
+        path: null,
+        metadata: { task: 'candidate.score', provider: 'n8n', cost: 1, candidateId },
+      })
+    }
     let parsed: unknown = null
     try {
       parsed = result.body ? JSON.parse(result.body) : null
@@ -125,6 +160,13 @@ export class ScoringService {
     const scoring = normalizeN8nResponse(parsed)
     if (scoring) await this.apply(organizationId, candidateId, scoring)
     return scoring ? 'scored' : 'awaiting_callback'
+  }
+
+  /** The last attempt of `candidates.score` failed: the reserved AI credit is given back. */
+  async giveUp({ organizationId, candidateId, creditPeriod }: ScoreJob) {
+    if (!creditPeriod) return
+    await aiCreditService.refund({ organizationId, period: creditPeriod })
+    logger.warn({ organizationId, candidateId }, 'candidate.scoring_given_up')
   }
 
   /**

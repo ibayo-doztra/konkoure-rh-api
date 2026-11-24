@@ -168,7 +168,7 @@ export class CandidateEventSchema extends BaseModel {
   @column()
   declare payload: Record<string, unknown>
   @column()
-  declare type: 'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'
+  declare type: 'created' | 'stage_changed' | 'scored' | 'scoring_skipped' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'
 }
 
 export class CandidateNoteSchema extends BaseModel {
@@ -1457,6 +1457,27 @@ export class UsageCounterSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare used: number
+}
+
+export class UsageEventSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'kind', 'metadata', 'module', 'organizationId', 'path', 'userId'] as const
+  $columns = UsageEventSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare kind: string
+  @column()
+  declare metadata: Record<string, unknown>
+  @column()
+  declare module: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare path: string | null
+  @column()
+  declare userId: string | null
 }
 
 export class UserRoleSchema extends BaseModel {

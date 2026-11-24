@@ -149,7 +149,8 @@
     "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
     "okr": "Cet OKR n'existe pas.",
     "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé.",
-    "reviewNotScorable": "Les scores 9-box ne se saisissent que sur une évaluation validée ou signée."
+    "reviewNotScorable": "Les scores 9-box ne se saisissent que sur une évaluation validée ou signée.",
+    "reviewNotStarted": "La synthèse IA demande une évaluation commencée."
   },
   "recruitment": {
     "jobNotPublishable": "Seule une offre en brouillon ou fermée peut être publiée.",

@@ -26,5 +26,7 @@
   "E_MANUAL_PUNCH_DISABLED": "Manual punching is disabled for this organization.",
   "E_WEIGHT_OVERFLOW": "The total weight of this employee's goals on this plan would exceed 100.",
   "E_JOB_CLOSED": "This offer no longer accepts applications.",
-  "E_CLAIM_INVALID": "This claim code is invalid, expired or already used."
+  "E_CLAIM_INVALID": "This claim code is invalid, expired or already used.",
+  "E_AI_QUOTA_EXCEEDED": "The AI credits of the month are used up for your plan.",
+  "E_AI_UNAVAILABLE": "The AI service is unavailable right now."
 }
