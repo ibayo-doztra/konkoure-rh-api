@@ -19,6 +19,8 @@ export const organizationSettingsDefaults = {
   },
   performance: { ratingScale: 5, requireSignature: true },
   recruitment: { autoScore: true, notifyOnApplication: true },
+  /** 9-box axes (07 §5.10): score ≤ lowMax is low, ≤ mediumMax medium, else high. */
+  talents: { nineBox: { lowMax: 2, mediumMax: 3 } },
   branding: { primaryColor: '#0F7A5A' },
 }
 

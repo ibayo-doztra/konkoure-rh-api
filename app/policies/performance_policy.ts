@@ -109,6 +109,11 @@ export default class PerformancePolicy extends BasePolicy {
     return this.isHr() || this.isTeamManager(inTeam)
   }
 
+  /** 9-box scores of an evaluation (decision of 2026-11-24): HR only, never on one's own. */
+  scoreTalent(_user: User, review: PerformanceReview) {
+    return this.isHr() && !this.isSelf(review)
+  }
+
   /** The author or O H, never the recipient (04 §5, 07 §5.9). */
   deleteFeedback(user: User, feedback: Feedback) {
     const self = this.ctx.tenant.employeeId

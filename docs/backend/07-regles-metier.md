@@ -322,7 +322,9 @@ la matrice 9-box ; il n'est jamais supprimable par le destinataire.
 5.10 **9-box** — axe performance = `performance_score` (ou moyenne des
 `manager_score` des évaluations signées du cycle) ; axe potentiel =
 `potential_score` saisi par les RH. Grille 3×3, seuils configurables
-(défaut : 1–2 bas, 3 moyen, 4–5 haut).
+(défaut : 1–2 bas, 3 moyen, 4–5 haut), dans `organizations.settings.talents.nineBox`
+(`lowMax`, `mediumMax`). Les deux scores se saisissent par
+`PATCH /org/performance/reviews/:id/talent` (06 §9).
 
 ## 6. Abonnements, plans et droits d'accès
 

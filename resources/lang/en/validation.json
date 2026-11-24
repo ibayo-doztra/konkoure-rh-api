@@ -20,7 +20,8 @@
   "organization": {
     "timezone": "This time zone is not recognized.",
     "logo": "The logo must be a PNG, JPEG or WebP image.",
-    "confirmName": "The name entered does not match the organization's name."
+    "confirmName": "The name entered does not match the organization's name.",
+    "nineBoxThresholds": "The medium threshold must be greater than the low threshold."
   },
   "member": {
     "lastOwner": "The organization must keep at least one active owner."
@@ -147,7 +148,8 @@
     "reviewGoal": "One of the goals does not belong to this evaluation.",
     "feedbackSelf": "You cannot give feedback to yourself.",
     "okr": "This OKR does not exist.",
-    "goal": "This goal does not exist or does not belong to this employee."
+    "goal": "This goal does not exist or does not belong to this employee.",
+    "reviewNotScorable": "9-box scores can only be set on a validated or signed evaluation."
   },
   "recruitment": {
     "jobNotPublishable": "Only a draft or closed offer can be published.",

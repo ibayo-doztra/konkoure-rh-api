@@ -2,6 +2,7 @@ import type Employee from '#models/employee'
 import type EmployeeSkill from '#models/employee_skill'
 import type Skill from '#models/skill'
 import type SuccessionPlan from '#models/succession_plan'
+import type { NineBox, NineBoxPlacement } from '#modules/talents/services/nine_box_service'
 
 const person = (id: string | null, names: Map<string, string>) =>
   id === null ? null : { id, name: names.get(id) ?? null }
@@ -37,5 +38,30 @@ export function skillsMatrixDto(skills: Skill[], employees: Employee[], levels: 
       departmentId: employee.departmentId,
       levels: byEmployee.get(employee.id) ?? {},
     })),
+  }
+}
+
+function placementDto(placement: NineBoxPlacement) {
+  const { review } = placement
+  return {
+    employeeId: review.employeeId,
+    name: placement.name,
+    reviewId: review.id,
+    reviewStatus: review.status,
+    performanceScore: placement.performance,
+    potentialScore: placement.potential,
+  }
+}
+
+export function nineBoxDto(box: NineBox) {
+  return {
+    cycleId: box.cycleId,
+    thresholds: box.thresholds,
+    cells: box.cells.map((cell) => ({
+      performance: cell.performance,
+      potential: cell.potential,
+      employees: cell.placements.map(placementDto),
+    })),
+    unplaced: box.unplaced.map(placementDto),
   }
 }

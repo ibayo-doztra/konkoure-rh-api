@@ -63,6 +63,13 @@ export class ReviewRepository extends TenantRepository<typeof PerformanceReview>
       .paginate(filters.page, filters.perPage)
   }
 
+  /** Evaluations of a cycle, optionally limited to some employees (9-box). */
+  ofCycle(cycleId: string, employeeIds?: string[]) {
+    const query = this.query().where('cycle_id', cycleId)
+    if (employeeIds) query.whereIn('employee_id', employeeIds)
+    return query.orderBy('id', 'asc')
+  }
+
   /** Employees who already have an evaluation in the cycle. */
   async employeesInCycle(cycleId: string): Promise<Set<string>> {
     const rows = await PerformanceReview.query({ client: this.trx })

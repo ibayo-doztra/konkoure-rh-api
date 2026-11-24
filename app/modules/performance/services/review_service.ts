@@ -37,6 +37,14 @@ export interface ManagerInput {
   goals?: GoalCommentInput[]
 }
 
+export interface TalentScoresInput {
+  performanceScore?: number | null
+  potentialScore?: number | null
+}
+
+/** 9-box scores apply to a finished evaluation (decision of 2026-11-24). */
+const TALENT_SCORABLE: readonly ReviewStatus[] = ['validated', 'signed']
+
 /** The employee still writes the self-evaluation (07 §5.7). */
 const SELF_EDITABLE: readonly ReviewStatus[] = ['not_started', 'in_progress', 'sent_back']
 
@@ -249,6 +257,33 @@ export class ReviewService {
     })
     await reviewNotifier.signed(view.review, actor.id)
     return view
+  }
+
+  /**
+   * HR scores of the 9-box (07 §5.10): HR fields outside the signed content,
+   * so a signed evaluation still accepts them.
+   */
+  scoreTalent(
+    tenant: TenantContext,
+    actor: User,
+    id: string,
+    input: TalentScoresInput,
+    audit: AuditContext
+  ) {
+    return this.mutate(tenant, actor, id, audit, async (_reviews, review) => {
+      if (!TALENT_SCORABLE.includes(review.status)) {
+        throw conflict('notValidated', 'validation.performance.reviewNotScorable')
+      }
+      if (input.performanceScore !== undefined) review.performanceScore = input.performanceScore
+      if (input.potentialScore !== undefined) review.potentialScore = input.potentialScore
+      return {
+        action: 'review.talent_scored',
+        after: {
+          performanceScore: review.performanceScore,
+          potentialScore: review.potentialScore,
+        },
+      }
+    })
   }
 
   /**

@@ -159,6 +159,9 @@ export function reviewDto(
     sentBackComment: review.sentBackComment,
     validatedBy: review.validatedBy,
     signedBy: review.signedBy,
+    // 9-box scores: never shown to the evaluated employee (04 §5 "talents").
+    performanceScore: ownView ? null : review.performanceScore,
+    potentialScore: ownView ? null : review.potentialScore,
     goals: view.goals.map((goal) => {
       const row = comments.get(goal.id)
       return {

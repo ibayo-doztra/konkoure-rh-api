@@ -68,3 +68,7 @@ export const updateSkillsMatrixValidator = vine.create({
     .minLength(1)
     .maxLength(500),
 })
+
+/* 9-box (07 §5.10, decision of 2026-11-24) */
+
+export const nineBoxValidator = vine.create({ cycleId: vine.string().uuid() })
