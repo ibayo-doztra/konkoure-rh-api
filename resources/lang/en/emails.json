@@ -86,5 +86,9 @@
   "applicationReceived": {
     "subject": "Application received: {job}",
     "body": "{organization} received your application to \"{job}\". We will get back to you."
+  },
+  "paymentSucceeded": {
+    "subject": "Payment confirmed — Konkouré {plan}",
+    "body": "Your payment of {amount} GNF for the {plan} plan is confirmed. Your subscription runs until {end}. Invoice: {invoice}."
   }
 }

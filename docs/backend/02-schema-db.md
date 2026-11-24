@@ -518,6 +518,8 @@ Pas de `deleted_at` : aucune table ne référence un plan, la suppression est ph
 `current_period_end timestamptz NOT NULL`, `canceled_at timestamptz NULL`,
 `cancel_at_period_end bool NOT NULL DEFAULT false`,
 `max_employees_override int NULL`, `modules_override jsonb NULL`.
+`scheduled_plan_id uuid NULL`, `scheduled_cycle billing_cycle NULL` (ajoutés le
+2026-11-24) : descente de gamme appliquée à l'échéance (07 §6.7).
 Index partiel unique : une seule souscription non terminale par organisation.
 `current_period_end` fait autorité pour l'accès (voir 07 §6).
 
@@ -546,6 +548,10 @@ Index `(organization_id, created_at DESC)`, `(status, created_at)`.
 `metric text NOT NULL` (`ai_credits`, `active_employees`, `sms`),
 `used int NOT NULL DEFAULT 0`, `limit_value int NULL`.
 `UNIQUE(organization_id, period, metric)`.
+`metric` et `period` sont contraints par `CHECK`. `payments` porte, en plus de
+l'isolation par tenant, une politique RLS `presignup_payments` : une ligne sans
+organisation n'est visible qu'hors de tout tenant. Numéros de facture tirés de la
+séquence `invoice_number_seq`.
 
 ## 10. Transverse et plateforme
 
@@ -567,7 +573,9 @@ Partitionnée par mois. Rétention 24 mois puis archivage froid.
 ### `usage_events`
 `id`, `organization_id`, `user_id uuid NULL`, `kind text NOT NULL`,
 `module text NULL`, `path text NULL`, `metadata jsonb NOT NULL DEFAULT '{}'`.
-Écriture asynchrone (file), jamais bloquante.
+Écriture asynchrone (file), jamais bloquante. Créée par 0102 (2026-11-24), insertion
+seule ; seul `kind = 'ai'` est émis pour l'instant (`metadata` : `task`, `version`,
+`cost`).
 
 ### `system_logs`
 `id`, `channel text NOT NULL`, `level text NOT NULL`, `message text NOT NULL`,

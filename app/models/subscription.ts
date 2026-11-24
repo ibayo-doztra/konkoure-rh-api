@@ -15,6 +15,10 @@ export default class Subscription extends SubscriptionSchema {
   @belongsTo(() => Plan)
   declare plan: BelongsTo<typeof Plan>
 
+  /** Plan taking effect at the end of the period (scheduled downgrade). */
+  @belongsTo(() => Plan, { foreignKey: 'scheduledPlanId' })
+  declare scheduledPlan: BelongsTo<typeof Plan>
+
   @beforeCreate()
   static assignId(subscription: Subscription) {
     subscription.id ??= newId()

@@ -5,6 +5,8 @@ export type QueueName = 'critical' | 'default' | 'ai' | 'outbound' | 'maintenanc
 
 import type { ExportJob } from '#modules/hr/services/employee_export_service'
 import type { TimeLogExportJob } from '#modules/timeclock/services/time_log_export_service'
+import type { UsageRecord } from '#modules/billing/services/ai_credit_service'
+import type { ScoreJob } from '#modules/recruitment/services/scoring_service'
 
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
 
@@ -23,6 +25,8 @@ interface JobDefinition<Payload> {
   /** Own retry schedule, instead of the default 5 attempts with exponential backoff. */
   retry?: { attempts: number; delaysMs: number[] }
   handle(payload: Payload): Promise<unknown>
+  /** Runs once the last attempt has failed (e.g. to give back an AI credit). Never throws. */
+  failed?(payload: Payload, error: unknown): Promise<void>
 }
 
 function defineJob<Payload>(definition: JobDefinition<Payload>) {
@@ -42,6 +46,12 @@ const leaveTask = (task: 'apply-started' | 'end' | 'annual-rollover') =>
 /** Attendance service, loaded on use. */
 async function attendance() {
   const { default: service } = await import('#modules/timeclock/services/attendance_service')
+  return service
+}
+
+/** Djomy settlement service, loaded on use. */
+async function settlement() {
+  const { default: service } = await import('#modules/billing/services/settlement_service')
   return service
 }
 
@@ -126,12 +136,16 @@ export const jobs = {
     },
   }),
   /** n8n scoring call (07 §4.4): 3 attempts, 30 s, 5 min, 30 min, no side effect after. */
-  'candidates.score': defineJob<{ organizationId: string; candidateId: string }>({
+  'candidates.score': defineJob<ScoreJob>({
     queue: 'ai',
     retry: { attempts: 3, delaysMs: [30_000, 5 * 60_000, 30 * 60_000] },
     handle: async (payload) => {
       const { default: service } = await import('#modules/recruitment/services/scoring_service')
       return service.run(payload)
+    },
+    failed: async (payload) => {
+      const { default: service } = await import('#modules/recruitment/services/scoring_service')
+      await service.giveUp(payload)
     },
   }),
   'candidates.score-result': defineJob<{ receiptId: string }>({
@@ -139,6 +153,56 @@ export const jobs = {
     handle: async (payload) => {
       const { default: service } = await import('#modules/recruitment/services/scoring_service')
       return service.processReceipt(payload)
+    },
+  }),
+  'payments.settle': defineJob<{ receiptId: string }>({
+    queue: 'critical',
+    handle: async (payload) => {
+      const service = await settlement()
+      return service.processReceipt(payload)
+    },
+  }),
+  'payments.poll-pending': defineJob<Record<string, never>>({
+    queue: 'critical',
+    handle: async () => {
+      const service = await settlement()
+      return service.pollPending()
+    },
+  }),
+  'payments.expire': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const service = await settlement()
+      return service.expirePending()
+    },
+  }),
+  'payments.reconcile': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const service = await settlement()
+      return service.reconcile()
+    },
+  }),
+  'invoices.render': defineJob<{ organizationId: string; invoiceId: string }>({
+    queue: 'default',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/billing/services/invoice_pdf_service')
+      return service.render(payload)
+    },
+  }),
+  'usage.record': defineJob<UsageRecord>({
+    queue: 'maintenance',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/billing/services/ai_credit_service')
+      return service.write(payload)
+    },
+  }),
+  'subscriptions.lifecycle': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } =
+        await import('#modules/billing/services/subscription_lifecycle_service')
+      return service.run()
     },
   }),
   'contracts.expiring': defineJob<Record<string, never>>({
@@ -158,6 +222,10 @@ export type JobName = keyof typeof jobs
  */
 export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
+  { job: 'subscriptions.lifecycle', pattern: '0 1 * * *' },
+  { job: 'payments.poll-pending', pattern: '*/5 * * * *' },
+  { job: 'payments.expire', pattern: '10 * * * *' },
+  { job: 'payments.reconcile', pattern: '40 * * * *' },
   { job: 'leaves.end', pattern: '10 0 * * *' },
   { job: 'goals.mark-late', pattern: '20 0 * * *' },
   { job: 'jobs.auto-close', pattern: '30 0 * * *' },

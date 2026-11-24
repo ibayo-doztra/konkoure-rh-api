@@ -1,3 +1,4 @@
+import type { DateTime } from 'luxon'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type { ModelAttributes } from '@adonisjs/lucid/types/model'
 import Feedback, { type FeedbackKind } from '#models/feedback'
@@ -41,6 +42,20 @@ export class FeedbackRepository extends TenantRepository<typeof Feedback> {
           .whereNull('deleted_at')
           .select('id')
       )
+  }
+
+  /**
+   * Feedback received in a period that a manager may read: not private and
+   * visible to the manager (07 §5.9), for the AI synthesis of a review.
+   */
+  receivedBetween(employeeId: string, from: DateTime, to: DateTime) {
+    return this.query()
+      .where('to_employee_id', employeeId)
+      .where('is_private', false)
+      .where('visible_to_manager', true)
+      .whereBetween('created_at', [from.toJSDate(), to.toJSDate()])
+      .orderBy('created_at', 'asc')
+      .limit(50)
   }
 
   create(data: Partial<ModelAttributes<Feedback>>) {

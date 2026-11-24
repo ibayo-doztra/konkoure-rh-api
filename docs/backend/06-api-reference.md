@@ -810,7 +810,7 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
 | POST | `/org/recruitment/jobs/:id/close` | O H R |
 | POST | `/org/recruitment/jobs/:id/duplicate` | O H R |
 | GET | `/org/recruitment/jobs/:id/qr` | O H R | QR de la page publique |
-| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce (reportée au lot IA, décision du 2026-11-23) |
+| POST | `/org/recruitment/jobs/:id/generate` | O H R | Génération IA de l'annonce (livrée le 2026-11-24, voir « IA ») |
 | GET | `/org/recruitment/candidates` | O H R |
 | POST | `/org/recruitment/candidates` | O H R |
 | GET/PATCH/DELETE | `/org/recruitment/candidates/:id` | O H R |
@@ -986,7 +986,8 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
 - `DELETE /okrs/:id` : le porteur en `draft`/`needs_revision`, O H toujours.
 - `POST /okrs/:id/checkins` : `{ message }`, sur un OKR `validated` et `active`
   seulement (`409` sinon) ; `progressSnapshot` fige la progression du moment.
-- `POST /okrs/suggest` : reporté avec les crédits IA (lot facturation).
+- `POST /okrs/suggest` : livré le 2026-11-24 (voir plus bas). Tout membre ayant une
+  fiche employé ; `count` vaut 3 par défaut.
 
 ### Évaluations (décisions du 2026-11-23)
 - `POST /reviews` ⚡ : `{ cycleId, planId?, employeeIds? }` sur un cycle `open`
@@ -1014,7 +1015,13 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
   `rule = "notValidated"` sinon) : ce sont des champs RH hors du contenu signé.
   Audit `review.talent_scored`. Le détail expose `performanceScore` et
   `potentialScore`, toujours `null` pour l'évalué.
-  `POST /:id/ai-summary` est reporté au lot IA.
+  `POST /:id/ai-summary` (décision du 2026-11-24) : sans corps, O H ou manager de
+  l'équipe (jamais sur soi), refusé en `not_started` (`409`, `rule = "notStarted"`).
+  Entrées de l'IA : auto-évaluation, évaluation du manager, objectifs et leurs
+  commentaires, feedbacks non privés et visibles du manager reçus sur la période du
+  cycle (12 derniers mois sans cycle). Le résultat (≤ 250 mots) est écrit dans
+  `ai_summary` et la réponse est le détail de l'évaluation ; `aiSummary` y vaut
+  toujours `null` pour l'évalué.
 
 ### Feedback et réalisations (précisions du 2026-11-23)
 - `POST /feedback` : `{ toEmployeeId, kind: kudos|suggestion|concern, message,
@@ -1069,6 +1076,22 @@ Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5
 Sortie : `{ data: { keyResults: [{ title, metric, targetValue, unit }] } }`.
 Consomme un crédit IA ; `403 E_AI_QUOTA_EXCEEDED` si le quota du plan est épuisé.
 
+### IA : règles communes (décisions du 2026-11-24)
+- Fournisseur OpenAI (`AI_PROVIDER=openai`, `AI_API_KEY`, `AI_MODEL`). Sans clé ou
+  sans modèle : `503 E_AI_UNAVAILABLE`, aucun crédit consommé.
+- Un crédit est réservé avant l'appel (`usage_counters`, période `AAAA-MM`, limite
+  `plans.ai_credits_per_month`), rendu si la réponse reste non conforme après un
+  nouvel essai (`503 E_AI_UNAVAILABLE`). Chaque appel réussi écrit un `usage_events`
+  (`kind = 'ai'`) par la file.
+- `POST /org/recruitment/jobs/:id/generate` (O H R) : `{ notes?: 0..2000, language?:
+  fr|en }` (défaut : langue de l'organisation). Envoie titre, type de contrat,
+  département, lieu et notes, jamais de salaire. Réponse `{ data: { description,
+  requirements } }` ; **rien n'est enregistré**, le client applique par `PATCH`.
+- Scoring n8n des candidatures : un crédit est réservé au déclenchement ; quota épuisé
+  ⇒ pas d'appel au workflow et événement candidat `scoring_skipped`
+  (`payload.reason = 'ai_quota'`) ; échec définitif après les 3 tentatives ⇒ crédit
+  rendu.
+
 ---
 
 ## 10. Facturation `/org/billing` — `owner` uniquement
@@ -1086,6 +1109,26 @@ Consomme un crédit IA ; `403 E_AI_QUOTA_EXCEEDED` si le quota du plan est épui
 | GET | `/org/billing/invoices/:id/pdf` | URL signée |
 | GET | `/org/billing/usage` | Compteurs (employés, crédits IA) |
 
+### Lecture, annulation et réactivation (décisions du 2026-11-24)
+Pas de contrôle de module sur `/org/billing` : une organisation `expired` y garde
+accès pour souscrire (07 §6.2). Owner seulement (`403` sinon).
+- `GET /subscription` : `{ id, status (statut effectif, 07 §6.5), plan: { id, code,
+  name }, cycle, trialEndsAt, currentPeriodStart, currentPeriodEnd,
+  cancelAtPeriodEnd, canceledAt, scheduledPlan, scheduledCycle }`.
+- `GET /plans` : `[{ id, code, name, priceMonthlyGnf, priceYearlyGnf, maxEmployees,
+  aiCreditsPerMonth, modules, features }]` ; sans `price_yearly_gnf`, l'annuel vaut
+  10 mois (2 offerts, comme l'existant).
+- `GET /usage` : `{ period: 'AAAA-MM', employees: { used, limit }, aiCredits: { used,
+  limit } }`.
+- `GET /payments` (`filter[status]`, paginé) et `GET /payments/:id` : `{ id,
+  merchantReference, planId, cycle, method, status, expectedAmount, paidAmount,
+  currency, failureReason, createdAt, updatedAt }`. `GET /invoices` : `{ id, number,
+  paymentId, amount, currency, issuedAt, periodStart, periodEnd, hasPdf }`.
+- `POST /cancel` : abonnement payant `active` ou `past_due` seulement (`409`,
+  `rule = "notCancelable"`) ; passe `canceled` avec `cancelAtPeriodEnd`.
+  `POST /resume` : abonnement `canceled` dont la période court (`409`,
+  `rule = "notResumable"`). Réponse : l'abonnement. Audités.
+
 ### `POST /org/billing/checkout`
 ```ts
 vine.object({
@@ -1100,6 +1143,26 @@ expectedAmount, currency, instructions?, redirectUrl? } }`.
 Le client interroge ensuite `GET /org/billing/payments/:id` toutes les 3 s
 (60 tentatives maximum) ; le passage à `succeeded` est confirmé par le webhook
 Djomy **et** un appel de vérification serveur.
+
+Précisions du 2026-11-24 :
+- Montant calculé par le serveur : prix mensuel, ou annuel (10 mois si l'offre n'a
+  pas de prix annuel). Montée de gamme depuis une offre payante en cours : prix de
+  la période visée moins le crédit des jours restants de la période actuelle ; la
+  nouvelle période commence au paiement. Crédit couvrant tout : `409`,
+  `rule = "nothingToPay"`.
+- Descente de gamme depuis une offre payante en cours : aucun paiement, l'offre est
+  programmée à l'échéance. Réponse `200` : `{ data: { scheduled: true, planId, cycle,
+  effectiveAt } }`. Effectif supérieur au `max_employees` visé :
+  `403 E_QUOTA_EXCEEDED`, `details[0] = { field: 'employees', rule: <nombre à retirer> }`.
+- `payerPhone` obligatoire pour `orange_money` et `mtn_momo` (`422`) ; offre
+  inconnue, non publique ou `free` : `422`. `instructions` (texte traduit) pour le
+  mobile money, `redirectUrl` (portail Djomy) pour la carte ; l'autre vaut `null`.
+- Retour du portail carte : `<WEB_APP_URL>/app/billing/return?payment=<paymentId>`
+  (route du front, confirmée le 2026-11-24).
+- Djomy injoignable ou non configuré : `503 E_DEPENDENCY_UNAVAILABLE`, le paiement
+  créé passe `failed` (`failureReason = 'provider_unavailable'`).
+- `GET /org/billing/invoices/:id/pdf` : `{ data: { url, expiresIn: 900 } }` (lien
+  signé 15 min) ; `409`, `rule = "notReady"`, tant que le PDF n'est pas généré.
 
 ---
 
@@ -1158,16 +1221,39 @@ de relance manuelle.
 l'organisation est créée, l'abonnement activé, `claimed_at` renseigné.
 Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 
+Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) :
+- `POST /public/payments/checkout` : `{ planId, cycle, method, payerPhone?, email }`
+  (téléphone obligatoire pour le mobile money). Montant plein, sans prorata. `201` :
+  `{ data: { merchantReference, claimToken, claimExpiresAt, status, expectedAmount,
+  currency, instructions, redirectUrl } }` ; `claimToken` (`clm_…`) n'est renvoyé
+  qu'une fois, seul son SHA-256 est stocké. Retour carte :
+  `<WEB_APP_URL>/paiement/retour?ref=<merchantReference>`.
+- `GET /public/payments/:ref` (ajouté) : en-tête `X-Claim-Token` obligatoire (`404`
+  sans le bon jeton) ; `{ data: { status, planCode, cycle, expectedAmount, currency,
+  emailMasked, claimable } }`, pour le suivi toutes les 3 s.
+- `POST /public/payments/:ref/claim` : authentifié (e-mail vérifié). Le paiement
+  doit être `succeeded`, non rattaché, non expiré et fait avec l'e-mail du compte ;
+  sinon `409 E_CLAIM_INVALID` avec `details[0].rule` parmi `notPaid`, `used`,
+  `expired`, `email`. Crée l'organisation (l'appelant en est owner, sans essai) et
+  l'abonnement payé à partir de maintenant, avec sa facture, dans une transaction.
+  `201` : même forme que `POST /organizations` (`plan` = code de l'offre payée).
+
 ---
 
 ## 12. Webhooks `/webhooks`
 
 | Méthode | Chemin | Sécurité |
 |---|---|---|
-| POST | `/webhooks/djomy` | HMAC `X-Djomy-Signature` + horodatage + anti-rejeu |
+| POST | `/webhooks/djomy/:token` | jeton de chemin `DJOMY_WEBHOOK_PATH_TOKEN` + `X-Webhook-Signature: v1:<HMAC>` + anti-rejeu (décision du 2026-11-24) |
 | POST | `/webhooks/n8n/scoring` | HMAC `X-Konkoure-Signature` par organisation |
 
 Précisions du 2026-11-23 : les webhooks sont servis sous `/api/v1/webhooks/*`.
+Djomy (décision du 2026-11-24, format réel de l'intégration existante) :
+`X-Webhook-Signature` = `v1:` + HMAC-SHA256 hexadécimal du corps brut avec
+`DJOMY_CLIENT_SECRET` ; jeton ou signature faux : `401`. `event_id` = `eventId` de
+l'événement, sinon SHA-256 du corps ; un rejeu répond `200 { received: true,
+duplicate: true }`. Le statut annoncé n'est jamais cru : le job `payments.settle`
+interroge `GET /v1/payments/:id/status` chez Djomy.
 `/webhooks/n8n/scoring?organizationId=…&candidateId=…` (l'URL de rappel transmise
 à n8n) : corps = la réponse n8n telle quelle (tableau à un élément ou objet),
 `X-Konkoure-Signature` = HMAC-SHA256 hexadécimal du corps brut avec le secret de

@@ -15,6 +15,17 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
     return this.query().preload('plan').orderBy('created_at', 'desc').orderBy('id', 'desc').first()
   }
 
+  /** The current subscription, locked, with its plan and scheduled plan. */
+  currentForUpdate() {
+    return this.query()
+      .preload('plan')
+      .preload('scheduledPlan')
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+      .forUpdate()
+      .first()
+  }
+
   /** Ends the current subscription: only one non-expired row per organization (index). */
   async expireCurrent() {
     await Subscription.query({ client: this.trx })
@@ -38,6 +49,30 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
     )
   }
 
+  /** Paid period on a plan, keeping the platform overrides of the previous row. */
+  createPaid(data: {
+    planId: string
+    cycle: 'monthly' | 'yearly'
+    startsAt: DateTime
+    endsAt: DateTime
+    maxEmployeesOverride: number | null
+    modulesOverride: string[] | null
+  }) {
+    return Subscription.create(
+      {
+        organizationId: this.organizationId,
+        planId: data.planId,
+        status: 'active',
+        cycle: data.cycle,
+        currentPeriodStart: data.startsAt,
+        currentPeriodEnd: data.endsAt,
+        maxEmployeesOverride: data.maxEmployeesOverride,
+        modulesOverride: data.modulesOverride,
+      },
+      { client: this.trx }
+    )
+  }
+
   createTrial(planId: string, startsAt: DateTime, endsAt: DateTime) {
     return Subscription.create(
       {
@@ -56,6 +91,15 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
 
 export function subscriptionsIn(organizationId: string, trx: TransactionClientContract) {
   return new SubscriptionRepository(organizationId, trx)
+}
+
+/** Public catalogue of live plans, in display order (06 §10). */
+export function publicPlans() {
+  return Plan.query()
+    .whereNull('deleted_at')
+    .where('is_public', true)
+    .orderBy('sort_order', 'asc')
+    .orderBy('code', 'asc')
 }
 
 /** The catalogue is global: plans are not tenant data. */

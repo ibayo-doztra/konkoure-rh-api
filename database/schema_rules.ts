@@ -3,7 +3,8 @@ import { type SchemaRules } from '@adonisjs/lucid/types/schema_generator'
 /**
  * Typing rules for the generated `database/schema.ts`: PostgreSQL enums and
  * jsonb columns would otherwise be typed `any` (forbidden, docs/backend/00 §3).
- * Enum literals must stay in sync with database/migrations/0002_enums.ts.
+ * Enum literals must stay in sync with database/migrations/0002_enums.ts and the
+ * migrations that add values (0098: `scoring_skipped`).
  */
 const APP_ROLE = `'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'`
 const JSON_OBJECT = { tsType: 'Record<string, unknown>' }
@@ -115,7 +116,7 @@ export default {
     candidate_events: {
       columns: {
         type: {
-          tsType: `'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'`,
+          tsType: `'created' | 'stage_changed' | 'scored' | 'scoring_skipped' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'`,
         },
         payload: JSON_OBJECT,
       },
@@ -167,8 +168,29 @@ export default {
           tsType: `'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'`,
         },
         cycle: { tsType: `'monthly' | 'yearly'` },
+        scheduled_cycle: { tsType: `'monthly' | 'yearly'` },
         modules_override: { tsType: 'string[] | null' },
       },
+    },
+    payments: {
+      columns: {
+        cycle: { tsType: `'monthly' | 'yearly'` },
+        status: {
+          tsType: `'pending' | 'processing' | 'succeeded' | 'failed' | 'expired' | 'refunded'`,
+        },
+        method: {
+          tsType: `'orange_money' | 'mtn_momo' | 'card' | 'bank_transfer' | 'manual'`,
+        },
+        raw_event: JSON_OBJECT,
+        claim_email: { tsType: 'string' },
+      },
+    },
+    usage_events: {
+      columns: { metadata: JSON_OBJECT },
+    },
+    // text column with a CHECK constraint (0094), not a PostgreSQL enum.
+    usage_counters: {
+      columns: { metric: { tsType: `'ai_credits' | 'active_employees' | 'sms'` } },
     },
     platform_admins: {
       columns: { level: { tsType: `'root' | 'support'` } },

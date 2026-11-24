@@ -3,11 +3,14 @@ import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import PerformancePolicy from '#policies/performance_policy'
 import { AppException } from '#shared/exceptions/app_exception'
 import okrService from '#modules/performance/services/okr_service'
+import aiService from '#modules/integrations/services/ai_service'
+import { okrSuggestTask } from '#modules/integrations/prompts/okr_suggest'
 import { okrCheckinDto, okrDto } from '#modules/performance/transformers/performance_transformer'
 import { pageMetaDto } from '#modules/hr/transformers/hr_transformer'
 import {
   createCheckinValidator,
   createOkrValidator,
+  suggestOkrValidator,
   idValidator,
   listOkrsValidator,
   replaceKeyResultsValidator,
@@ -29,6 +32,30 @@ export default class OkrsController {
     await ctx.bouncer.with(PerformancePolicy).authorize('read')
     const { rows, keyResults, meta } = await okrService.list(ctx.tenant, query)
     return { data: rows.map((okr) => okrDto(okr, keyResults)), meta: pageMetaDto(meta) }
+  }
+
+  /** `POST /okrs/suggest` (06 §9): AI key results, one credit, nothing stored. */
+  @ApiOperation({ summary: 'AI suggestion of key results' })
+  @ApiBody({ type: () => suggestOkrValidator })
+  async suggest(ctx: HttpContext) {
+    const input = await ctx.request.validateUsing(suggestOkrValidator)
+    await ctx.bouncer.with(PerformancePolicy).authorize('suggestOkr')
+    const user = ctx.auth.getUserOrFail()
+    const result = await aiService.run(
+      okrSuggestTask({
+        objective: input.objective,
+        context: input.context,
+        count: input.count ?? 3,
+        language: user.preferredLanguage === 'en' ? 'en' : 'fr',
+      }),
+      {
+        organizationId: ctx.tenant.organizationId,
+        userId: user.id,
+        module: 'performance',
+        path: '/org/performance/okrs/suggest',
+      }
+    )
+    return ctx.serialize(result)
   }
 
   @ApiOperation({ summary: 'Create a draft OKR' })

@@ -160,6 +160,8 @@ export function reviewDto(
     validatedBy: review.validatedBy,
     signedBy: review.signedBy,
     // 9-box scores: never shown to the evaluated employee (04 §5 "talents").
+    // The AI synthesis is for the manager and HR (decision of 2026-11-24).
+    aiSummary: ownView ? null : review.aiSummary,
     performanceScore: ownView ? null : review.performanceScore,
     potentialScore: ownView ? null : review.potentialScore,
     goals: view.goals.map((goal) => {

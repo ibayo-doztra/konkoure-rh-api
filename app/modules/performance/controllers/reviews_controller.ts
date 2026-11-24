@@ -159,6 +159,20 @@ export default class ReviewsController {
     return this.render(ctx, view)
   }
 
+  @ApiOperation({ summary: 'AI synthesis of an evaluation (one AI credit)' })
+  async aiSummary(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(idValidator)
+    const { review, inTeam } = await reviewService.find(ctx.tenant, params.id)
+    await ctx.bouncer.with(PerformancePolicy).authorize('manageReview', review, inTeam)
+    const view = await reviewService.aiSummary(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      params.id,
+      auditContext(ctx)
+    )
+    return this.render(ctx, view)
+  }
+
   private render(ctx: HttpContext, view: View) {
     const ownView = ctx.tenant.employeeId === view.review.employeeId
     return ctx.serialize(reviewDto(view, ownView))

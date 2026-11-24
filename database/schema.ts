@@ -168,7 +168,7 @@ export class CandidateEventSchema extends BaseModel {
   @column()
   declare payload: Record<string, unknown>
   @column()
-  declare type: 'created' | 'stage_changed' | 'scored' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'
+  declare type: 'created' | 'stage_changed' | 'scored' | 'scoring_skipped' | 'note_added' | 'note_deleted' | 'document_added' | 'email_sent'
 }
 
 export class CandidateNoteSchema extends BaseModel {
@@ -613,6 +613,37 @@ export class InvitationSchema extends BaseModel {
   declare updatedAt: DateTime
 }
 
+export class InvoiceSchema extends BaseModel {
+  static $columns = ['amount', 'createdAt', 'currency', 'id', 'issuedAt', 'number', 'organizationId', 'paymentId', 'pdfPath', 'periodEnd', 'periodStart', 'subscriptionId', 'updatedAt'] as const
+  $columns = InvoiceSchema.$columns
+  @column()
+  declare amount: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare currency: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column.dateTime()
+  declare issuedAt: DateTime
+  @column()
+  declare number: string
+  @column()
+  declare organizationId: string
+  @column()
+  declare paymentId: string | null
+  @column()
+  declare pdfPath: string | null
+  @column.dateTime()
+  declare periodEnd: DateTime
+  @column.dateTime()
+  declare periodStart: DateTime
+  @column()
+  declare subscriptionId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class JobSchema extends BaseModel {
   static $columns = ['contractType', 'createdAt', 'createdBy', 'deadline', 'deletedAt', 'departmentId', 'description', 'id', 'inclusiveScore', 'location', 'organizationId', 'publishedAt', 'requiredDocuments', 'requirements', 'slug', 'status', 'title', 'updatedAt', 'updatedBy', 'viewsCount'] as const
   $columns = JobSchema.$columns
@@ -975,6 +1006,57 @@ export class PasswordResetTokenSchema extends BaseModel {
   declare userId: string
 }
 
+export class PaymentSchema extends BaseModel {
+  static $columns = ['claimEmail', 'claimExpiresAt', 'claimTokenHash', 'claimedAt', 'createdAt', 'createdBy', 'currency', 'cycle', 'expectedAmount', 'failureReason', 'id', 'merchantReference', 'method', 'organizationId', 'paidAmount', 'payerPhone', 'planId', 'provider', 'providerTransactionId', 'rawEvent', 'status', 'subscriptionId', 'updatedAt'] as const
+  $columns = PaymentSchema.$columns
+  @column()
+  declare claimEmail: string | null
+  @column.dateTime()
+  declare claimExpiresAt: DateTime | null
+  @column()
+  declare claimTokenHash: string | null
+  @column.dateTime()
+  declare claimedAt: DateTime | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare currency: string
+  @column()
+  declare cycle: 'monthly' | 'yearly'
+  @column()
+  declare expectedAmount: string
+  @column()
+  declare failureReason: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare merchantReference: string
+  @column()
+  declare method: 'orange_money' | 'mtn_momo' | 'card' | 'bank_transfer' | 'manual' | null
+  @column()
+  declare organizationId: string | null
+  @column()
+  declare paidAmount: string | null
+  @column()
+  declare payerPhone: string | null
+  @column()
+  declare planId: string
+  @column()
+  declare provider: string
+  @column()
+  declare providerTransactionId: string | null
+  @column()
+  declare rawEvent: Record<string, unknown> | null
+  @column()
+  declare status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'expired' | 'refunded'
+  @column()
+  declare subscriptionId: string | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class PerformanceCycleSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'deletedAt', 'frequency', 'id', 'name', 'organizationId', 'periodEnd', 'periodStart', 'selfEvalClosesAt', 'selfEvalOpensAt', 'status', 'updatedAt', 'updatedBy'] as const
   $columns = PerformanceCycleSchema.$columns
@@ -1233,7 +1315,7 @@ export class SkillSchema extends BaseModel {
 }
 
 export class SubscriptionSchema extends BaseModel {
-  static $columns = ['cancelAtPeriodEnd', 'canceledAt', 'createdAt', 'currentPeriodEnd', 'currentPeriodStart', 'cycle', 'id', 'maxEmployeesOverride', 'modulesOverride', 'organizationId', 'planId', 'status', 'trialEndsAt', 'updatedAt'] as const
+  static $columns = ['cancelAtPeriodEnd', 'canceledAt', 'createdAt', 'currentPeriodEnd', 'currentPeriodStart', 'cycle', 'id', 'maxEmployeesOverride', 'modulesOverride', 'organizationId', 'planId', 'scheduledCycle', 'scheduledPlanId', 'status', 'trialEndsAt', 'updatedAt'] as const
   $columns = SubscriptionSchema.$columns
   @column()
   declare cancelAtPeriodEnd: boolean
@@ -1257,6 +1339,10 @@ export class SubscriptionSchema extends BaseModel {
   declare organizationId: string
   @column()
   declare planId: string
+  @column()
+  declare scheduledCycle: 'monthly' | 'yearly' | null
+  @column()
+  declare scheduledPlanId: string | null
   @column()
   declare status: 'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'
   @column.dateTime()
@@ -1350,6 +1436,48 @@ export class TimeLogSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare workZoneId: string | null
+}
+
+export class UsageCounterSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'limitValue', 'metric', 'organizationId', 'period', 'updatedAt', 'used'] as const
+  $columns = UsageCounterSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare limitValue: number | null
+  @column()
+  declare metric: 'ai_credits' | 'active_employees' | 'sms'
+  @column()
+  declare organizationId: string
+  @column()
+  declare period: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare used: number
+}
+
+export class UsageEventSchema extends BaseModel {
+  static $columns = ['createdAt', 'id', 'kind', 'metadata', 'module', 'organizationId', 'path', 'userId'] as const
+  $columns = UsageEventSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare kind: string
+  @column()
+  declare metadata: Record<string, unknown>
+  @column()
+  declare module: string | null
+  @column()
+  declare organizationId: string
+  @column()
+  declare path: string | null
+  @column()
+  declare userId: string | null
 }
 
 export class UserRoleSchema extends BaseModel {
