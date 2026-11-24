@@ -34,6 +34,11 @@ export function registerPublicRoutes() {
     .use(throttleCareers)
 
   router
+    .get('public/plans', [PublicPaymentsController, 'plans'])
+    .as('public.plans')
+    .use(throttleCareers)
+
+  router
     .post('public/demo-requests', [DemoRequestsController, 'store'])
     .as('public.demoRequests.store')
     .use(throttleDemoRequests)
