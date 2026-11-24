@@ -89,6 +89,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   DJOMY_CLIENT_SECRET: Env.schema.secret.optional(),
   DJOMY_WEBHOOK_PATH_TOKEN: Env.schema.secret.optional(),
 
+  // IA (docs/backend/08 §7, décision du 2026-11-24 : OpenAI). Sans clé ni modèle,
+  // les fonctions IA renvoient 503 E_AI_UNAVAILABLE sans consommer de crédit.
+  AI_PROVIDER: Env.schema.enum.optional(['openai'] as const),
+  AI_API_KEY: Env.schema.secret.optional(),
+  AI_MODEL: Env.schema.string.optional(),
+
   // E-mail (Resend). Sans clé, les e-mails ne partent pas (dev local).
   MAIL_MAILER: Env.schema.enum(['resend'] as const),
   MAIL_FROM_NAME: Env.schema.string(),

@@ -34,6 +34,13 @@ const optionalFields = {
 
 export const jobIdValidator = vine.create({ params: params() })
 
+/** POST /jobs/:id/generate (decision of 2026-11-24): a suggestion, nothing stored. */
+export const generateJobValidator = vine.create({
+  params: params(),
+  notes: vine.string().trim().maxLength(2000).optional(),
+  language: vine.enum(['fr', 'en'] as const).optional(),
+})
+
 export const listJobsValidator = vine.create({
   page: vine.number().withoutDecimals().min(1).max(10_000).optional(),
   perPage: vine.number().withoutDecimals().min(1).max(100).optional(),

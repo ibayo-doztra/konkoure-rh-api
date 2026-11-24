@@ -24,6 +24,11 @@ export default class PerformancePolicy extends BasePolicy {
     return true
   }
 
+  /** `POST /okrs/suggest` (06 §9 "self"): any member with an employee record. */
+  suggestOkr(_user: User) {
+    return this.ctx.tenant.employeeId !== null
+  }
+
   manageSetup(_user: User) {
     return this.isHr()
   }

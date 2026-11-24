@@ -202,7 +202,11 @@ téléchargeable.
 ## 7. Intelligence artificielle
 
 Passerelle unique `AiService` (`app/modules/integrations/services/ai_service.ts`),
-fournisseur configurable (`AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`).
+fournisseur configurable (`AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`). Décision du
+2026-11-24 : OpenAI via le SDK `openai`, sorties structurées (`json_schema` strict)
+puis validation VineJS. `job.generate`, `okr.suggest` et `review.summary` sont
+livrés ; `social.post` reste pour le lot intégrations. Un job dont la dernière
+tentative échoue peut déclarer un crochet `failed` (ex. rendre le crédit du scoring).
 
 | Usage | Entrée | Sortie attendue | Coût |
 |---|---|---|---|

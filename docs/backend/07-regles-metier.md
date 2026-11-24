@@ -383,7 +383,10 @@ jours restants et démarre une nouvelle période au paiement.
 
 6.8 **Crédits IA** — décrémentés dans `usage_counters` à chaque appel IA
 (génération d'annonce, scoring, suggestion OKR, synthèse). Quota épuisé ⇒
-`403 E_AI_QUOTA_EXCEEDED`. Réinitialisation le 1er de chaque mois.
+`403 E_AI_QUOTA_EXCEEDED`. Réinitialisation le 1er de chaque mois. Le crédit est
+réservé avant l'appel et rendu si l'appel échoue ; pour le scoring automatique, un
+quota épuisé n'empêche pas la candidature : le scoring est sauté et tracé
+(décision du 2026-11-24).
 
 ## 7. Paiements Djomy
 
