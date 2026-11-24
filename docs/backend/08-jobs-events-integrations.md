@@ -27,7 +27,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 |---|---|---|
 | Toutes les 5 min | `payments:poll-pending` | Vérifie auprès de Djomy les paiements `pending` de moins de 30 min |
 | Toutes les 15 min | `attendance:consolidate` | Recalcule `attendance_days` modifiés |
-| Toutes les heures | `payments:reconcile` | Rapproche les 48 dernières heures |
+| Toutes les heures | `payments:reconcile` | Rapproche les 48 dernières heures : un paiement `failed`/`expired` payé chez Djomy reçoit `failure_reason = 'remote_succeeded'` et une alerte (action manuelle `root`, lot 10) |
 | Toutes les heures | `payments:expire` | `pending` > 30 min ⇒ `expired` |
 | 00h05 | `leaves:apply-started` | Marque les congés commençant aujourd'hui, passe l'employé en `on_leave` |
 | 00h10 | `leaves:end` | Repasse en `active` les employés dont le congé s'achève |
@@ -135,10 +135,12 @@ Trois tentatives d'envoi ; échec définitif ⇒ `system_logs` + alerte.
 
 ### Entrants
 
-`POST /webhooks/djomy` :
-1. corps brut → HMAC-SHA256 avec `DJOMY_WEBHOOK_SECRET`, comparaison
+`POST /webhooks/djomy/:token` (décision du 2026-11-24 : format réel de Djomy,
+qui n'envoie pas d'horodatage) :
+1. jeton de chemin `DJOMY_WEBHOOK_PATH_TOKEN`, puis corps brut → HMAC-SHA256 avec
+   `DJOMY_CLIENT_SECRET` comparé à `X-Webhook-Signature` (`v1:<hex>`),
    `timingSafeEqual` ;
-2. écart d'horodatage ≤ 5 min ;
+2. anti-rejeu par `event_id` (pas d'horodatage chez Djomy) ;
 3. `webhook_receipts` avec `UNIQUE(provider, event_id)` ;
 4. mise en file `critical` ;
 5. réponse `200` immédiate ;
@@ -200,7 +202,11 @@ téléchargeable.
 ## 7. Intelligence artificielle
 
 Passerelle unique `AiService` (`app/modules/integrations/services/ai_service.ts`),
-fournisseur configurable (`AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`).
+fournisseur configurable (`AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`). Décision du
+2026-11-24 : OpenAI via le SDK `openai`, sorties structurées (`json_schema` strict)
+puis validation VineJS. `job.generate`, `okr.suggest` et `review.summary` sont
+livrés ; `social.post` reste pour le lot intégrations. Un job dont la dernière
+tentative échoue peut déclarer un crochet `failed` (ex. rendre le crédit du scoring).
 
 | Usage | Entrée | Sortie attendue | Coût |
 |---|---|---|---|

@@ -88,9 +88,10 @@ export class QueueService {
   ): Promise<void> {
     if (this.driver === 'sync') {
       setImmediate(() => {
-        this.run(name, payload).catch((error) =>
+        this.run(name, payload).catch(async (error) => {
           logger.error({ err: error, job: name }, 'job.failed')
-        )
+          await this.giveUp(name, payload, error)
+        })
       })
       return
     }
@@ -133,12 +134,13 @@ export class QueueService {
         },
       })
       worker.on('error', (error) => logger.error({ err: error, queue: name }, 'worker.error'))
-      worker.on('failed', (job, error) => {
+      worker.on('failed', async (job, error) => {
         const terminal = job && job.attemptsMade >= (job.opts.attempts ?? 1)
         logger[terminal ? 'error' : 'warn'](
           { err: error, queue: name, job: job?.name, jobId: job?.id, attempts: job?.attemptsMade },
           terminal ? 'job.failed' : 'job.retry'
         )
+        if (job && terminal) await this.giveUp(job.name as JobName, job.data, error)
       })
       return worker
     })
@@ -161,6 +163,22 @@ export class QueueService {
   async close() {
     await Promise.all([...this.queues.values()].map((queue) => queue.close()))
     this.queues.clear()
+  }
+
+  /** The `failed` hook of a job whose last attempt failed; errors are only logged. */
+  private async giveUp<Name extends JobName>(
+    name: Name,
+    payload: JobPayload<Name>,
+    error: unknown
+  ) {
+    const hook = jobs[name]?.failed as
+      ((data: JobPayload<Name>, error: unknown) => Promise<void>) | undefined
+    if (!hook) return
+    try {
+      await hook(payload, error)
+    } catch (hookError) {
+      logger.error({ err: hookError, job: name }, 'job.failed_hook_error')
+    }
   }
 
   private run<Name extends JobName>(name: Name, payload: JobPayload<Name>) {

@@ -149,7 +149,8 @@
     "feedbackSelf": "You cannot give feedback to yourself.",
     "okr": "This OKR does not exist.",
     "goal": "This goal does not exist or does not belong to this employee.",
-    "reviewNotScorable": "9-box scores can only be set on a validated or signed evaluation."
+    "reviewNotScorable": "9-box scores can only be set on a validated or signed evaluation.",
+    "reviewNotStarted": "The AI synthesis needs a started evaluation."
   },
   "recruitment": {
     "jobNotPublishable": "Only a draft or closed offer can be published.",
@@ -177,6 +178,17 @@
   },
   "billing": {
     "notCancelable": "Only a running paid subscription can be canceled.",
-    "notResumable": "Only a canceled subscription whose period is still running can be resumed."
+    "notResumable": "Only a canceled subscription whose period is still running can be resumed.",
+    "payerPhone": "The payer's number is required for Orange Money and MTN MoMo.",
+    "plan": "This plan does not exist or cannot be subscribed to.",
+    "downgradeQuota": "The headcount exceeds the number of employees of the target plan.",
+    "nothingToPay": "The credit of the current period already covers this plan.",
+    "noPdf": "The PDF of this invoice is not available yet.",
+    "claim": {
+      "used": "This payment is already bound to an organization.",
+      "expired": "The claim code has expired.",
+      "email": "This payment was made with another e-mail address.",
+      "notPaid": "This payment is not confirmed yet."
+    }
   }
 }

@@ -573,7 +573,9 @@ Partitionnée par mois. Rétention 24 mois puis archivage froid.
 ### `usage_events`
 `id`, `organization_id`, `user_id uuid NULL`, `kind text NOT NULL`,
 `module text NULL`, `path text NULL`, `metadata jsonb NOT NULL DEFAULT '{}'`.
-Écriture asynchrone (file), jamais bloquante.
+Écriture asynchrone (file), jamais bloquante. Créée par 0102 (2026-11-24), insertion
+seule ; seul `kind = 'ai'` est émis pour l'instant (`metadata` : `task`, `version`,
+`cost`).
 
 ### `system_logs`
 `id`, `channel text NOT NULL`, `level text NOT NULL`, `message text NOT NULL`,

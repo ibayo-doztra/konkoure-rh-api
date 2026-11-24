@@ -49,6 +49,30 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
     )
   }
 
+  /** Paid period on a plan, keeping the platform overrides of the previous row. */
+  createPaid(data: {
+    planId: string
+    cycle: 'monthly' | 'yearly'
+    startsAt: DateTime
+    endsAt: DateTime
+    maxEmployeesOverride: number | null
+    modulesOverride: string[] | null
+  }) {
+    return Subscription.create(
+      {
+        organizationId: this.organizationId,
+        planId: data.planId,
+        status: 'active',
+        cycle: data.cycle,
+        currentPeriodStart: data.startsAt,
+        currentPeriodEnd: data.endsAt,
+        maxEmployeesOverride: data.maxEmployeesOverride,
+        modulesOverride: data.modulesOverride,
+      },
+      { client: this.trx }
+    )
+  }
+
   createTrial(planId: string, startsAt: DateTime, endsAt: DateTime) {
     return Subscription.create(
       {

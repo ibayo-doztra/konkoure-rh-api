@@ -375,11 +375,18 @@ remet `cancel_at_period_end = false`.
 6.7 **Changement de plan** — montée en gamme immédiate avec prorata calculé sur
 les jours restants ; descente en gamme effective à l'échéance. Une descente est
 refusée si l'effectif dépasse le `max_employees` du plan cible
-(`409 E_QUOTA_EXCEEDED`, message listant le nombre d'employés à retirer).
+(`E_QUOTA_EXCEEDED`, `403` selon le catalogue des codes, avec le nombre d'employés
+à retirer dans `details[0].rule`). Mise en œuvre (décision du 2026-11-24) :
+`subscriptions.scheduled_plan_id` / `scheduled_cycle`, appliqués par
+`subscriptions:lifecycle` ; la montée paie la période visée moins le crédit des
+jours restants et démarre une nouvelle période au paiement.
 
 6.8 **Crédits IA** — décrémentés dans `usage_counters` à chaque appel IA
 (génération d'annonce, scoring, suggestion OKR, synthèse). Quota épuisé ⇒
-`403 E_AI_QUOTA_EXCEEDED`. Réinitialisation le 1er de chaque mois.
+`403 E_AI_QUOTA_EXCEEDED`. Réinitialisation le 1er de chaque mois. Le crédit est
+réservé avant l'appel et rendu si l'appel échoue ; pour le scoring automatique, un
+quota épuisé n'empêche pas la candidature : le scoring est sauté et tracé
+(décision du 2026-11-24).
 
 ## 7. Paiements Djomy
 
@@ -399,7 +406,8 @@ Le serveur ne fait jamais confiance au polling seul.
 7.4 **Confirmation** — un paiement passe à `succeeded` uniquement si :
 webhook signé reçu **et** vérification serveur auprès de Djomy
 (`GET /transactions/:id`) confirmant l'état et le montant.
-`paid_amount < expected_amount` ⇒ `status='failed'`, alerte plateforme.
+`paid_amount < expected_amount` ⇒ `status='failed'`, alerte plateforme
+(`failure_reason = 'amount_mismatch'`).
 
 7.5 **Activation** — à `succeeded` : création ou mise à jour de `subscriptions`
 (`status='active'`, `current_period_start=now()`,
@@ -414,7 +422,9 @@ webhook tardif arrive : il est journalisé pour réconciliation manuelle.
 
 7.7 **Paiement avant inscription** — `claim_token` (hash en base) valable 7
 jours, usage unique, lié à `claim_email`. La réclamation crée l'organisation et
-active l'abonnement dans une seule transaction.
+active l'abonnement dans une seule transaction. Le paiement reste hors de tout
+tenant jusque-là ; le rattachement passe par la fonction `claim_payment()` (0097),
+dont la mise à jour conditionnelle garantit l'usage unique.
 
 7.8 **Réconciliation** — job horaire comparant les `payments` non terminaux avec
 l'API Djomy sur les dernières 48 h ; les écarts alimentent

@@ -68,6 +68,11 @@ export function registerOrgRoutes() {
           router.get('payments', [BillingController, 'payments']).as('payments.index')
           router.get('payments/:id', [BillingController, 'payment']).as('payments.show')
           router.get('invoices', [BillingController, 'invoices']).as('invoices.index')
+          router.get('invoices/:id/pdf', [BillingController, 'invoicePdf']).as('invoices.pdf')
+          router
+            .post('checkout', [BillingController, 'checkout'])
+            .as('checkout')
+            .use(middleware.idempotency())
           router.post('cancel', [BillingController, 'cancel']).as('cancel')
           router.post('resume', [BillingController, 'resume']).as('resume')
         })
@@ -271,6 +276,7 @@ export function registerOrgRoutes() {
             .group(() => {
               router.get('/', [OkrsController, 'index']).as('index')
               router.post('/', [OkrsController, 'store']).as('store')
+              router.post('suggest', [OkrsController, 'suggest']).as('suggest')
               router.get(':id', [OkrsController, 'show']).as('show')
               router.patch(':id', [OkrsController, 'update']).as('update')
               router.delete(':id', [OkrsController, 'destroy']).as('destroy')
@@ -303,6 +309,7 @@ export function registerOrgRoutes() {
               router.post(':id/validate', [ReviewsController, 'validate']).as('validate')
               router.post(':id/send-back', [ReviewsController, 'sendBack']).as('sendBack')
               router.post(':id/sign', [ReviewsController, 'sign']).as('sign')
+              router.post(':id/ai-summary', [ReviewsController, 'aiSummary']).as('aiSummary')
               router
                 .patch(':id/talent', [ReviewsController, 'talent'])
                 .as('talent')
@@ -365,6 +372,7 @@ export function registerOrgRoutes() {
               router.post(':id/close', [JobsController, 'close']).as('close')
               router.post(':id/duplicate', [JobsController, 'duplicate']).as('duplicate')
               router.get(':id/qr', [JobsController, 'qr']).as('qr')
+              router.post(':id/generate', [JobsController, 'generate']).as('generate')
             })
             .prefix('jobs')
             .as('jobs')

@@ -18,6 +18,9 @@ import {
 } from '#modules/performance/repositories/review_repository'
 import { isInViewerTeam, visibleEmployeeIds } from '#modules/performance/scope'
 import reviewNotifier from '#modules/performance/services/review_notifier'
+import { feedbacksIn } from '#modules/performance/repositories/feedback_repository'
+import aiService from '#modules/integrations/services/ai_service'
+import { reviewSummaryTask } from '#modules/integrations/prompts/review_summary'
 
 export interface ReviewListQuery {
   page?: number
@@ -283,6 +286,62 @@ export class ReviewService {
           potentialScore: review.potentialScore,
         },
       }
+    })
+  }
+
+  /**
+   * `POST /reviews/:id/ai-summary` (decision of 2026-11-24): synthesis of the
+   * evaluation, its goals and the feedback the manager may read, stored in
+   * `ai_summary`. The AI call runs outside any transaction; one credit.
+   */
+  async aiSummary(tenant: TenantContext, actor: User, id: string, audit: AuditContext) {
+    const { organizationId } = tenant
+    const input = await withTenant(organizationId, async (trx) => {
+      const reviews = reviewsIn(organizationId, trx)
+      const review = await reviews.findOrFail(id)
+      if (review.status === 'not_started') {
+        throw conflict('notStarted', 'validation.performance.reviewNotStarted')
+      }
+      const cycle = review.cycleId ? await cyclesIn(organizationId, trx).find(review.cycleId) : null
+      const to = DateTime.now()
+      const from = cycle ? cycle.periodStart.startOf('day') : to.minus({ months: 12 })
+      const end = cycle ? DateTime.min(cycle.periodEnd.endOf('day'), to) : to
+      const goals = await reviews.goalsOf(review.id)
+      const rows = await reviews.commentsOf(review.id)
+      const comments = new Map(rows.map((row) => [row.goalId, row]))
+      const feedback = await feedbacksIn(organizationId, trx).receivedBetween(
+        review.employeeId,
+        from,
+        end
+      )
+      return {
+        language: actor.preferredLanguage === 'en' ? ('en' as const) : ('fr' as const),
+        selfScore: review.selfScore,
+        selfComment: review.selfGlobalComment,
+        managerScore: review.managerScore,
+        managerComment: review.managerGlobalComment,
+        goals: goals.map((goal) => ({
+          title: goal.title,
+          progress: goal.progress,
+          status: goal.status,
+          selfComment: comments.get(goal.id)?.selfComment ?? null,
+          selfRating: comments.get(goal.id)?.selfRating ?? null,
+          managerComment: comments.get(goal.id)?.managerComment ?? null,
+          managerRating: comments.get(goal.id)?.managerRating ?? null,
+        })),
+        feedback: feedback.map((row) => ({ kind: row.kind, message: row.message })),
+      }
+    })
+
+    const { summary } = await aiService.run(reviewSummaryTask(input), {
+      organizationId,
+      userId: actor.id,
+      module: 'performance',
+      path: `/org/performance/reviews/${id}/ai-summary`,
+    })
+    return this.mutate(tenant, actor, id, audit, async (_reviews, review) => {
+      review.aiSummary = summary
+      return { action: 'review.ai_summary', after: { status: review.status } }
     })
   }
 

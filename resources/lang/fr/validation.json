@@ -149,7 +149,8 @@
     "feedbackSelf": "Vous ne pouvez pas vous adresser un feedback à vous-même.",
     "okr": "Cet OKR n'existe pas.",
     "goal": "Cet objectif n'existe pas ou n'appartient pas à cet employé.",
-    "reviewNotScorable": "Les scores 9-box ne se saisissent que sur une évaluation validée ou signée."
+    "reviewNotScorable": "Les scores 9-box ne se saisissent que sur une évaluation validée ou signée.",
+    "reviewNotStarted": "La synthèse IA demande une évaluation commencée."
   },
   "recruitment": {
     "jobNotPublishable": "Seule une offre en brouillon ou fermée peut être publiée.",
@@ -177,6 +178,17 @@
   },
   "billing": {
     "notCancelable": "Seul un abonnement payant en cours peut être annulé.",
-    "notResumable": "Seul un abonnement annulé dont la période court encore peut être réactivé."
+    "notResumable": "Seul un abonnement annulé dont la période court encore peut être réactivé.",
+    "payerPhone": "Le numéro du payeur est obligatoire pour Orange Money et MTN MoMo.",
+    "plan": "Cette offre n'existe pas ou ne peut pas être souscrite.",
+    "downgradeQuota": "L'effectif dépasse le nombre d'employés de l'offre visée.",
+    "nothingToPay": "Le crédit de la période en cours couvre déjà cette offre.",
+    "noPdf": "Le PDF de cette facture n'est pas encore disponible.",
+    "claim": {
+      "used": "Ce paiement est déjà rattaché à une organisation.",
+      "expired": "Le code de rattachement a expiré.",
+      "email": "Ce paiement a été fait avec une autre adresse e-mail.",
+      "notPaid": "Ce paiement n'est pas encore confirmé."
+    }
   }
 }

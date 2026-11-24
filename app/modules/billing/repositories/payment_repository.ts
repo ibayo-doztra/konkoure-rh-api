@@ -1,4 +1,6 @@
+import type { DateTime } from 'luxon'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import type { ModelAttributes } from '@adonisjs/lucid/types/model'
 import Invoice from '#models/invoice'
 import Payment, { type PaymentStatus } from '#models/payment'
 import UsageCounter from '#models/usage_counter'
@@ -8,6 +10,10 @@ import { TenantRepository } from '#shared/base/tenant_repository'
 export class PaymentRepository extends TenantRepository<typeof Payment> {
   constructor(organizationId: string, trx: TransactionClientContract) {
     super(Payment, organizationId, trx)
+  }
+
+  create(data: Partial<ModelAttributes<Payment>>) {
+    return Payment.create({ ...data, organizationId: this.organizationId }, { client: this.trx })
   }
 
   paginate(filters: { page: number; perPage: number; status?: PaymentStatus }) {
@@ -24,6 +30,32 @@ export class PaymentRepository extends TenantRepository<typeof Payment> {
 export class InvoiceRepository extends TenantRepository<typeof Invoice> {
   constructor(organizationId: string, trx: TransactionClientContract) {
     super(Invoice, organizationId, trx)
+  }
+
+  /** `KNK-AAAA-NNNNNN` from the global sequence (02 §9). */
+  async create(data: {
+    subscriptionId: string
+    paymentId: string
+    amount: number
+    issuedAt: DateTime
+    periodStart: DateTime
+    periodEnd: DateTime
+  }) {
+    const { rows } = await this.trx.rawQuery("SELECT nextval('invoice_number_seq') AS value")
+    const sequence = String(rows[0].value).padStart(6, '0')
+    return Invoice.create(
+      {
+        organizationId: this.organizationId,
+        subscriptionId: data.subscriptionId,
+        paymentId: data.paymentId,
+        number: `KNK-${data.issuedAt.toUTC().year}-${sequence}`,
+        amount: String(data.amount),
+        issuedAt: data.issuedAt,
+        periodStart: data.periodStart,
+        periodEnd: data.periodEnd,
+      },
+      { client: this.trx }
+    )
   }
 
   paginate(filters: { page: number; perPage: number }) {
