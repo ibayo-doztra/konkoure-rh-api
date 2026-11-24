@@ -88,3 +88,39 @@ export const updatePlanValidator = vine.create({
   sortOrder: vine.number().withoutDecimals().min(0).max(1000).optional(),
   isPublic: vine.boolean().optional(),
 })
+
+const APP_ROLES = [
+  'owner',
+  'hr_admin',
+  'manager',
+  'employee',
+  'recruiter',
+  'security_agent',
+] as const
+
+export const listUsersValidator = vine.create({
+  ...paging,
+  q: vine.string().trim().minLength(1).maxLength(100).optional(),
+})
+
+/** PATCH /platform/users/:id/roles: replaces the roles in one organization (empty removes). */
+export const updateUserRolesValidator = vine.create({
+  params: params(),
+  organizationId: vine.string().uuid(),
+  roles: vine.array(vine.enum(APP_ROLES)).distinct(),
+})
+
+/** Ban and impersonation always carry a reason, kept in the audit trail. */
+export const reasonValidator = vine.create({
+  params: params(),
+  reason: vine.string().trim().minLength(3).maxLength(500),
+})
+
+export const grantAdminValidator = vine.create({
+  email: vine.string().trim().email().maxLength(254),
+  level: vine.enum(['root', 'support'] as const),
+})
+
+export const adminUserIdValidator = vine.create({
+  params: vine.object({ userId: vine.string().uuid() }),
+})

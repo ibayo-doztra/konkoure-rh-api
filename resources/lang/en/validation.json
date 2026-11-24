@@ -195,6 +195,14 @@
     "notSuspendable": "This subscription is already suspended or expired.",
     "notSuspended": "Only a suspended subscription can be reactivated.",
     "planCodeTaken": "A plan already has this code.",
-    "planInUse": "This plan is still used by a subscription."
+    "planInUse": "This plan is still used by a subscription.",
+    "self": "This action does not apply to your own account.",
+    "platformAdmin": "This action is not possible on a platform administrator.",
+    "banned": "This account is banned.",
+    "alreadyBanned": "This account is already banned.",
+    "notBanned": "This account is not banned.",
+    "unknownUser": "No account uses this address.",
+    "lastRoot": "The platform must keep at least one root administrator.",
+    "impersonation": "This action is forbidden during an impersonation."
   }
 }

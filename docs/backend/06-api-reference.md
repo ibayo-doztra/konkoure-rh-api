@@ -1284,6 +1284,7 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 | PATCH/DELETE | `/platform/plans/:id` | **root** |
 | GET | `/platform/users` | support | recherche globale |
 | PATCH | `/platform/users/:id/roles` | **root** |
+| POST | `/platform/users/:id/ban` \| `/unban` | **root** | ajouté le 2026-11-24 |
 | POST | `/platform/users/:id/impersonate` | **root** | token 30 min, audité |
 | GET/POST/DELETE | `/platform/admins` | **root** |
 | GET | `/platform/settings` | support |
@@ -1329,6 +1330,33 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   code unique (`409`). `PATCH /:id` : mêmes champs sauf `code`, qui ne change jamais.
   `DELETE /:id` : logique, `409` (`rule = "inUse"`) si un abonnement non expiré
   l'utilise ou la programme.
+
+### Comptes, impersonation et admins (décisions du 2026-11-24)
+- `GET /platform/users` : `page`, `perPage`, `q` (e-mail ou nom) ; `{ id, email,
+  fullName, isActive, emailVerified, lastLoginAt, createdAt, platformLevel,
+  organizations: [{ organizationId, organizationName, roles }] }`, sans donnée de
+  fiche personnelle.
+- `PATCH /platform/users/:id/roles` (root) : `{ organizationId, roles[] }` remplace les
+  rôles du compte dans l'organisation (liste vide : retrait) ; mêmes protections que
+  `/org/members` (`409 lastOwner`), le compte doit déjà en être membre (`404`). Audit
+  `role.granted|revoked` avec `actorRole = 'platform_root'`.
+- `POST /platform/users/:id/ban` (root) : `{ reason }` ; `users.is_active = false`, toutes
+  les sessions révoquées (jetons d'accès et refresh), `401` immédiat. `409` sur soi
+  (`self`), sur un admin plateforme actif (`platformAdmin`), si déjà banni.
+  `POST /unban` : réactive (`409 notBanned`). Audit `user.banned|unbanned`.
+- `POST /platform/users/:id/impersonate` (root) : `{ reason }` → `201 { accessToken,
+  expiresIn: 1800, expiresAt, user }`. Jeton d'accès de 30 min, sans refresh, nommé
+  `impersonation:<id de l'admin>`. `GET /me` renvoie alors `impersonation: { by,
+  expiresAt }` (bannière), `null` sinon. Interdit pendant l'impersonation (`403`,
+  `rule = "impersonation"`) : `/platform/*`, `PATCH /me`, `POST /me/password`,
+  `DELETE /me/sessions/:id`, `POST /auth/logout-all`, `DELETE /org`,
+  `POST /org/billing/checkout|cancel`. Refusé sur soi, un admin plateforme ou un compte
+  banni (`409`). Audit `impersonation.started` avec le motif.
+- `GET /platform/admins` (root) : admins actifs `{ userId, email, fullName, level,
+  createdAt }`. `POST` : `{ email, level }` donne ou change le niveau d'un compte
+  existant (`422` si inconnu ou banni). `DELETE /:userId` : désactive. Le dernier root
+  actif ne peut être ni retiré ni rétrogradé (`409 lastRoot`). Audit
+  `platform_admin.granted|revoked`.
 
 ---
 

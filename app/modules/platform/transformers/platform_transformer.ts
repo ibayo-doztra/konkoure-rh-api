@@ -1,9 +1,12 @@
 import type Organization from '#models/organization'
 import type Plan from '#models/plan'
+import type PlatformAdmin from '#models/platform_admin'
+import type User from '#models/user'
 import type Subscription from '#models/subscription'
 import type { Entitlements } from '#modules/billing/services/entitlement_service'
 import { planDto, subscriptionDto } from '#modules/billing/transformers/billing_transformer'
 import type { OrganizationRow } from '#modules/platform/repositories/platform_organization_repository'
+import type { Membership } from '#modules/platform/repositories/platform_user_repository'
 
 const iso = (value: Date | null) => (value ? new Date(value).toISOString() : null)
 
@@ -69,5 +72,34 @@ export function platformPlanDto(plan: Plan) {
     sortOrder: plan.sortOrder,
     isPublic: plan.isPublic,
     deletedAt: plan.deletedAt?.toISO() ?? null,
+  }
+}
+
+/** Back-office account: identity and access only, no personal file data (06 §13). */
+export function platformUserDto(
+  user: User,
+  memberships: Membership[] = [],
+  platformLevel: string | null = null
+) {
+  return {
+    id: user.id,
+    email: user.email,
+    fullName: user.fullName,
+    isActive: user.isActive,
+    emailVerified: user.emailVerifiedAt !== null,
+    lastLoginAt: user.lastLoginAt?.toISO() ?? null,
+    createdAt: user.createdAt.toISO(),
+    platformLevel,
+    organizations: memberships,
+  }
+}
+
+export function platformAdminDto(admin: PlatformAdmin, user: User | null) {
+  return {
+    userId: admin.userId,
+    email: user?.email ?? null,
+    fullName: user?.fullName ?? null,
+    level: admin.level,
+    createdAt: admin.createdAt.toISO(),
   }
 }

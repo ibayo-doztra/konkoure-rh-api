@@ -195,6 +195,14 @@
     "notSuspendable": "Cet abonnement est déjà suspendu ou expiré.",
     "notSuspended": "Seul un abonnement suspendu peut être réactivé.",
     "planCodeTaken": "Une offre porte déjà ce code.",
-    "planInUse": "Cette offre est encore utilisée par un abonnement."
+    "planInUse": "Cette offre est encore utilisée par un abonnement.",
+    "self": "Cette action ne s'applique pas à votre propre compte.",
+    "platformAdmin": "Cette action est impossible sur un administrateur de la plateforme.",
+    "banned": "Ce compte est banni.",
+    "alreadyBanned": "Ce compte est déjà banni.",
+    "notBanned": "Ce compte n'est pas banni.",
+    "unknownUser": "Aucun compte n'utilise cette adresse.",
+    "lastRoot": "La plateforme doit garder au moins un administrateur root.",
+    "impersonation": "Cette action est interdite pendant une impersonation."
   }
 }

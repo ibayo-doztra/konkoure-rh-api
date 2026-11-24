@@ -51,7 +51,10 @@ export function registerOrgRoutes() {
     .group(() => {
       router.get('/', [CurrentOrganizationController, 'show']).as('show')
       router.patch('/', [CurrentOrganizationController, 'update']).as('update')
-      router.delete('/', [CurrentOrganizationController, 'destroy']).as('destroy')
+      router
+        .delete('/', [CurrentOrganizationController, 'destroy'])
+        .as('destroy')
+        .use(middleware.notImpersonating())
       router
         .put('settings', [CurrentOrganizationController, 'updateSettings'])
         .as('settings.update')
@@ -72,8 +75,11 @@ export function registerOrgRoutes() {
           router
             .post('checkout', [BillingController, 'checkout'])
             .as('checkout')
-            .use(middleware.idempotency())
-          router.post('cancel', [BillingController, 'cancel']).as('cancel')
+            .use([middleware.notImpersonating(), middleware.idempotency()])
+          router
+            .post('cancel', [BillingController, 'cancel'])
+            .as('cancel')
+            .use(middleware.notImpersonating())
           router.post('resume', [BillingController, 'resume']).as('resume')
         })
         .prefix('billing')
