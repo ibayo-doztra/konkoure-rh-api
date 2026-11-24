@@ -33,7 +33,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 | 00h10 | `leaves:end` | Repasse en `active` les employés dont le congé s'achève |
 | 00h20 | `goals:mark-late` | Objectifs échus non atteints ⇒ `late` |
 | 00h30 | `jobs:auto-close` | Offres expirées depuis 7 jours ⇒ `closed` |
-| 01h00 | `subscriptions:lifecycle` | Fin d'essai, échéances, `past_due`, `expired`, notifications J−7/J−1 |
+| 01h00 | `subscriptions:lifecycle` | Fin d'essai, échéances, `past_due`, `expired`, descente programmée, notification `trial.ending` J−7/J−1 aux owners (une fois par échéance) |
 | 02h00 | `contracts:expiring` | Notifie les contrats arrivant à terme dans 30 jours |
 | 03h00 | `retention:purge` | Applique les durées de rétention (05 §13) |
 | 03h30 | `partitions:ensure` | Crée 3 mois de partitions à l'avance, détache celles > 24 mois |

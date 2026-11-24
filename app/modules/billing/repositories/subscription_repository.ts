@@ -15,6 +15,17 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
     return this.query().preload('plan').orderBy('created_at', 'desc').orderBy('id', 'desc').first()
   }
 
+  /** The current subscription, locked, with its plan and scheduled plan. */
+  currentForUpdate() {
+    return this.query()
+      .preload('plan')
+      .preload('scheduledPlan')
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+      .forUpdate()
+      .first()
+  }
+
   /** Ends the current subscription: only one non-expired row per organization (index). */
   async expireCurrent() {
     await Subscription.query({ client: this.trx })
@@ -56,6 +67,15 @@ export class SubscriptionRepository extends TenantRepository<typeof Subscription
 
 export function subscriptionsIn(organizationId: string, trx: TransactionClientContract) {
   return new SubscriptionRepository(organizationId, trx)
+}
+
+/** Public catalogue of live plans, in display order (06 §10). */
+export function publicPlans() {
+  return Plan.query()
+    .whereNull('deleted_at')
+    .where('is_public', true)
+    .orderBy('sort_order', 'asc')
+    .orderBy('code', 'asc')
 }
 
 /** The catalogue is global: plans are not tenant data. */

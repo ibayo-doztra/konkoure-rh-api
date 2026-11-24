@@ -167,8 +167,26 @@ export default {
           tsType: `'trialing' | 'active' | 'past_due' | 'suspended' | 'canceled' | 'expired'`,
         },
         cycle: { tsType: `'monthly' | 'yearly'` },
+        scheduled_cycle: { tsType: `'monthly' | 'yearly'` },
         modules_override: { tsType: 'string[] | null' },
       },
+    },
+    payments: {
+      columns: {
+        cycle: { tsType: `'monthly' | 'yearly'` },
+        status: {
+          tsType: `'pending' | 'processing' | 'succeeded' | 'failed' | 'expired' | 'refunded'`,
+        },
+        method: {
+          tsType: `'orange_money' | 'mtn_momo' | 'card' | 'bank_transfer' | 'manual'`,
+        },
+        raw_event: JSON_OBJECT,
+        claim_email: { tsType: 'string' },
+      },
+    },
+    // text column with a CHECK constraint (0094), not a PostgreSQL enum.
+    usage_counters: {
+      columns: { metric: { tsType: `'ai_credits' | 'active_employees' | 'sms'` } },
     },
     platform_admins: {
       columns: { level: { tsType: `'root' | 'support'` } },

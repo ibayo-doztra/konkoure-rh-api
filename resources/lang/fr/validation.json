@@ -174,5 +174,9 @@
   },
   "skillsMatrix": {
     "duplicate": "Une même cellule (employé, compétence) apparaît plusieurs fois."
+  },
+  "billing": {
+    "notCancelable": "Seul un abonnement payant en cours peut être annulé.",
+    "notResumable": "Seul un abonnement annulé dont la période court encore peut être réactivé."
   }
 }

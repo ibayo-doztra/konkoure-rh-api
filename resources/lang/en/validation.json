@@ -174,5 +174,9 @@
   },
   "skillsMatrix": {
     "duplicate": "The same (employee, skill) cell appears more than once."
+  },
+  "billing": {
+    "notCancelable": "Only a running paid subscription can be canceled.",
+    "notResumable": "Only a canceled subscription whose period is still running can be resumed."
   }
 }
