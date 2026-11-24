@@ -141,6 +141,14 @@ export const jobs = {
       return service.processReceipt(payload)
     },
   }),
+  'subscriptions.lifecycle': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } =
+        await import('#modules/billing/services/subscription_lifecycle_service')
+      return service.run()
+    },
+  }),
   'contracts.expiring': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -158,6 +166,7 @@ export type JobName = keyof typeof jobs
  */
 export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
+  { job: 'subscriptions.lifecycle', pattern: '0 1 * * *' },
   { job: 'leaves.end', pattern: '10 0 * * *' },
   { job: 'goals.mark-late', pattern: '20 0 * * *' },
   { job: 'jobs.auto-close', pattern: '30 0 * * *' },

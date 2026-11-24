@@ -6,6 +6,7 @@ const InvitationsController = () =>
   import('#modules/invitations/controllers/invitations_controller')
 
 const EntitlementsController = () => import('#modules/billing/controllers/entitlements_controller')
+const BillingController = () => import('#modules/billing/controllers/billing_controller')
 const DashboardController = () => import('#modules/dashboard/controllers/dashboard_controller')
 
 const CurrentOrganizationController = () =>
@@ -57,6 +58,21 @@ export function registerOrgRoutes() {
       router.post('logo', [CurrentOrganizationController, 'uploadLogo']).as('logo.store')
 
       router.get('entitlements', [EntitlementsController, 'show']).as('entitlements.show')
+
+      // Billing stays reachable when the subscription is expired (07 §6.2): no entitlement.
+      router
+        .group(() => {
+          router.get('subscription', [BillingController, 'subscription']).as('subscription')
+          router.get('plans', [BillingController, 'plans']).as('plans')
+          router.get('usage', [BillingController, 'usage']).as('usage')
+          router.get('payments', [BillingController, 'payments']).as('payments.index')
+          router.get('payments/:id', [BillingController, 'payment']).as('payments.show')
+          router.get('invoices', [BillingController, 'invoices']).as('invoices.index')
+          router.post('cancel', [BillingController, 'cancel']).as('cancel')
+          router.post('resume', [BillingController, 'resume']).as('resume')
+        })
+        .prefix('billing')
+        .as('billing')
       // Each block checks its own module, so no entitlement middleware here.
       router.get('dashboard', [DashboardController, 'show']).as('dashboard.show')
 

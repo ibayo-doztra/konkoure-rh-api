@@ -82,5 +82,9 @@
   "candidateScored": {
     "title": "Candidature analysée",
     "body": "Le CV de {candidateName} a reçu un score de {score}/100."
+  },
+  "trialEnding": {
+    "title": "Votre essai se termine bientôt",
+    "body": "Votre essai gratuit se termine dans {daysLeft} jour(s), le {endDate}. Choisissez une offre pour conserver l'accès à tous les modules."
   }
 }

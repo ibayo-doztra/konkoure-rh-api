@@ -1086,6 +1086,26 @@ Consomme un crédit IA ; `403 E_AI_QUOTA_EXCEEDED` si le quota du plan est épui
 | GET | `/org/billing/invoices/:id/pdf` | URL signée |
 | GET | `/org/billing/usage` | Compteurs (employés, crédits IA) |
 
+### Lecture, annulation et réactivation (décisions du 2026-11-24)
+Pas de contrôle de module sur `/org/billing` : une organisation `expired` y garde
+accès pour souscrire (07 §6.2). Owner seulement (`403` sinon).
+- `GET /subscription` : `{ id, status (statut effectif, 07 §6.5), plan: { id, code,
+  name }, cycle, trialEndsAt, currentPeriodStart, currentPeriodEnd,
+  cancelAtPeriodEnd, canceledAt, scheduledPlan, scheduledCycle }`.
+- `GET /plans` : `[{ id, code, name, priceMonthlyGnf, priceYearlyGnf, maxEmployees,
+  aiCreditsPerMonth, modules, features }]` ; sans `price_yearly_gnf`, l'annuel vaut
+  10 mois (2 offerts, comme l'existant).
+- `GET /usage` : `{ period: 'AAAA-MM', employees: { used, limit }, aiCredits: { used,
+  limit } }`.
+- `GET /payments` (`filter[status]`, paginé) et `GET /payments/:id` : `{ id,
+  merchantReference, planId, cycle, method, status, expectedAmount, paidAmount,
+  currency, failureReason, createdAt, updatedAt }`. `GET /invoices` : `{ id, number,
+  paymentId, amount, currency, issuedAt, periodStart, periodEnd, hasPdf }`.
+- `POST /cancel` : abonnement payant `active` ou `past_due` seulement (`409`,
+  `rule = "notCancelable"`) ; passe `canceled` avec `cancelAtPeriodEnd`.
+  `POST /resume` : abonnement `canceled` dont la période court (`409`,
+  `rule = "notResumable"`). Réponse : l'abonnement. Audités.
+
 ### `POST /org/billing/checkout`
 ```ts
 vine.object({

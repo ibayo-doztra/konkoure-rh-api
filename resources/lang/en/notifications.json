@@ -82,5 +82,9 @@
   "candidateScored": {
     "title": "Application analysed",
     "body": "{candidateName}'s CV scored {score}/100."
+  },
+  "trialEnding": {
+    "title": "Your trial ends soon",
+    "body": "Your free trial ends in {daysLeft} day(s), on {endDate}. Choose a plan to keep access to every module."
   }
 }
