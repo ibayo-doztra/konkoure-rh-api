@@ -21,6 +21,17 @@ export interface CreateOrganizationInput {
   performanceModel?: 'classic' | 'sap'
 }
 
+/**
+ * Replaces the 30-day trial of a new organization: a payment made before
+ * sign-up activates its paid plan instead (07 §7.7). Runs in the creation
+ * transaction, inside the new tenant.
+ */
+export type InitialSubscription = (
+  organizationId: string,
+  trx: TransactionClientContract,
+  context: AuditContext
+) => Promise<void>
+
 export interface UpdateOrganizationInput {
   name?: string
   defaultLanguage?: 'fr' | 'en'
@@ -56,13 +67,18 @@ export class OrganizationService {
    * Creates an organization whose creator becomes `owner`, with their linked
    * employee record (04 §3) and the trial subscription, in one audited transaction.
    */
-  async create(user: User, input: CreateOrganizationInput, audit: AuditContext) {
+  async create(
+    user: User,
+    input: CreateOrganizationInput,
+    audit: AuditContext,
+    initialSubscription?: InitialSubscription
+  ) {
     if (!user.emailVerifiedAt) throw new AppException('E_EMAIL_NOT_VERIFIED')
 
     const base = slugify(input.name)
     for (let attempt = 1; ; attempt++) {
       try {
-        return await this.insert(user, input, base, attempt, audit)
+        return await this.insert(user, input, base, attempt, audit, initialSubscription)
       } catch (error) {
         // Two concurrent creations picked the same free slug: try again.
         if (!isSlugConflict(error) || attempt >= MAX_ATTEMPTS) throw error
@@ -186,7 +202,8 @@ export class OrganizationService {
     input: CreateOrganizationInput,
     base: string,
     attempt: number,
-    audit: AuditContext
+    audit: AuditContext,
+    initialSubscription?: InitialSubscription
   ): Promise<Organization> {
     // The id is chosen first: the owner role is written inside the new tenant (RLS).
     const id = newId()
@@ -239,6 +256,12 @@ export class OrganizationService {
         targetId: employee.id,
         after: { status: 'active', departmentId: null },
       })
+
+      if (initialSubscription) {
+        await initialSubscription(organization.id, trx, context)
+        await organization.refresh()
+        return organization
+      }
 
       const plan = await findPlanByCode(TRIAL_PLAN_CODE, trx)
       if (!plan) throw new AppException('E_INTERNAL')

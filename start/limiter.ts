@@ -38,6 +38,14 @@ export const throttleCareers = limiter.define('careers_ip', (ctx) =>
   limiter.allowRequests(60).every('1 minute').usingKey(`careers:${ctx.request.ip()}`)
 )
 
+/**
+ * Public payments before sign-up (decision of 2026-11-24): status polling every
+ * 3 s for 3 minutes fits, abuse does not. 30 requests / minute / IP.
+ */
+export const throttlePublicPayments = limiter.define('public_payments_ip', (ctx) =>
+  limiter.allowRequests(30).every('1 minute').usingKey(`public_payments:${ctx.request.ip()}`)
+)
+
 /** Authenticated budget: 600 requests / minute / user. */
 export const throttleUser = limiter.define('global_user', (ctx) =>
   limiter

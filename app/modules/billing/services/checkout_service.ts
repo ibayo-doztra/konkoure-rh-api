@@ -66,6 +66,59 @@ export function quote(
   return { kind: 'charge', amount: Math.max(0, Math.round(full - credit)) }
 }
 
+/**
+ * Calls Djomy for a payment already stored (07 §7.1-7.2): direct mobile money
+ * charge, or card portal. A provider failure runs `onFailure` (the payment
+ * fails, no money moved) and answers `503`.
+ */
+export async function chargeWithDjomy(
+  payment: Payment,
+  plan: Plan,
+  input: { cycle: BillingCycle; method: CheckoutMethod; payerPhone?: string },
+  returnUrl: string,
+  onFailure: () => Promise<unknown>
+): Promise<{ transactionId: string | null; redirectUrl: string | null }> {
+  const amount = Number(payment.expectedAmount)
+  const description = `Konkouré ${plan.name} (${input.cycle})`
+  try {
+    if (input.method === 'card') {
+      const result = await djomyClient.gateway({
+        amount,
+        merchantReference: payment.merchantReference,
+        method: input.method,
+        returnUrl,
+        cancelUrl: returnUrl,
+        description,
+      })
+      return { transactionId: result.transactionId, redirectUrl: result.redirectUrl }
+    }
+    const result = await djomyClient.directCharge({
+      amount,
+      merchantReference: payment.merchantReference,
+      payerPhone: input.payerPhone!,
+      method: input.method,
+      description,
+    })
+    return { transactionId: result.transactionId, redirectUrl: null }
+  } catch (error) {
+    logger.error({ err: error, paymentId: payment.id }, 'billing.checkout_provider_failed')
+    await onFailure()
+    throw new AppException('E_DEPENDENCY_UNAVAILABLE')
+  }
+}
+
+/** A public plan that can be bought (06 §10): `422` otherwise. */
+export async function purchasablePlan(planId: string) {
+  const plan = await Plan.query()
+    .where('id', planId)
+    .whereNull('deleted_at')
+    .where('is_public', true)
+    .whereNot('code', 'free')
+    .first()
+  if (!plan) throw AppException.validation('planId', 'exists', 'validation.billing.plan')
+  return plan
+}
+
 /** `POST /org/billing/checkout` (06 §10, 07 §7.1-7.2). */
 export class CheckoutService {
   async checkout(
@@ -78,13 +131,7 @@ export class CheckoutService {
       throw AppException.validation('payerPhone', 'required', 'validation.billing.payerPhone')
     }
     if (!djomyClient.configured) throw new AppException('E_DEPENDENCY_UNAVAILABLE')
-    const target = await Plan.query()
-      .where('id', input.planId)
-      .whereNull('deleted_at')
-      .where('is_public', true)
-      .whereNot('code', 'free')
-      .first()
-    if (!target) throw AppException.validation('planId', 'exists', 'validation.billing.plan')
+    const target = await purchasablePlan(input.planId)
 
     const { organizationId } = tenant
     const context = { ...audit, organizationId, actorRole: tenant.primaryRole }
@@ -164,41 +211,15 @@ export class CheckoutService {
 
   /** Calls Djomy after the commit; a provider failure fails the payment (no money moved). */
   private async charge(tenant: TenantContext, payment: Payment, plan: Plan, input: CheckoutInput) {
-    const amount = Number(payment.expectedAmount)
-    const description = `Konkouré ${plan.name} (${input.cycle})`
-    let transactionId: string | null = null
-    let redirectUrl: string | null = null
-    try {
-      if (input.method === 'card') {
-        const returnUrl = `${env.get('WEB_APP_URL')}/settings/billing?payment=${payment.id}`
-        const result = await djomyClient.gateway({
-          amount,
-          merchantReference: payment.merchantReference,
-          method: input.method,
-          returnUrl,
-          cancelUrl: returnUrl,
-          description,
-        })
-        transactionId = result.transactionId
-        redirectUrl = result.redirectUrl
-      } else {
-        const result = await djomyClient.directCharge({
-          amount,
-          merchantReference: payment.merchantReference,
-          payerPhone: input.payerPhone!,
-          method: input.method,
-          description,
-        })
-        transactionId = result.transactionId
-      }
-    } catch (error) {
-      logger.error({ err: error, paymentId: payment.id }, 'billing.checkout_provider_failed')
-      await this.update(tenant, payment.id, {
-        status: 'failed',
-        failureReason: 'provider_unavailable',
-      })
-      throw new AppException('E_DEPENDENCY_UNAVAILABLE')
-    }
+    const returnUrl = `${env.get('WEB_APP_URL')}/settings/billing?payment=${payment.id}`
+    const { transactionId, redirectUrl } = await chargeWithDjomy(
+      payment,
+      plan,
+      input,
+      returnUrl,
+      () =>
+        this.update(tenant, payment.id, { status: 'failed', failureReason: 'provider_unavailable' })
+    )
     const saved = await this.update(tenant, payment.id, { providerTransactionId: transactionId })
     return { kind: 'payment' as const, payment: saved, redirectUrl }
   }

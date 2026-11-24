@@ -419,7 +419,9 @@ webhook tardif arrive : il est journalisé pour réconciliation manuelle.
 
 7.7 **Paiement avant inscription** — `claim_token` (hash en base) valable 7
 jours, usage unique, lié à `claim_email`. La réclamation crée l'organisation et
-active l'abonnement dans une seule transaction.
+active l'abonnement dans une seule transaction. Le paiement reste hors de tout
+tenant jusque-là ; le rattachement passe par la fonction `claim_payment()` (0097),
+dont la mise à jour conditionnelle garantit l'usage unique.
 
 7.8 **Réconciliation** — job horaire comparant les `payments` non terminaux avec
 l'API Djomy sur les dernières 48 h ; les écarts alimentent

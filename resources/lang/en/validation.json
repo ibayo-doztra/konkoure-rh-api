@@ -182,6 +182,12 @@
     "plan": "This plan does not exist or cannot be subscribed to.",
     "downgradeQuota": "The headcount exceeds the number of employees of the target plan.",
     "nothingToPay": "The credit of the current period already covers this plan.",
-    "noPdf": "The PDF of this invoice is not available yet."
+    "noPdf": "The PDF of this invoice is not available yet.",
+    "claim": {
+      "used": "This payment is already bound to an organization.",
+      "expired": "The claim code has expired.",
+      "email": "This payment was made with another e-mail address.",
+      "notPaid": "This payment is not confirmed yet."
+    }
   }
 }

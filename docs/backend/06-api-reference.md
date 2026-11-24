@@ -1196,6 +1196,23 @@ de relance manuelle.
 l'organisation est créée, l'abonnement activé, `claimed_at` renseigné.
 Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 
+Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) :
+- `POST /public/payments/checkout` : `{ planId, cycle, method, payerPhone?, email }`
+  (téléphone obligatoire pour le mobile money). Montant plein, sans prorata. `201` :
+  `{ data: { merchantReference, claimToken, claimExpiresAt, status, expectedAmount,
+  currency, instructions, redirectUrl } }` ; `claimToken` (`clm_…`) n'est renvoyé
+  qu'une fois, seul son SHA-256 est stocké. Retour carte :
+  `<WEB_APP_URL>/paiement/retour?ref=<merchantReference>`.
+- `GET /public/payments/:ref` (ajouté) : en-tête `X-Claim-Token` obligatoire (`404`
+  sans le bon jeton) ; `{ data: { status, planCode, cycle, expectedAmount, currency,
+  emailMasked, claimable } }`, pour le suivi toutes les 3 s.
+- `POST /public/payments/:ref/claim` : authentifié (e-mail vérifié). Le paiement
+  doit être `succeeded`, non rattaché, non expiré et fait avec l'e-mail du compte ;
+  sinon `409 E_CLAIM_INVALID` avec `details[0].rule` parmi `notPaid`, `used`,
+  `expired`, `email`. Crée l'organisation (l'appelant en est owner, sans essai) et
+  l'abonnement payé à partir de maintenant, avec sa facture, dans une transaction.
+  `201` : même forme que `POST /organizations` (`plan` = code de l'offre payée).
+
 ---
 
 ## 12. Webhooks `/webhooks`

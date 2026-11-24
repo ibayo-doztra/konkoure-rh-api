@@ -25,5 +25,6 @@
   "E_OUT_OF_ZONE": "You are outside every authorized work zone.",
   "E_MANUAL_PUNCH_DISABLED": "Manual punching is disabled for this organization.",
   "E_WEIGHT_OVERFLOW": "The total weight of this employee's goals on this plan would exceed 100.",
-  "E_JOB_CLOSED": "This offer no longer accepts applications."
+  "E_JOB_CLOSED": "This offer no longer accepts applications.",
+  "E_CLAIM_INVALID": "This claim code is invalid, expired or already used."
 }
