@@ -169,5 +169,8 @@
     "webhookUrl": "The webhook URL must use https, port 443 and a public domain name.",
     "webhookEnvUrl": "Set the URL of this environment before activating it.",
     "webhookNotConfigured": "No webhook is configured for this environment."
+  },
+  "skillsMatrix": {
+    "duplicate": "The same (employee, skill) cell appears more than once."
   }
 }

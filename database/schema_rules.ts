@@ -148,6 +148,10 @@ export default {
     feedbacks: {
       columns: { kind: { tsType: `'kudos' | 'suggestion' | 'concern'` } },
     },
+    // text column with a CHECK constraint (0081), not a PostgreSQL enum.
+    succession_plans: {
+      columns: { readiness: { tsType: `'ready_now' | '1_2_years' | '3_plus_years'` } },
+    },
     okrs: {
       columns: {
         status: { tsType: `'draft' | 'active' | 'completed' | 'archived'` },

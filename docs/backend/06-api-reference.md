@@ -1027,6 +1027,28 @@ Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
   `goalId` doit être un objectif de cet employé. `GET` : `filter[employeeId|goalId]`,
   limité à soi, l'équipe ou tous. `DELETE` : suppression logique par l'auteur ou O H.
 
+### Talents (décisions du 2026-11-24)
+Module `talents` requis (absent de l'essai, 07 §6.2 : `403 E_MODULE_NOT_INCLUDED`).
+- `GET /talents/succession` : paginé, `filter[readiness]`, `filter[employeeId]`
+  (titulaire ou successeur). `POST` : `{ positionTitle, currentEmployeeId?,
+  successorEmployeeId?, readiness?: ready_now|1_2_years|3_plus_years, notes? }` ;
+  `PATCH /:id` accepte les mêmes champs (`null` efface). Employé inconnu ou d'une
+  autre organisation : `422`. `DELETE /:id` est physique (rien ne référence un plan),
+  audité. Réponse : `{ id, positionTitle, currentEmployee: { id, name } | null,
+  successorEmployee, readiness, notes, createdAt, updatedAt }`.
+- `GET /talents/skills-matrix` : `page`, `perPage` (≤ 100, pagine les employés),
+  `filter[departmentId]`, `filter[skillId][]` (colonnes affichées), `filter[status]`
+  (sans statut, les employés partis sont exclus). O H voient tous les employés, un
+  manager son équipe. Réponse : `{ data: { skills: [{ id, name, category }],
+  employees: [{ id, firstName, lastName, jobTitle, departmentId, levels: { [skillId]:
+  level } }] }, meta }`.
+- `PUT /talents/skills-matrix` (O H) : `{ entries: [{ employeeId, skillId, level:
+  1..5 | null }] }`, 1 à 500 cellules distinctes (`422`, `rule = "distinct"`).
+  Un niveau crée ou met à jour l'évaluation, `null` la supprime ; employé ou
+  compétence inconnus : `422`, rien n'est appliqué. Réponse : `{ data: { updated,
+  removed } }` ; audit `talents.skills_matrix_updated` avec l'avant/après des
+  cellules modifiées.
+
 ### `POST /org/performance/okrs/suggest`
 Entrée : `{ objective: string(10..500), context?: string(0..2000), count?: 3..5 }`.
 Sortie : `{ data: { keyResults: [{ title, metric, targetValue, unit }] } }`.

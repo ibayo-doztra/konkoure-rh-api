@@ -497,6 +497,8 @@ Contrainte applicative : la somme des `weight` d'un employé sur un plan ≤ 100
 `id`, `organization_id`, `position_title text NOT NULL`,
 `current_employee_id uuid NULL`, `successor_employee_id uuid NULL`,
 `readiness text NULL` (`ready_now`, `1_2_years`, `3_plus_years`), `notes text`.
+`readiness` est contraint par un `CHECK` ; employés en `ON DELETE SET NULL`.
+Pas de `deleted_at` : aucune table ne référence un plan, la suppression est physique.
 
 ## 9. Facturation
 
