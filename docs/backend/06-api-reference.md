@@ -857,6 +857,29 @@ conserve les dates déjà saisies, renvoie les jours fériés de l'année.
 - Notes : `{ body }` ; suppression logique par O H ou le recruteur auteur, événement
   `note_deleted`. `GET /candidates/:id/events` : historique, du plus récent au plus ancien.
 
+### Webhook n8n et scoring (précisions du 2026-11-23)
+- `GET /org/recruitment/webhooks` (O H) : `{ testWebhookUrl, prodWebhookUrl,
+  activeEnv, hasSecret, updatedAt }`. Le secret n'est jamais relu.
+- `PUT /org/recruitment/webhooks` : `{ testWebhookUrl?, prodWebhookUrl?, activeEnv?,
+  rotateSecret? }`. URLs contrôlées par 05 §10 (`422`) ; activer un environnement
+  exige son URL. Le secret HMAC (64 caractères hexadécimaux) est généré par le
+  serveur, chiffré au repos, et **renvoyé une seule fois** (`secret`) dans la
+  réponse qui le crée ou le renouvelle.
+- `POST /org/recruitment/webhooks/ping` : `{ env? }` (défaut : l'environnement
+  actif) → `{ env, ok, status, latencyMs, error }` ; aucun webhook ⇒ `422`.
+- Appel sortant (candidature publique uniquement, environnement actif) : POST JSON
+  signé `X-Konkoure-Signature` (HMAC-SHA256 hexadécimal du corps) et
+  `X-Konkoure-Timestamp` (secondes Unix) :
+  `{ event: 'candidate.applied', environment, organization { id, name },
+  job { id, title, description, requirements, location, contractType },
+  candidate { id, fullName, documents: [{ key, url }] }, callback { url } }`,
+  URLs signées 1 h, ni e-mail ni téléphone. Une réponse 2xx portant un résultat
+  conforme est appliquée tout de suite ; sinon n8n rappelle `callback.url`.
+  Échec transport ou non-2xx : 3 tentatives (30 s, 5 min, 30 min), puis abandon
+  sans effet. Les crédits IA ne sont pas décomptés avant le lot facturation.
+- Résultat appliqué : colonnes `ai_*`, `ai_scored_at`, événement `scored`,
+  notification `candidate.scored` aux recruteurs ; jamais de changement d'étape.
+
 _Aucun endpoint de relance du scoring._ Le scoring IA est déclenché uniquement à
 la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 `aiScore`, `aiJustification`, `aiStrengths`, `aiWeaknesses`, `aiCandidateName`,
@@ -1106,6 +1129,15 @@ Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 |---|---|---|
 | POST | `/webhooks/djomy` | HMAC `X-Djomy-Signature` + horodatage + anti-rejeu |
 | POST | `/webhooks/n8n/scoring` | HMAC `X-Konkoure-Signature` par organisation |
+
+Précisions du 2026-11-23 : les webhooks sont servis sous `/api/v1/webhooks/*`.
+`/webhooks/n8n/scoring?organizationId=…&candidateId=…` (l'URL de rappel transmise
+à n8n) : corps = la réponse n8n telle quelle (tableau à un élément ou objet),
+`X-Konkoure-Signature` = HMAC-SHA256 hexadécimal du corps brut avec le secret de
+l'organisation (préfixe `sha256=` accepté), `X-Konkoure-Timestamp` à ± 5 min.
+`event_id` = SHA-256 de l'organisation, du candidat et du corps ; un rejeu répond
+`200 { received: true, duplicate: true }`. Signature absente, fausse ou périmée :
+`401`.
 | POST | `/webhooks/resend` | HMAC (statuts de délivrabilité) |
 
 Toujours `200` après enregistrement (traitement asynchrone), `401` si signature

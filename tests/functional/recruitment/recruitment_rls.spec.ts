@@ -39,3 +39,46 @@ test.group('Recruitment services under the application role', (group) => {
     await jobService.autoClose()
   })
 })
+
+test.group('Scoring services under the application role', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  test('webhook settings, receipts and results work with RLS enforced', async ({ assert }) => {
+    const { default: webhookConfigService } =
+      await import('#modules/recruitment/services/webhook_config_service')
+    const { default: scoringService } =
+      await import('#modules/recruitment/services/scoring_service')
+    const { default: Candidate } = await import('#models/candidate')
+    const org = await createRecruitingOrganization('Mienne')
+    const owner = await createUser({ emailVerifiedAt: DateTime.now() })
+    await grantRoles(owner, org, ['owner'])
+    const job = await createJob(org)
+    const candidate = await Candidate.create({
+      organizationId: org.id,
+      jobId: job.id,
+      fullName: 'Test',
+    })
+    const tenant = new TenantContext(org.id, ['owner'])
+
+    await db.rawQuery('SET LOCAL ROLE konkoure_app')
+
+    const { secret } = await webhookConfigService.update(
+      tenant,
+      owner,
+      { prodWebhookUrl: 'https://n8n.example.com/hook', activeEnv: 'prod' },
+      {}
+    )
+    assert.isString(secret)
+    await scoringService.apply(org.id, candidate.id, {
+      aiScore: 70,
+      aiJustification: null,
+      aiStrengths: [],
+      aiWeaknesses: [],
+      aiCandidateName: null,
+      aiIsValidCv: null,
+      aiFraudAlert: null,
+    })
+    const scored = await Candidate.findOrFail(candidate.id)
+    assert.equal(scored.aiScore, 70)
+  })
+})

@@ -1,5 +1,6 @@
 import { DateTime } from 'luxon'
 import drive from '@adonisjs/drive/services/main'
+import { diskFor } from '#shared/files/storage_disks'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
 import type User from '#models/user'
 import type Contract from '#models/contract'
@@ -334,7 +335,7 @@ export class ContractService {
     )
     try {
       const url = await drive
-        .use('s3')
+        .use(diskFor('private'))
         .getSignedUrl(path, { expiresIn: `${DOCUMENT_URL_TTL_SECONDS}s` })
       return { url, expiresIn: DOCUMENT_URL_TTL_SECONDS }
     } catch (cause) {

@@ -20,6 +20,8 @@ interface JobDefinition<Payload> {
    * the default retention (docs/backend/08 §1).
    */
   sensitive?: boolean
+  /** Own retry schedule, instead of the default 5 attempts with exponential backoff. */
+  retry?: { attempts: number; delaysMs: number[] }
   handle(payload: Payload): Promise<unknown>
 }
 
@@ -121,6 +123,22 @@ export const jobs = {
     handle: async () => {
       const { default: service } = await import('#modules/recruitment/services/job_service')
       return service.autoClose()
+    },
+  }),
+  /** n8n scoring call (07 §4.4): 3 attempts, 30 s, 5 min, 30 min, no side effect after. */
+  'candidates.score': defineJob<{ organizationId: string; candidateId: string }>({
+    queue: 'ai',
+    retry: { attempts: 3, delaysMs: [30_000, 5 * 60_000, 30 * 60_000] },
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/recruitment/services/scoring_service')
+      return service.run(payload)
+    },
+  }),
+  'candidates.score-result': defineJob<{ receiptId: string }>({
+    queue: 'default',
+    handle: async (payload) => {
+      const { default: service } = await import('#modules/recruitment/services/scoring_service')
+      return service.processReceipt(payload)
     },
   }),
   'contracts.expiring': defineJob<Record<string, never>>({

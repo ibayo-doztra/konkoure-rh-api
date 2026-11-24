@@ -30,6 +30,8 @@ const OkrsController = () => import('#modules/performance/controllers/okrs_contr
 const ReviewsController = () => import('#modules/performance/controllers/reviews_controller')
 const FeedbackController = () => import('#modules/performance/controllers/feedback_controller')
 const JobsController = () => import('#modules/recruitment/controllers/jobs_controller')
+const RecruitmentWebhooksController = () =>
+  import('#modules/recruitment/controllers/recruitment_webhooks_controller')
 const CandidatesController = () => import('#modules/recruitment/controllers/candidates_controller')
 const TimeclockController = () => import('#modules/timeclock/controllers/timeclock_controller')
 const AttendanceController = () => import('#modules/timeclock/controllers/attendance_controller')
@@ -349,6 +351,15 @@ export function registerOrgRoutes() {
             })
             .prefix('candidates')
             .as('candidates')
+
+          router
+            .group(() => {
+              router.get('/', [RecruitmentWebhooksController, 'show']).as('show')
+              router.put('/', [RecruitmentWebhooksController, 'update']).as('update')
+              router.post('ping', [RecruitmentWebhooksController, 'ping']).as('ping')
+            })
+            .prefix('webhooks')
+            .as('webhooks')
         })
         .prefix('recruitment')
         .as('recruitment')

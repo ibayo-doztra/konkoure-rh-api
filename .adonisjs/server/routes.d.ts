@@ -168,6 +168,9 @@ export type ScannedRoutes = {
     'org.recruitment.candidates.notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.recruitment.candidates.notes.destroy': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'noteId': ParamValue} }
     'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.webhooks.show': { paramsTuple?: []; params?: {} }
+    'org.recruitment.webhooks.update': { paramsTuple?: []; params?: {} }
+    'org.recruitment.webhooks.ping': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.update': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
@@ -193,6 +196,7 @@ export type ScannedRoutes = {
     'public.careers.jobs.show': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
     'public.careers.jobs.apply.check': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
     'public.careers.jobs.apply': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
+    'webhooks.n8n.scoring': { paramsTuple?: []; params?: {} }
   }
   GET: {
     'health.show': { paramsTuple?: []; params?: {} }
@@ -254,6 +258,7 @@ export type ScannedRoutes = {
     'org.recruitment.candidates.documents.url': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'key': ParamValue} }
     'org.recruitment.candidates.notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.webhooks.show': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -325,6 +330,7 @@ export type ScannedRoutes = {
     'org.recruitment.candidates.documents.url': { paramsTuple: [ParamValue,ParamValue]; params: {'id': ParamValue,'key': ParamValue} }
     'org.recruitment.candidates.notes.index': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.recruitment.candidates.events': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.webhooks.show': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.index': { paramsTuple?: []; params?: {} }
     'org.timeclock.attendance.index': { paramsTuple?: []; params?: {} }
@@ -400,6 +406,7 @@ export type ScannedRoutes = {
     'org.recruitment.candidates.stage': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.recruitment.candidates.hire': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.recruitment.candidates.notes.store': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.webhooks.ping': { paramsTuple?: []; params?: {} }
     'org.timeclock.zones.store': { paramsTuple?: []; params?: {} }
     'org.timeclock.punch': { paramsTuple?: []; params?: {} }
     'org.timeclock.logs.export': { paramsTuple?: []; params?: {} }
@@ -409,6 +416,7 @@ export type ScannedRoutes = {
     'org.timeclock.sync': { paramsTuple?: []; params?: {} }
     'public.careers.jobs.apply.check': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
     'public.careers.jobs.apply': { paramsTuple: [ParamValue,ParamValue]; params: {'orgSlug': ParamValue,'jobSlug': ParamValue} }
+    'webhooks.n8n.scoring': { paramsTuple?: []; params?: {} }
   }
   PATCH: {
     'me.update': { paramsTuple?: []; params?: {} }
@@ -463,6 +471,7 @@ export type ScannedRoutes = {
     'org.settings.update': { paramsTuple?: []; params?: {} }
     'org.employees.skills.replace': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
     'org.performance.okrs.keyResults': { paramsTuple: [ParamValue]; params: {'id': ParamValue} }
+    'org.recruitment.webhooks.update': { paramsTuple?: []; params?: {} }
   }
 }
 declare module '@adonisjs/core/types/http' {
