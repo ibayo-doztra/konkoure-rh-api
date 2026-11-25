@@ -45,6 +45,7 @@ test.group('GET /api/v1/me', (group) => {
       mustChangePassword: false,
     })
     assert.isTrue(data.isPlatformAdmin)
+    assert.equal(data.platformLevel, 'support')
     assert.deepEqual(data.organizations, [
       {
         id: org.id,
@@ -78,6 +79,27 @@ test.group('GET /api/v1/me', (group) => {
     )
     const ids = (response.body().data as Array<{ id: string }>).map((o) => o.id)
     assert.deepEqual(ids, [mine.id])
+  })
+
+  test('exposes the active platform level, null otherwise', async ({ client, assert }) => {
+    const me = async (email: string) => {
+      const { accessToken } = await apiLogin(client, email)
+      const response = await expectStatus(client.get('/api/v1/me').bearerToken(accessToken), 200)
+      const { isPlatformAdmin, platformLevel } = response.body().data
+      return { isPlatformAdmin, platformLevel }
+    }
+    const root = await createUser({ email: 'root@doztra.test' })
+    const admin = await makePlatformAdmin(root)
+    admin.level = 'root'
+    await admin.save()
+    assert.deepEqual(await me(root.email), { isPlatformAdmin: true, platformLevel: 'root' })
+
+    admin.isActive = false
+    await admin.save()
+    assert.deepEqual(await me(root.email), { isPlatformAdmin: false, platformLevel: null })
+
+    const plain = await createUser({ email: 'plain@doztra.test' })
+    assert.deepEqual(await me(plain.email), { isPlatformAdmin: false, platformLevel: null })
   })
 
   test('requires authentication', async ({ client }) => {

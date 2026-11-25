@@ -29,13 +29,14 @@ export class MeService {
   ): Promise<{
     user: User
     isPlatformAdmin: boolean
+    platformLevel: 'root' | 'support' | null
     organizations: MembershipRow[]
     entitlements: Entitlements | null
     employee: Employee | null
   }> {
-    const [rows, isPlatformAdmin] = await Promise.all([
+    const [rows, platformLevel] = await Promise.all([
       memberships.forUser(user.id),
-      platformAdmins.isActive(user.id),
+      platformAdmins.levelOf(user.id),
     ])
     const resolved = await Promise.all(rows.map((row) => entitlementService.resolve(row.id)))
     const organizations = rows.map((row, index) => ({
@@ -45,7 +46,8 @@ export class MeService {
     const selected = rows.findIndex((row) => row.id === selectedOrganizationId)
     return {
       user,
-      isPlatformAdmin,
+      isPlatformAdmin: platformLevel !== null,
+      platformLevel,
       organizations,
       entitlements: selected >= 0 ? resolved[selected] : null,
       employee: selected >= 0 ? await employeeOfUser(rows[selected].id, user.id) : null,
