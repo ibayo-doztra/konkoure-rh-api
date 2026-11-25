@@ -1,6 +1,7 @@
 import { DateTime } from 'luxon'
 import db from '@adonisjs/lucid/services/db'
 import type { TransactionClientContract } from '@adonisjs/lucid/types/database'
+import type Invoice from '#models/invoice'
 import Payment from '#models/payment'
 import Plan from '#models/plan'
 import type Organization from '#models/organization'
@@ -13,8 +14,11 @@ import queueService from '#shared/queue/queue_service'
 import { newId, randomToken, sha256 } from '#shared/utils/crypto'
 import env from '#start/env'
 import organizationService from '#modules/organizations/services/organization_service'
-import { subscriptionsIn } from '#modules/billing/repositories/subscription_repository'
-import { invoicesIn, paymentsIn } from '#modules/billing/repositories/payment_repository'
+import organizations from '#modules/organizations/repositories/organization_repository'
+import { withTenant } from '#shared/tenant/with_tenant'
+import { TenantContext } from '#shared/tenant/tenant_context'
+import memberships from '#modules/users/repositories/membership_repository'
+import { paymentsIn } from '#modules/billing/repositories/payment_repository'
 import ledger from '#modules/billing/repositories/payment_ledger'
 import entitlementService from '#modules/billing/services/entitlement_service'
 import djomyClient from '#modules/billing/services/djomy_client'
@@ -24,7 +28,8 @@ import {
   type CheckoutMethod,
 } from '#modules/billing/services/checkout_service'
 import { PaymentSucceededMail } from '#modules/billing/mails/payment_mails'
-import { periodEnd, planAmount } from '#modules/billing/pricing'
+import { activatePaidPeriod } from '#modules/billing/services/paid_period'
+import { planAmount } from '#modules/billing/pricing'
 
 /** A claim code is valid 7 days (07 §7.7). */
 const CLAIM_DAYS = 7
@@ -116,48 +121,122 @@ export class PresignupService {
     input: { claimToken: string; organizationName: string },
     audit: AuditContext
   ): Promise<{ organization: Organization; planCode: string | null }> {
-    const payment = await this.withToken(merchantReference, input.claimToken)
+    const payment = await this.claimable(user, merchantReference, input.claimToken)
+
+    let invoice: Invoice | null = null
+    const organization = await organizationService.create(
+      user,
+      { name: input.organizationName },
+      audit,
+      async (organizationId, trx, context) => {
+        invoice = await this.bindAndActivate(
+          trx,
+          payment,
+          input.claimToken,
+          organizationId,
+          context
+        )
+      }
+    )
+    return this.announce(user, organization, payment, invoice)
+  }
+
+  /**
+   * `POST /public/payments/:ref/claim` with `organizationId` (decision of
+   * 2026-11-25): attaches the payment to an organization the caller already
+   * owns (checked by the controller). The running subscription follows the
+   * in-app payment rule (07 §7.5): same paid plan and cycle → extended,
+   * otherwise replaced from now.
+   */
+  async claimInto(
+    user: User,
+    merchantReference: string,
+    input: { claimToken: string; organizationId: string },
+    audit: AuditContext
+  ): Promise<{ organization: Organization; planCode: string | null }> {
+    if (!user.emailVerifiedAt) throw new AppException('E_EMAIL_NOT_VERIFIED')
+    const payment = await this.claimable(user, merchantReference, input.claimToken)
+    const { organizationId } = input
+
+    let invoice: Invoice | null = null
+    const organization = await withTenant(organizationId, async (trx) => {
+      const found = await organizations.findActiveForUpdate(organizationId, trx)
+      if (!found) throw new AppException('E_NOT_FOUND')
+      const context = { ...audit, organizationId, actorRole: 'owner' }
+      invoice = await this.bindAndActivate(trx, payment, input.claimToken, organizationId, context)
+      return found
+    })
+    return this.announce(user, organization, payment, invoice)
+  }
+
+  /**
+   * The caller's context in the target organization, for `BillingPolicy`:
+   * `404` when they are not a member or it is deleted (01 §4, nothing leaks).
+   */
+  async targetContext(user: User, organizationId: string) {
+    const roles = await memberships.rolesIn(user.id, organizationId)
+    if (roles.length === 0) throw new AppException('E_NOT_FOUND')
+    return new TenantContext(organizationId, roles, null)
+  }
+
+  /** The payment the signed-up user may claim (06 §11), or `409 E_CLAIM_INVALID`. */
+  private async claimable(user: User, merchantReference: string, claimToken: string) {
+    const payment = await this.withToken(merchantReference, claimToken)
     if (payment.organizationId || payment.claimedAt) throw claimInvalid('used')
     if (!payment.claimExpiresAt || payment.claimExpiresAt <= DateTime.now()) {
       throw claimInvalid('expired')
     }
     if (payment.claimEmail?.toLowerCase() !== user.email.toLowerCase()) throw claimInvalid('email')
     if (payment.status !== 'succeeded') throw claimInvalid('notPaid')
+    return payment
+  }
 
-    let invoiceId: string | null = null
-    let invoiceNumber = ''
-    let periodEndDate = ''
-    const organization = await organizationService.create(
-      user,
-      { name: input.organizationName },
-      audit,
-      async (organizationId, trx, context) => {
-        const claimed = await this.bind(trx, payment, input.claimToken, organizationId)
-        const invoice = await this.activate(trx, organizationId, claimed)
-        invoiceId = invoice.id
-        invoiceNumber = invoice.number
-        periodEndDate = invoice.periodEnd.toISODate()!
-        await auditService.record(trx, context, {
-          action: 'payment.claimed',
-          targetType: 'payment',
-          targetId: claimed.id,
-          after: { planId: claimed.planId, cycle: claimed.cycle },
-        })
-      }
-    )
+  /** In the claim transaction: binds once, activates the paid period, audits. */
+  private async bindAndActivate(
+    trx: TransactionClientContract,
+    payment: Payment,
+    claimToken: string,
+    organizationId: string,
+    context: AuditContext
+  ) {
+    const claimed = await this.bind(trx, payment, claimToken, organizationId)
+    const invoice = await activatePaidPeriod(trx, organizationId, claimed)
+    await auditService.record(trx, context, {
+      action: 'payment.claimed',
+      targetType: 'payment',
+      targetId: claimed.id,
+      after: {
+        planId: claimed.planId,
+        cycle: claimed.cycle,
+        subscriptionId: claimed.subscriptionId,
+      },
+    })
+    return invoice
+  }
 
+  /** After the commit: entitlements refreshed, confirmation e-mail, invoice PDF. */
+  private async announce(
+    user: User,
+    organization: Organization,
+    payment: Payment,
+    invoice: Invoice | null
+  ) {
     await entitlementService.invalidate(organization.id)
     const plan = await Plan.find(payment.planId)
-    await dispatchMail(
-      new PaymentSucceededMail(user, {
-        plan: plan?.name ?? '',
-        amount: String(Number(payment.paidAmount ?? payment.expectedAmount)),
-        invoiceNumber,
-        periodEnd: periodEndDate,
+    if (invoice) {
+      const issued: Invoice = invoice
+      await dispatchMail(
+        new PaymentSucceededMail(user, {
+          plan: plan?.name ?? '',
+          amount: String(Number(payment.paidAmount ?? payment.expectedAmount)),
+          invoiceNumber: issued.number,
+          periodEnd: issued.periodEnd.toISODate()!,
+        })
+      )
+      await queueService.dispatch('invoices.render', {
+        organizationId: organization.id,
+        invoiceId: issued.id,
       })
-    )
-    if (invoiceId) {
-      await queueService.dispatch('invoices.render', { organizationId: organization.id, invoiceId })
     }
     return { organization, planCode: plan?.code ?? null }
   }
@@ -185,29 +264,6 @@ export class PresignupService {
     ])
     if (!rows[0]?.id) throw claimInvalid('used')
     return paymentsIn(organizationId, trx).findOrFail(payment.id)
-  }
-
-  /** A paid period on the payment's plan from now, and its invoice (07 §7.5). */
-  private async activate(trx: TransactionClientContract, organizationId: string, payment: Payment) {
-    const now = DateTime.now()
-    const subscription = await subscriptionsIn(organizationId, trx).createPaid({
-      planId: payment.planId,
-      cycle: payment.cycle,
-      startsAt: now,
-      endsAt: periodEnd(now, payment.cycle),
-      maxEmployeesOverride: null,
-      modulesOverride: null,
-    })
-    payment.subscriptionId = subscription.id
-    await payment.useTransaction(trx).save()
-    return invoicesIn(organizationId, trx).create({
-      subscriptionId: subscription.id,
-      paymentId: payment.id,
-      amount: Number(payment.paidAmount ?? payment.expectedAmount),
-      issuedAt: now,
-      periodStart: now,
-      periodEnd: subscription.currentPeriodEnd,
-    })
   }
 
   /** Writes a pre-signup payment, outside any tenant. */

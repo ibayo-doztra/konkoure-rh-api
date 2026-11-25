@@ -188,7 +188,8 @@
       "used": "Ce paiement est déjà rattaché à une organisation.",
       "expired": "Le code de rattachement a expiré.",
       "email": "Ce paiement a été fait avec une autre adresse e-mail.",
-      "notPaid": "Ce paiement n'est pas encore confirmé."
+      "notPaid": "Ce paiement n'est pas encore confirmé.",
+      "target": "Indiquez soit le nom d'une nouvelle organisation, soit une organisation existante."
     }
   },
   "platform": {
