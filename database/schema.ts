@@ -290,6 +290,41 @@ export class ContractSchema extends BaseModel {
   declare weeklyHours: string | null
 }
 
+export class DemoRequestSchema extends BaseModel {
+  static $columns = ['assignedTo', 'companyName', 'companySize', 'createdAt', 'email', 'emailError', 'emailSentAt', 'emailStatus', 'fullName', 'id', 'message', 'phone', 'sourceIp', 'status', 'updatedAt'] as const
+  $columns = DemoRequestSchema.$columns
+  @column()
+  declare assignedTo: string | null
+  @column()
+  declare companyName: string
+  @column()
+  declare companySize: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare email: string
+  @column()
+  declare emailError: string | null
+  @column.dateTime()
+  declare emailSentAt: DateTime | null
+  @column()
+  declare emailStatus: 'pending' | 'sent' | 'failed'
+  @column()
+  declare fullName: string
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare message: string | null
+  @column()
+  declare phone: string
+  @column()
+  declare sourceIp: string | null
+  @column()
+  declare status: 'new' | 'contacted' | 'scheduled' | 'done' | 'rejected'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
 export class DepartmentSchema extends BaseModel {
   static $columns = ['createdAt', 'createdBy', 'deletedAt', 'description', 'id', 'managerId', 'name', 'organizationId', 'parentDepartmentId', 'updatedAt', 'updatedBy'] as const
   $columns = DepartmentSchema.$columns
@@ -1226,6 +1261,25 @@ export class PlatformAdminSchema extends BaseModel {
   declare userId: string
 }
 
+export class PlatformSettingSchema extends BaseModel {
+  static $columns = ['createdAt', 'description', 'isSecret', 'key', 'updatedAt', 'updatedBy', 'value'] as const
+  $columns = PlatformSettingSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare description: string | null
+  @column()
+  declare isSecret: boolean
+  @column({ isPrimary: true })
+  declare key: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare updatedBy: string | null
+  @column()
+  declare value: unknown
+}
+
 export class PublicHolidaySchema extends BaseModel {
   static $columns = ['createdAt', 'date', 'id', 'isMovable', 'isRecurring', 'name', 'organizationId', 'updatedAt'] as const
   $columns = PublicHolidaySchema.$columns
@@ -1376,6 +1430,29 @@ export class SuccessionPlanSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare updatedBy: string | null
+}
+
+export class SystemLogSchema extends BaseModel {
+  static $columns = ['channel', 'context', 'createdAt', 'durationMs', 'id', 'level', 'message', 'organizationId', 'statusCode'] as const
+  $columns = SystemLogSchema.$columns
+  @column()
+  declare channel: string
+  @column()
+  declare context: Record<string, unknown>
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare durationMs: number | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare level: 'debug' | 'info' | 'warn' | 'error' | 'fatal'
+  @column()
+  declare message: string
+  @column()
+  declare organizationId: string | null
+  @column()
+  declare statusCode: number | null
 }
 
 export class TimeLogClientIdSchema extends BaseModel {

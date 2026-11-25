@@ -1,4 +1,4 @@
-import { beforeCreate, belongsTo } from '@adonisjs/lucid/orm'
+import { beforeCreate, belongsTo, column } from '@adonisjs/lucid/orm'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import { SubscriptionSchema } from '#database/schema'
 import Plan from '#models/plan'
@@ -11,6 +11,10 @@ export type BillingCycle = SubscriptionSchema['cycle']
 export default class Subscription extends SubscriptionSchema {
   static table = 'subscriptions'
   static selfAssignPrimaryKey = true
+
+  /** The pg driver would write a JS array as a PostgreSQL array, not as jsonb. */
+  @column({ prepare: (value: string[] | null) => (value === null ? null : JSON.stringify(value)) })
+  declare modulesOverride: string[] | null
 
   @belongsTo(() => Plan)
   declare plan: BelongsTo<typeof Plan>

@@ -16,6 +16,7 @@ import { registerMeRoutes } from '#start/routes/me'
 import { registerOrganizationRoutes } from '#start/routes/organizations'
 import { registerOrgRoutes } from '#start/routes/org'
 import { registerPublicRoutes } from '#start/routes/public'
+import { registerPlatformRoutes } from '#start/routes/platform'
 
 const HealthController = () => import('#modules/health/controllers/health_controller')
 
@@ -35,6 +36,7 @@ router
     registerOrganizationRoutes()
     registerOrgRoutes()
     registerPublicRoutes()
+    registerPlatformRoutes()
   })
   .prefix('/api/v1')
   .use(throttleIp)

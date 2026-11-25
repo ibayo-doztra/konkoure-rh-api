@@ -188,7 +188,26 @@
       "used": "Ce paiement est déjà rattaché à une organisation.",
       "expired": "Le code de rattachement a expiré.",
       "email": "Ce paiement a été fait avec une autre adresse e-mail.",
-      "notPaid": "Ce paiement n'est pas encore confirmé."
+      "notPaid": "Ce paiement n'est pas encore confirmé.",
+      "target": "Indiquez soit le nom d'une nouvelle organisation, soit une organisation existante."
     }
+  },
+  "platform": {
+    "notSuspendable": "Cet abonnement est déjà suspendu ou expiré.",
+    "notSuspended": "Seul un abonnement suspendu peut être réactivé.",
+    "planCodeTaken": "Une offre porte déjà ce code.",
+    "planInUse": "Cette offre est encore utilisée par un abonnement.",
+    "self": "Cette action ne s'applique pas à votre propre compte.",
+    "platformAdmin": "Cette action est impossible sur un administrateur de la plateforme.",
+    "banned": "Ce compte est banni.",
+    "alreadyBanned": "Ce compte est déjà banni.",
+    "notBanned": "Ce compte n'est pas banni.",
+    "unknownUser": "Aucun compte n'utilise cette adresse.",
+    "lastRoot": "La plateforme doit garder au moins un administrateur root.",
+    "impersonation": "Cette action est interdite pendant une impersonation.",
+    "unknownSetting": "Ce réglage n'existe pas.",
+    "noTransaction": "Ce paiement n'a pas de transaction Djomy à vérifier.",
+    "notPaid": "Djomy ne confirme pas ce paiement.",
+    "assignee": "L'assignation exige un administrateur de la plateforme actif."
   }
 }

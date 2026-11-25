@@ -8,24 +8,22 @@ import type Payment from '#models/payment'
 import type { PaymentStatus } from '#models/payment'
 import Plan from '#models/plan'
 import auditService from '#shared/audit/audit_service'
+import systemLogService from '#shared/logging/system_log_service'
 import { dispatchMail } from '#shared/mail/dispatch_mail'
 import queueService from '#shared/queue/queue_service'
 import { withTenant } from '#shared/tenant/with_tenant'
 import receipts from '#shared/webhooks/receipt_repository'
 import { membersIn } from '#modules/organizations/repositories/member_repository'
 import notificationService from '#modules/notifications/services/notification_service'
-import { subscriptionsIn } from '#modules/billing/repositories/subscription_repository'
-import { invoicesIn, paymentsIn } from '#modules/billing/repositories/payment_repository'
+import { paymentsIn } from '#modules/billing/repositories/payment_repository'
 import ledger from '#modules/billing/repositories/payment_ledger'
-import entitlementService, {
-  computeEntitlements,
-} from '#modules/billing/services/entitlement_service'
+import entitlementService from '#modules/billing/services/entitlement_service'
 import djomyClient, {
   readTransaction,
   type DjomyTransaction,
 } from '#modules/billing/services/djomy_client'
 import { PaymentSucceededMail } from '#modules/billing/mails/payment_mails'
-import { periodEnd } from '#modules/billing/pricing'
+import { activatePaidPeriod } from '#modules/billing/services/paid_period'
 
 export const DJOMY_PROVIDER = 'djomy'
 /** A payment still pending after 30 minutes expires (07 §7.6). */
@@ -36,9 +34,6 @@ export type SettleOutcome =
   'unknown' | 'no_transaction' | 'pending' | 'succeeded' | 'failed' | 'already_settled' | 'late'
 
 type InboundOutcome = 'invalid_signature' | 'duplicate' | 'accepted'
-
-/** Statuses of a paid period still running, which a renewal extends (07 §7.5). */
-const PAID_RUNNING = ['active', 'past_due', 'canceled']
 
 /**
  * Djomy payment settlement (07 §7.4-7.6, 08 §5): a payment succeeds only
@@ -166,6 +161,13 @@ export class SettlementService {
           { paymentId: payment.id, organizationId: payment.organizationId },
           'payments.reconcile_mismatch'
         )
+        await systemLogService.write({
+          channel: 'payments',
+          level: 'error',
+          message: 'Payment reported paid by Djomy but failed or expired here',
+          organizationId: payment.organizationId,
+          context: { paymentId: payment.id, merchantReference: payment.merchantReference },
+        })
         flagged += 1
       } catch (error) {
         logger.warn({ err: error, paymentId: payment.id }, 'payments.reconcile_failed')
@@ -187,6 +189,13 @@ export class SettlementService {
           payment.merge({ failureReason: 'late_success', rawEvent: remote.raw })
           await payment.useTransaction(trx).save()
           logger.error({ paymentId: payment.id }, 'payments.late_success')
+          await systemLogService.write({
+            channel: 'payments',
+            level: 'error',
+            message: 'Late Djomy confirmation of an expired payment',
+            organizationId: payment.organizationId,
+            context: { paymentId: payment.id, merchantReference: payment.merchantReference },
+          })
           result.outcome = 'late'
         }
         return
@@ -207,6 +216,13 @@ export class SettlementService {
           { paymentId: payment.id, expected: payment.expectedAmount, paid, currency },
           'payments.amount_mismatch'
         )
+        await systemLogService.write({
+          channel: 'payments',
+          level: 'error',
+          message: 'Djomy amount or currency differs from the expected payment',
+          organizationId: payment.organizationId,
+          context: { paymentId: payment.id, expected: payment.expectedAmount, paid, currency },
+        })
       } else {
         payment.merge({ status: 'succeeded', paidAmount: String(paid), failureReason: null })
       }
@@ -214,7 +230,7 @@ export class SettlementService {
       const succeeded = (payment.status as PaymentStatus) === 'succeeded'
 
       if (payment.organizationId && succeeded) {
-        result.invoice = await this.activate(trx, payment)
+        result.invoice = await activatePaidPeriod(trx, payment.organizationId!, payment)
       }
       if (payment.organizationId) {
         await auditService.record(
@@ -241,60 +257,6 @@ export class SettlementService {
       await this.announce(found.organizationId, found.id, outcome, invoice)
     }
     return outcome
-  }
-
-  /**
-   * Activation (07 §7.5): a renewal of the running plan extends its period;
-   * otherwise (trial, expired, upgrade) a new period starts now.
-   */
-  private async activate(trx: TransactionClientContract, payment: Payment) {
-    const organizationId = payment.organizationId!
-    const subscriptions = subscriptionsIn(organizationId, trx)
-    const current = await subscriptions.currentForUpdate()
-    const now = DateTime.now()
-    const status = current ? computeEntitlements(current, current.plan, now).status : null
-    const renewal =
-      current !== null &&
-      current.planId === payment.planId &&
-      current.cycle === payment.cycle &&
-      status !== null &&
-      PAID_RUNNING.includes(status)
-
-    let subscription
-    let start: DateTime
-    if (renewal) {
-      start = current.currentPeriodEnd > now ? current.currentPeriodEnd : now
-      current.merge({
-        status: 'active',
-        currentPeriodEnd: periodEnd(start, payment.cycle),
-        cancelAtPeriodEnd: false,
-        canceledAt: null,
-        scheduledPlanId: null,
-        scheduledCycle: null,
-      })
-      subscription = await subscriptions.save(current)
-    } else {
-      start = now
-      await subscriptions.expireCurrent()
-      subscription = await subscriptions.createPaid({
-        planId: payment.planId,
-        cycle: payment.cycle,
-        startsAt: start,
-        endsAt: periodEnd(start, payment.cycle),
-        maxEmployeesOverride: current?.maxEmployeesOverride ?? null,
-        modulesOverride: current?.modulesOverride ?? null,
-      })
-    }
-    payment.subscriptionId = subscription.id
-    await payment.useTransaction(trx).save()
-    return invoicesIn(organizationId, trx).create({
-      subscriptionId: subscription.id,
-      paymentId: payment.id,
-      amount: Number(payment.paidAmount),
-      issuedAt: now,
-      periodStart: start,
-      periodEnd: subscription.currentPeriodEnd,
-    })
   }
 
   /** After the commit: owners notified, confirmation e-mail, invoice PDF (07 §7.5). */

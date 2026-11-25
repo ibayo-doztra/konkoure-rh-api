@@ -581,6 +581,9 @@ seule ; seul `kind = 'ai'` est émis pour l'instant (`metadata` : `task`, `versi
 `id`, `channel text NOT NULL`, `level text NOT NULL`, `message text NOT NULL`,
 `organization_id uuid NULL`, `context jsonb NOT NULL DEFAULT '{}'`,
 `status_code int NULL`, `duration_ms int NULL`. Rétention 30 jours.
+Créée par 0103 (2026-11-24) : `level` contraint (`debug`…`fatal`), écrite pour chaque job
+abandonné (`jobs`) et chaque écart de paiement (`payments`), purgée chaque nuit
+(`system-logs.purge`, 03h15).
 
 ### `platform_admins`
 `id`, `user_id uuid NOT NULL UNIQUE`, `level platform_admin_level NOT NULL DEFAULT 'support'`,

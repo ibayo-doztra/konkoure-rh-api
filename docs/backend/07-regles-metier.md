@@ -422,7 +422,10 @@ webhook tardif arrive : il est journalisé pour réconciliation manuelle.
 
 7.7 **Paiement avant inscription** — `claim_token` (hash en base) valable 7
 jours, usage unique, lié à `claim_email`. La réclamation crée l'organisation et
-active l'abonnement dans une seule transaction. Le paiement reste hors de tout
+active l'abonnement dans une seule transaction, ou (décision du 2026-11-25) rattache
+le paiement à une organisation existante dont l'appelant est owner, l'abonnement
+suivant alors la règle d'activation du §7.5 (prolongation si même offre et même
+cycle payés en cours, sinon remplacement à partir de maintenant). Le paiement reste hors de tout
 tenant jusque-là ; le rattachement passe par la fonction `claim_payment()` (0097),
 dont la mise à jour conditionnelle garantit l'usage unique.
 

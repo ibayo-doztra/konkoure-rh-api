@@ -90,5 +90,11 @@
   "paymentSucceeded": {
     "subject": "Payment confirmed — Konkouré {plan}",
     "body": "Your payment of {amount} GNF for the {plan} plan is confirmed. Your subscription runs until {end}. Invoice: {invoice}."
+  },
+  "demoRequest": {
+    "subject": "Demo request: {company} ({size})",
+    "intro": "{company} ({size} employees) asks for a Konkouré demo.",
+    "contact": "Contact: {name}, {email}, {phone}.",
+    "message": "Message: {message}"
   }
 }

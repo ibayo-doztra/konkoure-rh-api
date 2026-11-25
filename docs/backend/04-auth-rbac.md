@@ -224,6 +224,7 @@ un utilisateur ne peut ni modifier son propre rôle, ni se retirer le rôle
 | payments.list / reconcile | ✔ (lecture) | ✔ |
 | demoRequests.updateStatus | ✔ | ✔ |
 | impersonation | ✖ | ✔ (journalisée, TTL 30 min, bannière obligatoire) |
+| users.ban / unban (ajouté le 2026-11-24) | ✖ | ✔ |
 
 ## 6. Implémentation Bouncer
 

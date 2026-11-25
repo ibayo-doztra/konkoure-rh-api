@@ -100,4 +100,6 @@ export default await Env.create(new URL('../', import.meta.url), {
   MAIL_FROM_NAME: Env.schema.string(),
   MAIL_FROM_ADDRESS: Env.schema.string({ format: 'email' }),
   RESEND_API_KEY: Env.schema.secret.optional(),
+  /** Recipient of the `demo_request` e-mails (08 §4); none set: requests are only stored. */
+  DEMO_REQUESTS_EMAIL: Env.schema.string.optional({ format: 'email' }),
 })

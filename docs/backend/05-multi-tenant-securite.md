@@ -34,6 +34,10 @@ public d'invitation résout l'organisation par la fonction `SECURITY DEFINER`
 
 Les jobs de fond et les tâches plateforme utilisent un rôle distinct
 (`konkoure_worker`) avec `BYPASSRLS` explicitement documenté, jamais le rôle web.
+Les lectures inter-organisations du back-office passent par `platformClient()`
+(`app/shared/platform/platform_client.ts`) : la connexion `platform`, qui prend
+`konkoure_worker` quand le serveur web tourne sous `DB_APP_ROLE`. Ses écritures
+d'organisation restent dans `withTenant`.
 
 ## 2. Anti-IDOR
 

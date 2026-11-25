@@ -188,7 +188,26 @@
       "used": "This payment is already bound to an organization.",
       "expired": "The claim code has expired.",
       "email": "This payment was made with another e-mail address.",
-      "notPaid": "This payment is not confirmed yet."
+      "notPaid": "This payment is not confirmed yet.",
+      "target": "Provide either a new organization name or an existing organization."
     }
+  },
+  "platform": {
+    "notSuspendable": "This subscription is already suspended or expired.",
+    "notSuspended": "Only a suspended subscription can be reactivated.",
+    "planCodeTaken": "A plan already has this code.",
+    "planInUse": "This plan is still used by a subscription.",
+    "self": "This action does not apply to your own account.",
+    "platformAdmin": "This action is not possible on a platform administrator.",
+    "banned": "This account is banned.",
+    "alreadyBanned": "This account is already banned.",
+    "notBanned": "This account is not banned.",
+    "unknownUser": "No account uses this address.",
+    "lastRoot": "The platform must keep at least one root administrator.",
+    "impersonation": "This action is forbidden during an impersonation.",
+    "unknownSetting": "This setting does not exist.",
+    "noTransaction": "This payment has no Djomy transaction to check.",
+    "notPaid": "Djomy does not confirm this payment.",
+    "assignee": "The assignee must be an active platform administrator."
   }
 }

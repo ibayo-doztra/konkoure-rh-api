@@ -44,6 +44,7 @@ export function organizationDto(row: MembershipRow) {
 export function meDto(snapshot: {
   user: User
   isPlatformAdmin: boolean
+  impersonation?: { by: string; expiresAt: string | null } | null
   organizations: MembershipRow[]
   entitlements: Entitlements | null
   employee: Employee | null
@@ -52,6 +53,8 @@ export function meDto(snapshot: {
   return {
     user: userDto(snapshot.user),
     isPlatformAdmin: snapshot.isPlatformAdmin,
+    // Set when a platform admin acts as this account: the client shows a banner.
+    impersonation: snapshot.impersonation ?? null,
     organizations: snapshot.organizations.map(organizationDto),
     employee: employee
       ? { id: employee.id, firstName: employee.firstName, lastName: employee.lastName }

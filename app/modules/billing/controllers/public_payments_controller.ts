@@ -1,6 +1,8 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import presignupService, { maskEmail } from '#modules/billing/services/presignup_service'
+import billingService from '#modules/billing/services/billing_service'
+import { planDto } from '#modules/billing/transformers/billing_transformer'
 import {
   claimValidator,
   presignupCheckoutValidator,
@@ -8,9 +10,19 @@ import {
 } from '#modules/billing/validators/billing_validator'
 import { organizationDto } from '#modules/users/transformers/me_transformer'
 import { auditContext } from '#modules/auth/http_helpers'
+import { AppException } from '#shared/exceptions/app_exception'
+import BillingPolicy from '#policies/billing_policy'
+import type { AppRole } from '#models/user_role'
 
 /** `/api/v1/public/payments` (06 §11, 07 §7.7, decisions of 2026-11-24). */
 export default class PublicPaymentsController {
+  /** `GET /public/plans` (06 §11): same shape as `GET /org/billing/plans`. */
+  @ApiOperation({ summary: 'Public plan catalogue' })
+  async plans(_ctx: HttpContext) {
+    const plans = await billingService.plans()
+    return { data: plans.map(planDto) }
+  }
+
   @ApiOperation({ summary: 'Pay before sign-up (claim code returned once)' })
   @ApiBody({ type: () => presignupCheckoutValidator })
   async checkout(ctx: HttpContext) {
@@ -52,17 +64,44 @@ export default class PublicPaymentsController {
     })
   }
 
-  @ApiOperation({ summary: 'Create the organization of a payment made before sign-up' })
+  @ApiOperation({
+    summary: 'Claim a payment made before sign-up: new organization or one the caller owns',
+  })
   @ApiBody({ type: () => claimValidator })
   async claim(ctx: HttpContext) {
-    const { params, ...input } = await ctx.request.validateUsing(claimValidator)
+    const { params, claimToken, organizationName, organizationId } =
+      await ctx.request.validateUsing(claimValidator)
+    if ((organizationName === undefined) === (organizationId === undefined)) {
+      throw AppException.validation(
+        organizationId === undefined ? 'organizationName' : 'organizationId',
+        'target',
+        'validation.billing.claim.target'
+      )
+    }
     const user = ctx.auth.getUserOrFail()
-    const { organization, planCode } = await presignupService.claim(
-      user,
-      params.ref,
-      input,
-      auditContext(ctx)
-    )
+
+    let roles: AppRole[] = ['owner']
+    let claimed
+    if (organizationId !== undefined) {
+      // Owner of the target organization only (04 §5 "billing.*"), 404 outside it.
+      ctx.tenant = await presignupService.targetContext(user, organizationId)
+      await ctx.bouncer.with(BillingPolicy).authorize('manage')
+      roles = [...ctx.tenant.roles]
+      claimed = await presignupService.claimInto(
+        user,
+        params.ref,
+        { claimToken, organizationId },
+        auditContext(ctx)
+      )
+    } else {
+      claimed = await presignupService.claim(
+        user,
+        params.ref,
+        { claimToken, organizationName: organizationName! },
+        auditContext(ctx)
+      )
+    }
+    const { organization, planCode } = claimed
     ctx.response.status(201)
     // Same shape as POST /organizations and the entries of GET /me `organizations`.
     return ctx.serialize(
@@ -74,7 +113,7 @@ export default class PublicPaymentsController {
         defaultLanguage: organization.defaultLanguage,
         defaultCurrency: organization.defaultCurrency,
         performanceModel: organization.performanceModel,
-        roles: ['owner'],
+        roles,
         plan: planCode,
       })
     )

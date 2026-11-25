@@ -9,6 +9,7 @@ import {
 } from '#modules/users/validators/me_validator'
 import { meDto, organizationDto, sessionDto } from '#modules/users/transformers/me_transformer'
 import { auditContext, currentFamilyId } from '#modules/auth/http_helpers'
+import { impersonationOf } from '#modules/auth/impersonation'
 import { confirmedBody } from '#shared/utils/openapi'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -26,8 +27,9 @@ function selectedOrganization(ctx: HttpContext) {
 export default class MeController {
   @ApiOperation({ summary: 'Current user, memberships and roles' })
   async show(ctx: HttpContext) {
-    const snapshot = await meService.snapshot(ctx.auth.getUserOrFail(), selectedOrganization(ctx))
-    return ctx.serialize(meDto(snapshot))
+    const user = ctx.auth.getUserOrFail()
+    const snapshot = await meService.snapshot(user, selectedOrganization(ctx))
+    return ctx.serialize(meDto({ ...snapshot, impersonation: impersonationOf(user) }))
   }
 
   @ApiOperation({ summary: 'Update the profile' })

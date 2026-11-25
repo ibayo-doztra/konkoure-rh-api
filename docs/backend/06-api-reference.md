@@ -1218,8 +1218,13 @@ de relance manuelle.
 `claim_token` (hash en base, valeur renvoyée une seule fois) et
 `claim_expires_at = now() + 7 jours`. Après inscription, l'utilisateur appelle
 `POST /public/payments/:ref/claim` avec `{ claimToken, organizationName }` :
-l'organisation est créée, l'abonnement activé, `claimed_at` renseigné.
+l'organisation est créée, l'abonnement activé, `claimed_at` renseigné. Depuis le
+2026-11-25, `{ claimToken, organizationId }` rattache le paiement à une
+organisation existante dont l'appelant est owner (précisions ci-dessous).
 Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
+
+`GET /public/plans` (livré le 2026-11-24, limiteur des pages carrières, 60/min/IP) :
+offres publiques non supprimées, même forme que `GET /org/billing/plans`.
 
 Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) :
 - `POST /public/payments/checkout` : `{ planId, cycle, method, payerPhone?, email }`
@@ -1237,6 +1242,21 @@ Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) 
   `expired`, `email`. Crée l'organisation (l'appelant en est owner, sans essai) et
   l'abonnement payé à partir de maintenant, avec sa facture, dans une transaction.
   `201` : même forme que `POST /organizations` (`plan` = code de l'offre payée).
+
+Précisions du 2026-11-25 (organisation existante, décision de l'utilisateur) :
+- `POST /public/payments/:ref/claim` accepte soit `{ claimToken, organizationName }`
+  (création, comportement ci-dessus), soit `{ claimToken, organizationId }`.
+  Exactement l'un des deux, sinon `422 E_VALIDATION` (règle `target`).
+- Avec `organizationId` : l'appelant doit être owner de l'organisation (`403
+  E_FORBIDDEN` s'il en est membre sans être owner ; `404` s'il n'en est pas membre
+  ou si elle est supprimée). Mêmes contrôles du paiement et mêmes `409
+  E_CLAIM_INVALID`. L'abonnement suit la règle du paiement en app (07 §7.5) : même
+  offre et même cycle qu'un abonnement payé en cours (`active`, `past_due`,
+  `canceled`) → la période est prolongée à partir de sa fin ; sinon (essai, expiré,
+  suspendu, autre offre ou cycle) l'abonnement courant est clos et une période
+  payée commence maintenant. Facture de l'organisation, audit `payment.claimed`
+  dans la même transaction. `201` : même forme que `POST /organizations`
+  (`roles` = rôles de l'appelant dans l'organisation, `plan` = code de l'offre payée).
 
 ---
 
@@ -1281,6 +1301,7 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 | PATCH/DELETE | `/platform/plans/:id` | **root** |
 | GET | `/platform/users` | support | recherche globale |
 | PATCH | `/platform/users/:id/roles` | **root** |
+| POST | `/platform/users/:id/ban` \| `/unban` | **root** | ajouté le 2026-11-24 |
 | POST | `/platform/users/:id/impersonate` | **root** | token 30 min, audité |
 | GET/POST/DELETE | `/platform/admins` | **root** |
 | GET | `/platform/settings` | support |
@@ -1296,6 +1317,87 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 
 Toutes les listes de journaux sont paginées **par curseur** et plafonnées à
 500 éléments par page.
+
+### Organisations, abonnements et offres (décisions du 2026-11-24)
+Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif compris) ;
+`support` lit, `root` écrit (`403`). Chaque action `root` est auditée
+(`actorRole = 'platform_root'`).
+- `GET /platform/dashboard` : `{ organizations: { live, paying }, subscriptions: {
+  trialing, active, past_due, canceled, suspended, expired } (statuts effectifs),
+  mrrGnf, churn30d }`. MRR = somme mensualisée (annuel / 12) des abonnements payants
+  en cours (`active`, `past_due`, `canceled` avant échéance) ; churn = offres payantes
+  dont l'accès a pris fin dans les 30 derniers jours.
+- `GET /platform/organizations` : `page`, `perPage`, `q` (nom ou slug),
+  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code) ;
+  lignes `{ id, name, slug, createdAt, employees, subscription: { status, cycle,
+  planCode, planName, trialEndsAt, currentPeriodEnd } | null }`.
+- `GET /platform/organizations/:id` : organisation, `subscription` (forme de
+  `GET /org/billing/subscription` + `storedStatus`, `maxEmployeesOverride`,
+  `modulesOverride`), `usage`, `counts: { members, employees }`, `owners: [{ id,
+  email, fullName }]`.
+- `PATCH /platform/organizations/:id/subscription` (root) : `{ planId?, status?, cycle?,
+  currentPeriodEnd?, trialEndsAt?, maxEmployeesOverride?, modulesOverride? }` ; cache
+  des droits invalidé. `POST suspend` : `suspended` (`hr` en lecture seule), `409` si
+  déjà suspendu ou expiré ; `POST reactivate` : depuis `suspended` seulement, statut
+  recalculé depuis l'échéance (`409` sinon). Réponse : le détail.
+- `GET /platform/plans` : toutes les offres, supprimées comprises (`planDto` +
+  `priceGnf`, `explicitYearlyPriceGnf`, `sortOrder`, `isPublic`, `deletedAt`).
+  `POST` (root) : `{ code (a-z, 0-9, -, _), name, priceGnf, priceYearlyGnf?,
+  maxEmployees, aiCreditsPerMonth?, modules[], features?, sortOrder?, isPublic? }`,
+  code unique (`409`). `PATCH /:id` : mêmes champs sauf `code`, qui ne change jamais.
+  `DELETE /:id` : logique, `409` (`rule = "inUse"`) si un abonnement non expiré
+  l'utilise ou la programme.
+
+### Comptes, impersonation et admins (décisions du 2026-11-24)
+- `GET /platform/users` : `page`, `perPage`, `q` (e-mail ou nom) ; `{ id, email,
+  fullName, isActive, emailVerified, lastLoginAt, createdAt, platformLevel,
+  organizations: [{ organizationId, organizationName, roles }] }`, sans donnée de
+  fiche personnelle.
+- `PATCH /platform/users/:id/roles` (root) : `{ organizationId, roles[] }` remplace les
+  rôles du compte dans l'organisation (liste vide : retrait) ; mêmes protections que
+  `/org/members` (`409 lastOwner`), le compte doit déjà en être membre (`404`). Audit
+  `role.granted|revoked` avec `actorRole = 'platform_root'`.
+- `POST /platform/users/:id/ban` (root) : `{ reason }` ; `users.is_active = false`, toutes
+  les sessions révoquées (jetons d'accès et refresh), `401` immédiat. `409` sur soi
+  (`self`), sur un admin plateforme actif (`platformAdmin`), si déjà banni.
+  `POST /unban` : réactive (`409 notBanned`). Audit `user.banned|unbanned`.
+- `POST /platform/users/:id/impersonate` (root) : `{ reason }` → `201 { accessToken,
+  expiresIn: 1800, expiresAt, user }`. Jeton d'accès de 30 min, sans refresh, nommé
+  `impersonation:<id de l'admin>`. `GET /me` renvoie alors `impersonation: { by,
+  expiresAt }` (bannière), `null` sinon. Interdit pendant l'impersonation (`403`,
+  `rule = "impersonation"`) : `/platform/*`, `PATCH /me`, `POST /me/password`,
+  `DELETE /me/sessions/:id`, `POST /auth/logout-all`, `DELETE /org`,
+  `POST /org/billing/checkout|cancel`. Refusé sur soi, un admin plateforme ou un compte
+  banni (`409`). Audit `impersonation.started` avec le motif.
+- `GET /platform/admins` (root) : admins actifs `{ userId, email, fullName, level,
+  createdAt }`. `POST` : `{ email, level }` donne ou change le niveau d'un compte
+  existant (`422` si inconnu ou banni). `DELETE /:userId` : désactive. Le dernier root
+  actif ne peut être ni retiré ni rétrogradé (`409 lastRoot`). Audit
+  `platform_admin.granted|revoked`.
+
+### Exploitation (décisions du 2026-11-24)
+- `GET /platform/settings` : `[{ key, value, isSecret, description, updatedAt }]`, la
+  valeur d'un réglage secret vaut toujours `null`. `PUT` (root) : `{ settings: [{ key,
+  value }] }`, clés connues seulement (`422`), valeur validée par clé ; audit
+  `platform_setting.updated` (secret masqué). `modules_open_for_testing` (booléen,
+  `false` par défaut) ouvre tous les modules à toutes les organisations, jamais au-delà
+  d'une suspension ou d'une expiration ; effet sous 60 s (cache des droits).
+- `GET /platform/payments` : paginé, `filter[status|failureReason|organizationId]`,
+  paiements avant inscription compris (`presignup`). `POST /platform/payments/:id/
+  reconcile` (root) : redemande l'état à Djomy ; payé en totalité ⇒ le paiement est
+  réglé normalement (activation, facture, e-mail) même s'il était `failed`/`expired` ;
+  `409` (`notPaid`, `noTransaction`) sinon ; déjà réglé ⇒ `200`, `outcome =
+  "already_settled"`. Audit `payment.reconciled`.
+- `POST /public/demo-requests` : `{ fullName, email, phone, companyName, companySize,
+  message? }`, 10 par heure et par IP ; `201 { id, received: true }`. E-mail
+  `demo_request` à `DEMO_REQUESTS_EMAIL` (sans adresse : seulement enregistrée).
+  `GET /platform/demo-requests` (`filter[status]`) et `PATCH /:id` (support) :
+  `{ status?, assignedTo? }`, l'assigné doit être un admin plateforme actif.
+- `GET /platform/logs/:kind` (`audit`, `system`, `usage`) : `cursor`, `limit` (≤ 500,
+  100 par défaut), `filter[organizationId|from|to]`, plus `actorUserId|action` (audit),
+  `channel|level` (system), `module` (usage) ; `{ data, meta: { nextCursor } }`.
+- `GET /platform/health` : sondes de `/health/ready`, pilote de file, intégrations
+  (`djomy`, `ai` : `configured` ou `missing`).
 
 ---
 

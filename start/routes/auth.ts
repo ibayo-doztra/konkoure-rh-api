@@ -22,7 +22,10 @@ export function registerAuthRoutes() {
       router
         .group(() => {
           router.post('logout', [AuthController, 'logout']).as('logout')
-          router.post('logout-all', [AuthController, 'logoutAll']).as('logoutAll')
+          router
+            .post('logout-all', [AuthController, 'logoutAll'])
+            .as('logoutAll')
+            .use(middleware.notImpersonating())
           router
             .post('resend-verification', [AuthController, 'resendVerification'])
             .as('resendVerification')
