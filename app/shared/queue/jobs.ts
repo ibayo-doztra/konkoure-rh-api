@@ -197,6 +197,13 @@ export const jobs = {
       return service.write(payload)
     },
   }),
+  'system-logs.purge': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#shared/logging/system_log_service')
+      return service.purge()
+    },
+  }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -223,6 +230,7 @@ export type JobName = keyof typeof jobs
 export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.apply-started', pattern: '5 0 * * *' },
   { job: 'subscriptions.lifecycle', pattern: '0 1 * * *' },
+  { job: 'system-logs.purge', pattern: '15 3 * * *' },
   { job: 'payments.poll-pending', pattern: '*/5 * * * *' },
   { job: 'payments.expire', pattern: '10 * * * *' },
   { job: 'payments.reconcile', pattern: '40 * * * *' },

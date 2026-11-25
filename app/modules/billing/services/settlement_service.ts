@@ -8,6 +8,7 @@ import type Payment from '#models/payment'
 import type { PaymentStatus } from '#models/payment'
 import Plan from '#models/plan'
 import auditService from '#shared/audit/audit_service'
+import systemLogService from '#shared/logging/system_log_service'
 import { dispatchMail } from '#shared/mail/dispatch_mail'
 import queueService from '#shared/queue/queue_service'
 import { withTenant } from '#shared/tenant/with_tenant'
@@ -166,6 +167,13 @@ export class SettlementService {
           { paymentId: payment.id, organizationId: payment.organizationId },
           'payments.reconcile_mismatch'
         )
+        await systemLogService.write({
+          channel: 'payments',
+          level: 'error',
+          message: 'Payment reported paid by Djomy but failed or expired here',
+          organizationId: payment.organizationId,
+          context: { paymentId: payment.id, merchantReference: payment.merchantReference },
+        })
         flagged += 1
       } catch (error) {
         logger.warn({ err: error, paymentId: payment.id }, 'payments.reconcile_failed')
@@ -187,6 +195,13 @@ export class SettlementService {
           payment.merge({ failureReason: 'late_success', rawEvent: remote.raw })
           await payment.useTransaction(trx).save()
           logger.error({ paymentId: payment.id }, 'payments.late_success')
+          await systemLogService.write({
+            channel: 'payments',
+            level: 'error',
+            message: 'Late Djomy confirmation of an expired payment',
+            organizationId: payment.organizationId,
+            context: { paymentId: payment.id, merchantReference: payment.merchantReference },
+          })
           result.outcome = 'late'
         }
         return
@@ -207,6 +222,13 @@ export class SettlementService {
           { paymentId: payment.id, expected: payment.expectedAmount, paid, currency },
           'payments.amount_mismatch'
         )
+        await systemLogService.write({
+          channel: 'payments',
+          level: 'error',
+          message: 'Djomy amount or currency differs from the expected payment',
+          organizationId: payment.organizationId,
+          context: { paymentId: payment.id, expected: payment.expectedAmount, paid, currency },
+        })
       } else {
         payment.merge({ status: 'succeeded', paidAmount: String(paid), failureReason: null })
       }

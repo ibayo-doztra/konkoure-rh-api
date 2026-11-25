@@ -8,6 +8,8 @@ const PlatformPlansController = () =>
   import('#modules/platform/controllers/platform_plans_controller')
 const PlatformUsersController = () =>
   import('#modules/platform/controllers/platform_users_controller')
+const PlatformOperationsController = () =>
+  import('#modules/platform/controllers/platform_operations_controller')
 
 /**
  * `/api/v1/platform/*` — back office (06 §13). `auth` then `platform` (active
@@ -62,6 +64,21 @@ export function registerPlatformRoutes() {
         })
         .prefix('admins')
         .as('admins')
+
+      router.get('settings', [PlatformOperationsController, 'settings']).as('settings.show')
+      router.put('settings', [PlatformOperationsController, 'updateSettings']).as('settings.update')
+      router.get('payments', [PlatformOperationsController, 'payments']).as('payments.index')
+      router
+        .post('payments/:id/reconcile', [PlatformOperationsController, 'reconcile'])
+        .as('payments.reconcile')
+      router
+        .get('demo-requests', [PlatformOperationsController, 'demoRequests'])
+        .as('demoRequests.index')
+      router
+        .patch('demo-requests/:id', [PlatformOperationsController, 'updateDemoRequest'])
+        .as('demoRequests.update')
+      router.get('logs/:kind', [PlatformOperationsController, 'logs']).as('logs')
+      router.get('health', [PlatformOperationsController, 'health']).as('health')
     })
     .prefix('platform')
     .as('platform')

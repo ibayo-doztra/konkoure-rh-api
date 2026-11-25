@@ -1,5 +1,8 @@
 import type Organization from '#models/organization'
+import type DemoRequest from '#models/demo_request'
+import type Payment from '#models/payment'
 import type Plan from '#models/plan'
+import type PlatformSetting from '#models/platform_setting'
 import type PlatformAdmin from '#models/platform_admin'
 import type User from '#models/user'
 import type Subscription from '#models/subscription'
@@ -102,4 +105,61 @@ export function platformAdminDto(admin: PlatformAdmin, user: User | null) {
     level: admin.level,
     createdAt: admin.createdAt.toISO(),
   }
+}
+
+/** A secret setting never leaves the API: its value is `null` (02 §10). */
+export function platformSettingDto(setting: PlatformSetting) {
+  return {
+    key: setting.key,
+    value: setting.isSecret ? null : setting.value,
+    isSecret: setting.isSecret,
+    description: setting.description,
+    updatedAt: setting.updatedAt.toISO(),
+  }
+}
+
+export function platformPaymentDto(payment: Payment) {
+  return {
+    id: payment.id,
+    organizationId: payment.organizationId,
+    merchantReference: payment.merchantReference,
+    providerTransactionId: payment.providerTransactionId,
+    planId: payment.planId,
+    cycle: payment.cycle,
+    method: payment.method,
+    status: payment.status,
+    expectedAmount: Number(payment.expectedAmount),
+    paidAmount: payment.paidAmount === null ? null : Number(payment.paidAmount),
+    currency: payment.currency,
+    failureReason: payment.failureReason,
+    presignup: payment.claimTokenHash !== null,
+    claimedAt: payment.claimedAt?.toISO() ?? null,
+    createdAt: payment.createdAt.toISO(),
+  }
+}
+
+export function demoRequestDto(request: DemoRequest) {
+  return {
+    id: request.id,
+    fullName: request.fullName,
+    email: request.email,
+    phone: request.phone,
+    companyName: request.companyName,
+    companySize: request.companySize,
+    message: request.message,
+    status: request.status,
+    emailStatus: request.emailStatus,
+    assignedTo: request.assignedTo,
+    createdAt: request.createdAt.toISO(),
+  }
+}
+
+/** Journal rows keep their columns, in camelCase; dates in ISO 8601. */
+export function logRowDto(row: Record<string, unknown>) {
+  return Object.fromEntries(
+    Object.entries(row).map(([key, value]) => [
+      key.replace(/_([a-z])/g, (_match, letter: string) => letter.toUpperCase()),
+      value instanceof Date ? value.toISOString() : value,
+    ])
+  )
 }

@@ -1358,6 +1358,30 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   actif ne peut être ni retiré ni rétrogradé (`409 lastRoot`). Audit
   `platform_admin.granted|revoked`.
 
+### Exploitation (décisions du 2026-11-24)
+- `GET /platform/settings` : `[{ key, value, isSecret, description, updatedAt }]`, la
+  valeur d'un réglage secret vaut toujours `null`. `PUT` (root) : `{ settings: [{ key,
+  value }] }`, clés connues seulement (`422`), valeur validée par clé ; audit
+  `platform_setting.updated` (secret masqué). `modules_open_for_testing` (booléen,
+  `false` par défaut) ouvre tous les modules à toutes les organisations, jamais au-delà
+  d'une suspension ou d'une expiration ; effet sous 60 s (cache des droits).
+- `GET /platform/payments` : paginé, `filter[status|failureReason|organizationId]`,
+  paiements avant inscription compris (`presignup`). `POST /platform/payments/:id/
+  reconcile` (root) : redemande l'état à Djomy ; payé en totalité ⇒ le paiement est
+  réglé normalement (activation, facture, e-mail) même s'il était `failed`/`expired` ;
+  `409` (`notPaid`, `noTransaction`) sinon ; déjà réglé ⇒ `200`, `outcome =
+  "already_settled"`. Audit `payment.reconciled`.
+- `POST /public/demo-requests` : `{ fullName, email, phone, companyName, companySize,
+  message? }`, 10 par heure et par IP ; `201 { id, received: true }`. E-mail
+  `demo_request` à `DEMO_REQUESTS_EMAIL` (sans adresse : seulement enregistrée).
+  `GET /platform/demo-requests` (`filter[status]`) et `PATCH /:id` (support) :
+  `{ status?, assignedTo? }`, l'assigné doit être un admin plateforme actif.
+- `GET /platform/logs/:kind` (`audit`, `system`, `usage`) : `cursor`, `limit` (≤ 500,
+  100 par défaut), `filter[organizationId|from|to]`, plus `actorUserId|action` (audit),
+  `channel|level` (system), `module` (usage) ; `{ data, meta: { nextCursor } }`.
+- `GET /platform/health` : sondes de `/health/ready`, pilote de file, intégrations
+  (`djomy`, `ai` : `configured` ou `missing`).
+
 ---
 
 ## 14. Santé

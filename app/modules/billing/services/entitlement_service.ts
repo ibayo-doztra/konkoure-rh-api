@@ -7,6 +7,7 @@ import type { BillingCycle, SubscriptionStatus } from '#models/subscription'
 import { AppException } from '#shared/exceptions/app_exception'
 import { withTenant } from '#shared/tenant/with_tenant'
 import { subscriptionsIn } from '#modules/billing/repositories/subscription_repository'
+import { MODULES_OPEN_FOR_TESTING, platformFlag } from '#shared/platform/platform_settings'
 
 export type ModuleKey =
   | 'hr'
@@ -35,6 +36,19 @@ export interface Entitlements {
   /** A paid plan is still effective, cancellation until its term included. */
   planEffective: boolean
 }
+
+/** Every module of 07 §6.1. */
+export const ALL_MODULES: readonly ModuleKey[] = [
+  'hr',
+  'timeclock',
+  'leaves',
+  'performance',
+  'recruitment',
+  'talents',
+  'settings',
+  'integrations',
+  'api',
+]
 
 const CACHE_TTL_SECONDS = 60
 const PAST_DUE_GRACE_DAYS = 7
@@ -65,17 +79,22 @@ function effectiveStatus(subscription: Subscription, now: DateTime): Subscriptio
 export function computeEntitlements(
   subscription: Subscription,
   plan: Plan,
-  now: DateTime = DateTime.now()
+  now: DateTime = DateTime.now(),
+  options: { openAllModules?: boolean } = {}
 ): Entitlements {
   const status = effectiveStatus(subscription, now)
   const restricted = status === 'suspended' || status === 'expired'
   const trialing = status === 'trialing'
+  // `modules_open_for_testing` opens every module, never past a suspension or expiry.
+  const granted = options.openAllModules
+    ? [...ALL_MODULES]
+    : (subscription.modulesOverride ?? plan.modules)
   return {
     planCode: plan.code,
     planName: plan.name,
     status,
     cycle: subscription.cycle,
-    modules: restricted ? RESTRICTED_MODULES : (subscription.modulesOverride ?? plan.modules),
+    modules: restricted ? RESTRICTED_MODULES : granted,
     readOnlyModules: restricted ? RESTRICTED_MODULES : [],
     maxEmployees: subscription.maxEmployeesOverride ?? plan.maxEmployees,
     aiCreditsPerMonth: plan.aiCreditsPerMonth,
@@ -123,7 +142,9 @@ export class EntitlementService {
       subscriptionsIn(organizationId, trx).current()
     )
     if (!subscription) return null
-    const entitlements = computeEntitlements(subscription, subscription.plan)
+    const entitlements = computeEntitlements(subscription, subscription.plan, DateTime.now(), {
+      openAllModules: await platformFlag(MODULES_OPEN_FOR_TESTING),
+    })
     await this.writeCache(organizationId, entitlements)
     return entitlements
   }
