@@ -1218,7 +1218,9 @@ de relance manuelle.
 `claim_token` (hash en base, valeur renvoyée une seule fois) et
 `claim_expires_at = now() + 7 jours`. Après inscription, l'utilisateur appelle
 `POST /public/payments/:ref/claim` avec `{ claimToken, organizationName }` :
-l'organisation est créée, l'abonnement activé, `claimed_at` renseigné.
+l'organisation est créée, l'abonnement activé, `claimed_at` renseigné. Depuis le
+2026-11-25, `{ claimToken, organizationId }` rattache le paiement à une
+organisation existante dont l'appelant est owner (précisions ci-dessous).
 Un jeton déjà consommé ou expiré renvoie `409 E_CLAIM_INVALID`.
 
 `GET /public/plans` (livré le 2026-11-24, limiteur des pages carrières, 60/min/IP) :
@@ -1240,6 +1242,21 @@ Précisions du 2026-11-24 (limiteur 30 requêtes/min/IP sur `/public/payments`) 
   `expired`, `email`. Crée l'organisation (l'appelant en est owner, sans essai) et
   l'abonnement payé à partir de maintenant, avec sa facture, dans une transaction.
   `201` : même forme que `POST /organizations` (`plan` = code de l'offre payée).
+
+Précisions du 2026-11-25 (organisation existante, décision de l'utilisateur) :
+- `POST /public/payments/:ref/claim` accepte soit `{ claimToken, organizationName }`
+  (création, comportement ci-dessus), soit `{ claimToken, organizationId }`.
+  Exactement l'un des deux, sinon `422 E_VALIDATION` (règle `target`).
+- Avec `organizationId` : l'appelant doit être owner de l'organisation (`403
+  E_FORBIDDEN` s'il en est membre sans être owner ; `404` s'il n'en est pas membre
+  ou si elle est supprimée). Mêmes contrôles du paiement et mêmes `409
+  E_CLAIM_INVALID`. L'abonnement suit la règle du paiement en app (07 §7.5) : même
+  offre et même cycle qu'un abonnement payé en cours (`active`, `past_due`,
+  `canceled`) → la période est prolongée à partir de sa fin ; sinon (essai, expiré,
+  suspendu, autre offre ou cycle) l'abonnement courant est clos et une période
+  payée commence maintenant. Facture de l'organisation, audit `payment.claimed`
+  dans la même transaction. `201` : même forme que `POST /organizations`
+  (`roles` = rôles de l'appelant dans l'organisation, `plan` = code de l'offre payée).
 
 ---
 

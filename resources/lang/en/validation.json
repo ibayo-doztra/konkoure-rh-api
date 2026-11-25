@@ -188,7 +188,8 @@
       "used": "This payment is already bound to an organization.",
       "expired": "The claim code has expired.",
       "email": "This payment was made with another e-mail address.",
-      "notPaid": "This payment is not confirmed yet."
+      "notPaid": "This payment is not confirmed yet.",
+      "target": "Provide either a new organization name or an existing organization."
     }
   },
   "platform": {

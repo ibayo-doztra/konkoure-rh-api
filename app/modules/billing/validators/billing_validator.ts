@@ -58,9 +58,14 @@ export const presignupCheckoutValidator = vine.create({
 
 export const presignupReferenceValidator = vine.create({ params: reference() })
 
-/** POST /public/payments/:ref/claim (06 §11). */
+/**
+ * POST /public/payments/:ref/claim (06 §11): exactly one of `organizationName`
+ * (creates an organization) and `organizationId` (an organization the caller
+ * owns, decision of 2026-11-25); the controller enforces the exclusivity.
+ */
 export const claimValidator = vine.create({
   params: reference(),
   claimToken: vine.string().trim().minLength(10).maxLength(200),
-  organizationName: vine.string().trim().minLength(2).maxLength(120),
+  organizationName: vine.string().trim().minLength(2).maxLength(120).optional(),
+  organizationId: vine.string().uuid().optional(),
 })
