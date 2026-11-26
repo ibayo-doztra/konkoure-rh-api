@@ -17,6 +17,9 @@ export const socialCallbackValidator = vine.create({
   error: vine.string().maxLength(256).optional(),
 })
 
+/** GET /org/recruitment/jobs/:id/social-posts. */
+export const jobSocialPostsValidator = vine.create({ params: params() })
+
 /** POST /org/recruitment/jobs/:id/social-posts. */
 export const createSocialPostsValidator = vine.create({
   params: params(),

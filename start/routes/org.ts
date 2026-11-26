@@ -384,6 +384,9 @@ export function registerOrgRoutes() {
               router.get(':id/qr', [JobsController, 'qr']).as('qr')
               router.post(':id/generate', [JobsController, 'generate']).as('generate')
               router
+                .get(':id/social-posts', [SocialPostsController, 'index'])
+                .as('social_posts.index')
+              router
                 .post(':id/social-posts', [SocialPostsController, 'store'])
                 .as('social_posts.store')
               router

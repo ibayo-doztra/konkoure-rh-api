@@ -22,6 +22,11 @@ export class SocialAccountRepository extends TenantRepository<typeof SocialAccou
       .first()
   }
 
+  /** Accounts among `ids`, whatever their status. */
+  among(ids: string[]) {
+    return this.query().whereIn('id', ids)
+  }
+
   /** Active accounts among `ids`; ids of another organization are simply absent. */
   activeAmong(ids: string[]) {
     return this.query().whereIn('id', ids).where('status', 'active')
@@ -56,6 +61,15 @@ export class SocialPostRepository extends TenantRepository<typeof SocialPost> {
 
   create(data: Partial<SocialPost>) {
     return SocialPost.create({ ...data, organizationId: this.organizationId }, { client: this.trx })
+  }
+
+  /** Publications of an offer, newest first. */
+  forJob(jobId: string, limit: number) {
+    return this.query()
+      .where('job_id', jobId)
+      .orderBy('created_at', 'desc')
+      .orderBy('id', 'desc')
+      .limit(limit)
   }
 }
 
