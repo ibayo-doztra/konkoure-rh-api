@@ -77,7 +77,8 @@ toutes les sessions et journalise `security.password_reset`.
 `is_active = false` bloque immédiatement l'authentification et invalide les
 tokens. La suppression RGPD anonymise `users` (`email` remplacé par
 `deleted+<id>@invalid`, `full_name` vidé) et conserve les journaux d'audit avec
-l'identifiant technique uniquement.
+l'identifiant technique et l'e-mail du compte (`actor_email`), retenu comme trace
+légale (décision du 2026-11-26).
 
 ## 4. Rôles
 
