@@ -1,25 +1,26 @@
-import { readFile } from 'node:fs/promises'
 import type { MultipartFile } from '@adonisjs/core/bodyparser'
-import logger from '@adonisjs/core/services/logger'
-import drive from '@adonisjs/drive/services/main'
-import { diskFor } from '#shared/files/storage_disks'
 import type User from '#models/user'
 import type Organization from '#models/organization'
 import { AppException } from '#shared/exceptions/app_exception'
 import auditService, { type AuditContext } from '#shared/audit/audit_service'
+import fileStorage from '#shared/files/file_storage'
+import { filesIn } from '#shared/files/file_repository'
 import { withTenant } from '#shared/tenant/with_tenant'
 import type { TenantContext } from '#shared/tenant/tenant_context'
-import { newId } from '#shared/utils/crypto'
 import { detectImageType } from '#shared/utils/image_signature'
 import organizations from '#modules/organizations/repositories/organization_repository'
 
 const MAX_LOGO_BYTES = 2 * 1024 * 1024
 
-/** Public bucket of organization logos (docs/backend/08 §6). */
-const logoDisk = () => drive.use(diskFor('public'))
+/** `files.owner_type` of organization logos (`owner_id` = the organization). */
+export const LOGO_OWNER = 'organization_logo'
+
 const keyPrefix = (organizationId: string) => `${organizationId}/organization/${organizationId}/`
 
-/** Logo of the current organization. Storage calls stay outside the transaction. */
+/**
+ * Logo of the current organization, in the public bucket (docs/backend/08 §6),
+ * recorded in the `files` registry. Storage calls stay outside the transaction.
+ */
 export class OrganizationLogoService {
   async replace(
     tenant: TenantContext,
@@ -27,30 +28,39 @@ export class OrganizationLogoService {
     file: MultipartFile,
     audit: AuditContext
   ): Promise<Organization> {
-    if (file.size > MAX_LOGO_BYTES) throw new AppException('E_PAYLOAD_TOO_LARGE')
-    if (!file.tmpPath) throw new AppException('E_BAD_REQUEST')
-
-    const content = await readFile(file.tmpPath)
-    const type = detectImageType(content)
-    if (!type) throw AppException.validation('logo', 'imageType', 'validation.organization.logo')
-
     const { organizationId } = tenant
-    const key = `${keyPrefix(organizationId)}${newId()}.${type.extension}`
-    let logoUrl: string
-    try {
-      await logoDisk().put(key, content, { contentType: type.mime, visibility: 'public' })
-      logoUrl = await logoDisk().getUrl(key)
-    } catch (cause) {
-      throw new AppException('E_DEPENDENCY_UNAVAILABLE', { cause })
-    }
+    const upload = await fileStorage.check(file, MAX_LOGO_BYTES, detectImageType, () =>
+      AppException.validation('logo', 'imageType', 'validation.organization.logo')
+    )
+    const key = fileStorage.key(
+      organizationId,
+      'organization',
+      organizationId,
+      upload.type.extension
+    )
+    const stored = await fileStorage.put('public', key, upload)
 
-    let previousUrl: string | null = null
+    let previous: string[] = []
     let organization: Organization
     try {
+      const logoUrl = await fileStorage.publicUrl(key)
       organization = await withTenant(organizationId, async (trx) => {
+        const files = filesIn(organizationId, trx)
         const locked = await organizations.findActiveForUpdate(organizationId, trx)
         if (!locked) throw new AppException('E_NOT_FOUND')
-        previousUrl = locked.logoUrl
+        const previousUrl = locked.logoUrl
+        const rows = await files.ownedBy(LOGO_OWNER, organizationId)
+        const registered = rows.map((row) => row.path)
+        // A logo stored before the registry only exists through its URL.
+        const legacy = this.keyOf(organizationId, previousUrl)
+        previous = [...new Set(legacy ? [...registered, legacy] : registered)]
+        await files.forgetPaths(registered)
+        await files.create({
+          ...stored,
+          ownerType: LOGO_OWNER,
+          ownerId: organizationId,
+          uploadedBy: actor.id,
+        })
         locked.merge({ logoUrl, updatedBy: actor.id })
         await organizations.save(locked, trx)
         await auditService.record(
@@ -68,12 +78,11 @@ export class OrganizationLogoService {
         return locked
       })
     } catch (error) {
-      await this.deleteQuietly(key)
+      await fileStorage.deleteQuietly('public', key)
       throw error
     }
 
-    const previousKey = this.keyOf(organizationId, previousUrl)
-    if (previousKey) await this.deleteQuietly(previousKey)
+    for (const path of previous) await fileStorage.deleteQuietly('public', path)
     return organization
   }
 
@@ -81,15 +90,6 @@ export class OrganizationLogoService {
   private keyOf(organizationId: string, url: string | null) {
     const start = url?.indexOf(keyPrefix(organizationId)) ?? -1
     return url && start >= 0 ? url.slice(start).split('?')[0] : null
-  }
-
-  /** A leftover file is harmless: the request must not fail because of it. */
-  private async deleteQuietly(key: string) {
-    try {
-      await logoDisk().delete(key)
-    } catch (error) {
-      logger.warn({ err: error, key }, 'organization logo cleanup failed')
-    }
   }
 }
 
