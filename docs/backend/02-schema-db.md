@@ -581,7 +581,8 @@ Partitionnée par mois. Rétention 24 mois puis archivage froid.
 `module text NULL`, `path text NULL`, `metadata jsonb NOT NULL DEFAULT '{}'`.
 Écriture asynchrone (file), jamais bloquante. Créée par 0102 (2026-11-24), insertion
 seule ; seul `kind = 'ai'` est émis pour l'instant (`metadata` : `task`, `version`,
-`cost`).
+`cost`). Partitionnée par mois sur `created_at` depuis 0141 (2026-11-26), clé primaire
+`(id, created_at)`.
 
 ### `system_logs`
 `id`, `channel text NOT NULL`, `level text NOT NULL`, `message text NOT NULL`,
