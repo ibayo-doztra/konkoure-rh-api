@@ -17,11 +17,13 @@ export function socialAccountDto(account: SocialAccount) {
   }
 }
 
-export function socialPostDto(post: SocialPost) {
+/** `accountName`: null once the account was disconnected. */
+export function socialPostDto(post: SocialPost, accountName: string | null) {
   return {
     id: post.id,
     jobId: post.jobId,
     socialAccountId: post.socialAccountId,
+    accountName,
     provider: post.provider,
     content: post.content,
     status: post.status,

@@ -937,7 +937,7 @@ la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 | POST | `/org/recruitment/webhooks/ping` | O H |
 | GET/POST | `/org/integrations/social/accounts` | O H |
 | DELETE | `/org/integrations/social/accounts/:id` | O H |
-| POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
+| GET/POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
 | POST | `/org/recruitment/jobs/:id/social-posts/suggest` | O H R |
 | GET | `/api/v1/oauth/social/:provider/callback` | public (retour OAuth) |
 
@@ -973,12 +973,17 @@ le module `integrations` ; la publication, `recruitment` et `integrations`.
 - `POST /org/recruitment/jobs/:id/social-posts` (O H R) : `{ accountIds: uuid[]
   (1 à 10), content (1 à 3000) }` → `202 { data: [post] }`, une publication `pending`
   par compte, envoyée par la file `outbound` avec le lien de l'offre sur la page
-  carrières. `post` : `{ id, jobId, socialAccountId, provider, content, status,
+  carrières. `post` : `{ id, jobId, socialAccountId, accountName (`null` si le compte est
+  supprimé), provider, content, status,
   externalPostId, externalUrl, errorMessage, publishedAt, createdAt }`. Offre non
   publiée ⇒ `409` (`rule = "notPublished"`) ; compte inconnu, d'une autre
   organisation ou non `active` ⇒ `422` (`field = "accountIds"`). Un refus du réseau
   passe la publication en `failed` avec son message ; un jeton expiré passe aussi
   le compte en `expired` et notifie les O H (`social_account.expired`).
+- `GET /org/recruitment/jobs/:id/social-posts` (O H R, ajouté le 2026-11-26) :
+  `{ data: [post] }`, les publications de l'offre du plus récent au plus ancien
+  (100 au plus), pour suivre `pending → published | failed` (`externalUrl`,
+  `publishedAt`, `errorMessage`). Offre d'une autre organisation ⇒ `404`.
 - `POST /org/recruitment/jobs/:id/social-posts/suggest` (O H R) : `{ provider,
   language? }` → `{ data: { content } }`, texte et hashtags proposés par l'IA
   (`social.post`, 1 crédit), sans URL ni salaire, non enregistré.

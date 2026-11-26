@@ -29,6 +29,8 @@ import {
 
 /** LinkedIn tokens are renewed when they expire within this window (08 §8). */
 const REFRESH_WITHIN_DAYS = 7
+/** Publications listed for an offer (a handful per network in practice). */
+const LIST_LIMIT = 100
 
 export interface PublishJob {
   organizationId: string
@@ -74,19 +76,18 @@ export class SocialPostService {
         }
       }
       const repository = socialPostsIn(organizationId, trx)
-      const created: SocialPost[] = []
+      const created: Array<{ post: SocialPost; accountName: string | null }> = []
       for (const account of accounts) {
-        created.push(
-          await repository.create({
-            jobId,
-            socialAccountId: account.id,
-            provider: account.provider,
-            content: input.content,
-            mediaUrls: [],
-            status: 'pending',
-            createdBy: actor.id,
-          })
-        )
+        const post = await repository.create({
+          jobId,
+          socialAccountId: account.id,
+          provider: account.provider,
+          content: input.content,
+          mediaUrls: [],
+          status: 'pending',
+          createdBy: actor.id,
+        })
+        created.push({ post, accountName: account.accountName })
       }
       await auditService.record(
         trx,
@@ -100,10 +101,29 @@ export class SocialPostService {
       )
       return created
     })
-    for (const post of posts) {
+    for (const { post } of posts) {
       await queueService.dispatch('social.publish', { organizationId, postId: post.id })
     }
     return posts
+  }
+
+  /** `GET /org/recruitment/jobs/:id/social-posts`: their state, newest first (2026-11-26). */
+  async list(tenant: TenantContext, jobId: string) {
+    const { organizationId } = tenant
+    await this.requireIntegrations(organizationId, true)
+    return withTenant(organizationId, async (trx) => {
+      await jobsIn(organizationId, trx).findOrFail(jobId)
+      const posts = await socialPostsIn(organizationId, trx).forJob(jobId, LIST_LIMIT)
+      const accountIds = [
+        ...new Set(posts.map((post) => post.socialAccountId).filter((id) => id !== null)),
+      ]
+      const accounts = await socialAccountsIn(organizationId, trx).among(accountIds)
+      const names = new Map(accounts.map((account) => [account.id, account.accountName]))
+      return posts.map((post) => ({
+        post,
+        accountName: post.socialAccountId ? (names.get(post.socialAccountId) ?? null) : null,
+      }))
+    })
   }
 
   /**
@@ -283,9 +303,9 @@ export class SocialPostService {
     )
   }
 
-  private async requireIntegrations(organizationId: string) {
+  private async requireIntegrations(organizationId: string, readOnly = false) {
     const entitlements = await entitlementService.resolve(organizationId)
-    const refused = accessError(entitlements, 'integrations', false)
+    const refused = accessError(entitlements, 'integrations', readOnly)
     if (refused) throw refused
   }
 }

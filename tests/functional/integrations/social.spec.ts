@@ -274,6 +274,10 @@ test.group('Social accounts', (group) => {
 
     await expectStatus(orgCall(client, 'GET', accountsPath, owner, org), 403)
     await expectStatus(
+      orgCall(client, 'GET', `/recruitment/jobs/${job.id}/social-posts`, owner, org),
+      403
+    )
+    await expectStatus(
       orgCall(client, 'POST', `/recruitment/jobs/${job.id}/social-posts`, owner, org).json({
         accountIds: [job.id],
         content: 'Nous recrutons',
@@ -395,6 +399,67 @@ test.group('POST /org/recruitment/jobs/:id/social-posts', (group) => {
       assert.equal(facebookCall.get('link'), link)
       assert.equal(facebookCall.get('access_token'), 'p1-token')
       assert.equal(facebookCall.get('message'), 'Nous recrutons un comptable !')
+    } finally {
+      fake.restore()
+    }
+  })
+
+  test('GET lists the publications of the offer with their final state', async ({
+    client,
+    assert,
+  }) => {
+    const fake = fakeSocial({ linkedinExpired: true })
+    try {
+      const org = await createRecruitingOrganization()
+      const other = await createRecruitingOrganization('Autre')
+      const owner = await hrSession(client, org, ['owner'])
+      const recruiter = await hrSession(client, org, ['recruiter'])
+      const employee = await hrSession(client, org, ['employee'])
+      const stranger = await hrSession(client, other, ['owner'])
+      await connect(client, owner, org, 'linkedin')
+      await connect(client, owner, org, 'facebook')
+      const accounts = await SocialAccount.query().where('organization_id', org.id)
+      const ids = accounts.map((account) => account.id)
+      const job = await createPublishedJob(org)
+      const empty = await createPublishedJob(org)
+      const path = `/recruitment/jobs/${job.id}/social-posts`
+
+      await expectStatus(
+        orgCall(client, 'POST', path, recruiter, org).json({ accountIds: ids, content: 'Go' }),
+        202
+      )
+      const pending = await expectStatus(orgCall(client, 'GET', path, recruiter, org), 200)
+      assert.deepEqual(
+        pending.body().data.map((post: { status: string }) => post.status),
+        ['pending', 'pending', 'pending']
+      )
+
+      await fake.drain()
+      const done = await expectStatus(orgCall(client, 'GET', path, recruiter, org), 200)
+      const byProvider = (provider: string) =>
+        done.body().data.filter((post: { provider: string }) => post.provider === provider)
+      assert.lengthOf(byProvider('facebook'), 2)
+      for (const post of byProvider('facebook')) {
+        assert.equal(post.status, 'published')
+        assert.match(post.externalUrl, /^https:\/\/www\.facebook\.com\//)
+        assert.isNotNull(post.publishedAt)
+      }
+      assert.sameMembers(
+        byProvider('facebook').map((post: { accountName: string }) => post.accountName),
+        ['Page Un', 'Page Deux']
+      )
+      const [linkedin] = byProvider('linkedin')
+      assert.equal(linkedin.accountName, 'Doztra SA')
+      assert.equal(linkedin.status, 'failed')
+      assert.include(linkedin.errorMessage, 'Expired access token')
+
+      const none = await expectStatus(
+        orgCall(client, 'GET', `/recruitment/jobs/${empty.id}/social-posts`, owner, org),
+        200
+      )
+      assert.deepEqual(none.body().data, [])
+      await expectStatus(orgCall(client, 'GET', path, employee, org), 403)
+      await expectStatus(orgCall(client, 'GET', path, stranger, other), 404)
     } finally {
       fake.restore()
     }
