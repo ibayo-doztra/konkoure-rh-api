@@ -362,8 +362,21 @@ factory ne crée d'organisation implicite.
 `konkoure_app` et `konkoure_worker` sont créés par `0004`, avec des privilèges par
 défaut sur les nouvelles tables et séquences. Chaque table tenant appelle
 `SELECT enable_tenant_rls('<table>')` dans sa migration. Si le rôle migrateur n'a ni
-`CREATEROLE` ni `BYPASSRLS`, ces rôles doivent exister avant. `0140` reste à écrire
-pour `konkoure_readonly` et les révocations des tables à venir.
+`CREATEROLE` ni `BYPASSRLS`, ces rôles doivent exister avant.
+
+`0140` (décisions du 2026-11-26) :
+- crée `konkoure_readonly` (`LOGIN BYPASSRLS`, lecture de toutes les organisations), avec
+  `SELECT` sur toutes les tables, tables futures comprises (privilèges par défaut), sauf
+  `users`, `auth_access_tokens`, `auth_refresh_tokens`, `social_accounts`, `payments`,
+  `password_reset_tokens`, `invitations`, `device_tokens`, `platform_settings` et
+  `webhook_receipts` ;
+- retire de nouveau `UPDATE` et `DELETE` sur les tables en insertion seule (`audit_logs`,
+  `usage_events`, `candidate_events`, `leave_balance_ledger`, `nfc_badge_events`) aux
+  rôles `konkoure_app` et `konkoure_worker` ;
+- ajoute `purge_append_only_rows(org uuid)` (`SECURITY DEFINER`, exécutable par
+  `konkoure_worker` seulement) : seul chemin de suppression de ces tables, utilisé par la
+  purge des organisations ; refuse toute organisation non supprimée depuis plus de
+  30 jours ou déjà purgée. `audit_logs` est conservée par la purge (06 §3).
 
 ```sql
 -- Rôle applicatif : ni superuser, ni owner des tables

@@ -56,6 +56,14 @@ export const PURGED_TABLES = [
  * subscriptions they point to, audit logs (24 months, 05 §13) and system logs
  * (30 days, purged on their own).
  */
+/** Insert-only tables (0140): emptied by `purge_append_only_rows()`. */
+const APPEND_ONLY_TABLES: ReadonlySet<string> = new Set([
+  'candidate_events',
+  'nfc_badge_events',
+  'leave_balance_ledger',
+  'usage_events',
+])
+
 export const KEPT_TABLES = [
   'payments',
   'invoices',
@@ -94,10 +102,22 @@ export class OrganizationPurgeRepository {
       .first()
   }
 
-  /** Deletes the tenant rows; returns the number of rows per table. */
+  /**
+   * Deletes the tenant rows; returns the number of rows per table. The
+   * insert-only tables go through `purge_append_only_rows()` (0140), the only
+   * path allowed to delete from them, which checks the organization is due.
+   */
   async deleteTenantRows(organizationId: string, trx: TransactionClientContract) {
     const counts: Record<string, number> = {}
+    const appendOnly = await trx.rawQuery<{ rows: Array<{ counts: Record<string, number> }> }>(
+      'SELECT purge_append_only_rows(?) AS counts',
+      [organizationId]
+    )
+    for (const [table, count] of Object.entries(appendOnly.rows[0].counts)) {
+      if (count > 0) counts[table] = count
+    }
     for (const table of PURGED_TABLES) {
+      if (APPEND_ONLY_TABLES.has(table)) continue
       const result = await trx.rawQuery(`DELETE FROM ${table} WHERE organization_id = ?`, [
         organizationId,
       ])

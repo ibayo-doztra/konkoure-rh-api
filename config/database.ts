@@ -88,6 +88,7 @@ const dbConfig = defineConfig({
           'audit_logs_default',
           'time_logs_default',
           ...monthlyPartitions('time_logs'),
+          ...monthlyPartitions('audit_logs'),
         ],
       },
       debug: app.inDev,
