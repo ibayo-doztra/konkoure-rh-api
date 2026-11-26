@@ -990,7 +990,7 @@ export class OkrSchema extends BaseModel {
 }
 
 export class OrganizationSchema extends BaseModel {
-  static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
+  static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'purgedAt', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns
   @column()
   declare countryCode: string
@@ -1012,6 +1012,8 @@ export class OrganizationSchema extends BaseModel {
   declare name: string
   @column()
   declare performanceModel: 'classic' | 'sap'
+  @column.dateTime()
+  declare purgedAt: DateTime | null
   @column()
   declare settings: Record<string, unknown>
   @column()

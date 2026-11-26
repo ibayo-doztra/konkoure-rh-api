@@ -256,6 +256,15 @@ En-tête `X-Organization-Id` absent ou non uuid ⇒ `400 E_BAD_REQUEST`
   signature ; SVG refusé (05 §3). Plus de 2 Mo ⇒ `413 E_PAYLOAD_TOO_LARGE`.
 - `DELETE` `{ confirmName }` → `204`. Nom différent ⇒ `422`,
   `details[0].rule = "mismatch"`. L'accès cesse immédiatement.
+  Décisions du 2026-11-26 : pendant 30 jours, un `root` peut annuler la suppression
+  (`POST /platform/organizations/:id/restore`, §13). Ensuite, la tâche
+  `organizations:purge` supprime les fichiers de l'organisation (préfixe `<orgId>/` des
+  deux espaces) et toutes ses lignes tenant, **sauf** les paiements, les factures (et
+  leurs PDF, sous `invoices/<orgId>/`), les abonnements et les journaux d'audit. La ligne
+  `organizations` reste, anonymisée (nom `Organisation supprimée`, slug
+  `deleted-<id>`, logo et réglages effacés) avec `purged_at` ; journal
+  `organization.purged` (acteur `system`, ancien nom et slug). Les comptes
+  utilisateurs restent, seuls leurs rôles dans l'organisation disparaissent.
 - Journaux `organization.updated`, `organization.settings_updated`,
   `organization.logo_updated`, `organization.deleted`.
 
@@ -1331,6 +1340,7 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 | GET | `/platform/organizations/:id` | support | détail complet, usage |
 | PATCH | `/platform/organizations/:id/subscription` | **root** | plan, statut, cycle, échéance, overrides |
 | POST | `/platform/organizations/:id/suspend` \| `/reactivate` | **root** |
+| POST | `/platform/organizations/:id/restore` | **root** |
 | GET/POST | `/platform/plans` | lecture support / écriture **root** |
 | PATCH/DELETE | `/platform/plans/:id` | **root** |
 | GET | `/platform/users` | support | recherche globale |
@@ -1362,9 +1372,11 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   en cours (`active`, `past_due`, `canceled` avant échéance) ; churn = offres payantes
   dont l'accès a pris fin dans les 30 derniers jours.
 - `GET /platform/organizations` : `page`, `perPage`, `q` (nom ou slug),
-  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code) ;
-  lignes `{ id, name, slug, createdAt, employees, subscription: { status, cycle,
-  planCode, planName, trialEndsAt, currentPeriodEnd } | null }`.
+  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code),
+  `filter[deleted]` (booléen, 2026-11-26 : les organisations supprimées non encore
+  purgées au lieu des actives) ; lignes `{ id, name, slug, createdAt, deletedAt,
+  employees, subscription: { status, cycle, planCode, planName, trialEndsAt,
+  currentPeriodEnd } | null }`.
 - `GET /platform/organizations/:id` : organisation, `subscription` (forme de
   `GET /org/billing/subscription` + `storedStatus`, `maxEmployeesOverride`,
   `modulesOverride`), `usage`, `counts: { members, employees }`, `owners: [{ id,
@@ -1374,6 +1386,11 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   des droits invalidé. `POST suspend` : `suspended` (`hr` en lecture seule), `409` si
   déjà suspendu ou expiré ; `POST reactivate` : depuis `suspended` seulement, statut
   recalculé depuis l'échéance (`409` sinon). Réponse : le détail.
+- `POST /platform/organizations/:id/restore` (root, 2026-11-26) : annule un `DELETE /org`
+  dans les 30 jours (`deleted_at` remis à `null`, journal `platform.organization_restored`,
+  cache des droits invalidé). `409` `rule = "notDeleted"` pour une organisation active,
+  `rule = "purged"` après 30 jours ou après la purge ; `404` si inconnue. Réponse : le
+  détail, qui porte aussi `deletedAt` et `purgedAt`.
 - `GET /platform/plans` : toutes les offres, supprimées comprises (`planDto` +
   `priceGnf`, `explicitYearlyPriceGnf`, `sortOrder`, `isPublic`, `deletedAt`).
   `POST` (root) : `{ code (a-z, 0-9, -, _), name, priceGnf, priceYearlyGnf?,
