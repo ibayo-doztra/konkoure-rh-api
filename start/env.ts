@@ -103,6 +103,12 @@ export default await Env.create(new URL('../', import.meta.url), {
   AI_API_KEY: Env.schema.secret.optional(),
   AI_MODEL: Env.schema.string.optional(),
 
+  // Métriques Prometheus (01 §7, 09 §9, décision du 2026-11-26) : serveur HTTP séparé,
+  // jamais exposé par le proxy, sans authentification. Désactivé par défaut.
+  METRICS_ENABLED: Env.schema.boolean.optional(),
+  METRICS_HOST: Env.schema.string.optional({ format: 'host' }),
+  METRICS_PORT: Env.schema.number.optional(),
+
   // E-mail (Resend). Sans clé, les e-mails ne partent pas (dev local).
   MAIL_MAILER: Env.schema.enum(['resend'] as const),
   MAIL_FROM_NAME: Env.schema.string(),

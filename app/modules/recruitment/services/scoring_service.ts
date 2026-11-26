@@ -18,6 +18,7 @@ import { webhookConfigIn } from '#modules/recruitment/repositories/webhook_confi
 import webhookConfigService from '#modules/recruitment/services/webhook_config_service'
 import { COVER_LETTER_KEY, CV_KEY } from '#modules/recruitment/candidate_files'
 import { normalizeN8nResponse, type ScoringResult } from '#modules/recruitment/scoring/n8n_response'
+import { webhookRejections } from '#shared/metrics/metrics'
 
 /** Signed links sent to n8n last one hour (07 §4.4, 08 §6). */
 const N8N_URL_TTL_SECONDS = 60 * 60
@@ -193,6 +194,7 @@ export class ScoringService {
       Math.abs(Date.now() / 1000 - timestamp) <= MAX_CLOCK_SKEW_SECONDS
     if (!secret || !fresh || !this.signatureMatches(rawBody, secret, input.signature)) {
       logger.warn({ organizationId, candidateId, fresh }, 'n8n.scoring_signature_rejected')
+      webhookRejections.inc({ provider: 'n8n' })
       return 'invalid_signature'
     }
 

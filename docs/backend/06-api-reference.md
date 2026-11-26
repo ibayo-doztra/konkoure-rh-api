@@ -1574,7 +1574,7 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
 |---|---|---|
 | GET | `/health` | — | `{ status:'ok', version, uptime }` |
 | GET | `/health/ready` | — | `200` ou `503`, `{ status, checks: { database, redis, migrations } }` |
-| GET | `/metrics` | réseau interne | format Prometheus |
+| GET | `/metrics` | réseau interne | format Prometheus, serveur séparé (09 §9) |
 
 ## Endpoints complémentaires requis par le frontend
 Format, pagination et erreurs identiques au reste du document.

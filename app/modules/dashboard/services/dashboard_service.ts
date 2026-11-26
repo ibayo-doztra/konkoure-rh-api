@@ -20,6 +20,7 @@ import {
   previousPeriodBounds,
   type DashboardPeriod,
 } from '#modules/dashboard/dashboard_rules'
+import { recordCacheLookup } from '#shared/metrics/metrics'
 
 /** Cache of 06 §3. */
 const CACHE_TTL_SECONDS = 5 * 60
@@ -109,6 +110,7 @@ export class DashboardService {
       const flags = `${seesRecruitment ? ':rec' : ''}${seesPayroll ? ':pay' : ''}`
       const cacheKey = `dash:${CACHE_VERSION}:${organizationId}:${period}:${key}${flags}`
       const cached = await this.readCache(cacheKey)
+      recordCacheLookup('dashboard', cached !== null)
       if (cached) return cached
 
       const timezone = organization.timezone

@@ -24,6 +24,7 @@ import djomyClient, {
 } from '#modules/billing/services/djomy_client'
 import { PaymentSucceededMail } from '#modules/billing/mails/payment_mails'
 import { activatePaidPeriod } from '#modules/billing/services/paid_period'
+import { webhookRejections } from '#shared/metrics/metrics'
 
 export const DJOMY_PROVIDER = 'djomy'
 /** A payment still pending after 30 minutes expires (07 §7.6). */
@@ -52,6 +53,7 @@ export class SettlementService {
       !djomyClient.verifyWebhook(input.rawBody, input.signature)
     ) {
       logger.warn('djomy.webhook_signature_rejected')
+      webhookRejections.inc({ provider: 'djomy' })
       return 'invalid_signature'
     }
     let body: unknown = null

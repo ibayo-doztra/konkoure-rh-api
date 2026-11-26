@@ -81,7 +81,9 @@ définie avec `NODE_ENV=production`. Les en-têtes `Retry-After`, `X-RateLimit-L
 `GOOGLE_MAPS_API_KEY` (serveur, géocodage inverse — optionnel).
 
 ### Observabilité
-`OTEL_EXPORTER_OTLP_ENDPOINT`, `SENTRY_DSN`, `METRICS_ENABLED`.
+`OTEL_EXPORTER_OTLP_ENDPOINT`, `SENTRY_DSN`, `METRICS_ENABLED`, `METRICS_HOST`
+(défaut `127.0.0.1`, `0.0.0.0` dans un conteneur), `METRICS_PORT` (défaut 9464, jamais
+publié par le proxy : seul Prometheus, sur le réseau interne, y accède).
 
 > Aucune variable ne porte de valeur par défaut secrète. Aucun `.env` n'est
 > déployé en production : les valeurs viennent du gestionnaire de secrets.
