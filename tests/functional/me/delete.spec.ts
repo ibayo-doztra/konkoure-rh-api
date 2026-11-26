@@ -90,9 +90,9 @@ test.group('DELETE /api/v1/me', (group) => {
       .where('action', 'user.deleted')
       .where('target_id', user.id)
       .firstOrFail()
-    assert.isNull(audit.actorEmail)
+    // The e-mail stays in the audit log as a legal trace (decision of 2026-11-26).
+    assert.equal(audit.actorEmail, member.user.email)
     assert.isNull(audit.organizationId)
-    assert.notInclude(JSON.stringify(audit.afterData), member.user.email)
 
     // Every session has ended and the old e-mail no longer signs in.
     await expectStatus(client.get('/api/v1/me').bearerToken(member.accessToken), 401)
