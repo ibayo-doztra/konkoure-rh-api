@@ -122,6 +122,19 @@ export class QueueService {
     return queue
   }
 
+  /** Depth of every queue and age of its oldest waiting job (metrics, 09 §9). */
+  async stats() {
+    const now = Date.now()
+    const result = []
+    for (const name of Object.keys(QUEUES) as QueueName[]) {
+      const queue = this.queue(name)
+      const counts = await queue.getJobCounts('waiting', 'active', 'delayed', 'failed')
+      const [oldest] = await queue.getJobs(['waiting'], 0, 0, true)
+      result.push({ queue: name, counts, oldestWaitingMs: oldest ? now - oldest.timestamp : null })
+    }
+    return result
+  }
+
   /** Worker process (`node ace queue:work`). */
   startWorkers(names: QueueName[] = Object.keys(QUEUES) as QueueName[]): Worker[] {
     return names.map((name) => {
