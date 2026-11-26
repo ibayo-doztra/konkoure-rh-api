@@ -195,6 +195,8 @@
   "platform": {
     "notSuspendable": "This subscription is already suspended or expired.",
     "notSuspended": "Only a suspended subscription can be reactivated.",
+    "notDeleted": "This organization is not deleted.",
+    "purged": "The 30-day period is over: this organization is purged or being purged.",
     "planCodeTaken": "A plan already has this code.",
     "planInUse": "This plan is still used by a subscription.",
     "self": "This action does not apply to your own account.",

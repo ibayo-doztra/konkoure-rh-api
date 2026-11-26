@@ -36,6 +36,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 | 01h00 | `subscriptions:lifecycle` | Fin d'essai, échéances, `past_due`, `expired`, descente programmée, notification `trial.ending` J−7/J−1 aux owners (une fois par échéance) |
 | 02h00 | `contracts:expiring` | Notifie les contrats arrivant à terme dans 30 jours |
 | 03h00 | `retention:purge` | Applique les durées de rétention (05 §13) |
+| 03h10 | `organizations:purge` | Purge les organisations supprimées depuis plus de 30 jours (06 §3) |
 | 03h30 | `partitions:ensure` | Crée 3 mois de partitions à l'avance, détache celles > 24 mois |
 | 04h00 | `usage:rollup` | Agrège `usage_events` du jour |
 | 23h59 | `attendance:close-day` | Clôt la journée, détecte `missing_out` |

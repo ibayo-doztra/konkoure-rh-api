@@ -31,6 +31,7 @@ export function registerPlatformRoutes() {
           router
             .post(':id/reactivate', [PlatformOrganizationsController, 'reactivate'])
             .as('reactivate')
+          router.post(':id/restore', [PlatformOrganizationsController, 'restore']).as('restore')
         })
         .prefix('organizations')
         .as('organizations')

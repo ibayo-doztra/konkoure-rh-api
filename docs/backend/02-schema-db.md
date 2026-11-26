@@ -169,6 +169,7 @@ Index : `(user_id, revoked_at)`, `(family_id)`, `(expires_at)`.
 | `performance_model` | `performance_model NOT NULL DEFAULT 'classic'` | |
 | `settings` | `jsonb NOT NULL DEFAULT '{}'` | préférences libres (voir §11) |
 | `deleted_at` | `timestamptz NULL` | |
+| `purged_at` | `timestamptz NULL` | purge à 30 jours faite (migration 0117, 2026-11-26) |
 
 ### `user_roles`
 | Colonne | Type |

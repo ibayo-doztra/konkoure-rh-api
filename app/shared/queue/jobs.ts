@@ -204,6 +204,14 @@ export const jobs = {
       return service.purge()
     },
   }),
+  'organizations.purge': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } =
+        await import('#modules/organizations/services/organization_purge_service')
+      return service.run()
+    },
+  }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -242,6 +250,7 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
   { job: 'contracts.expiring', pattern: '0 2 * * *' },
   { job: 'notifications.purge', pattern: '0 3 * * *' },
+  { job: 'organizations.purge', pattern: '10 3 * * *' },
   { job: 'partitions.ensure', pattern: '30 3 * * *' },
   { job: 'attendance.consolidate', pattern: '*/15 * * * *' },
   { job: 'attendance.close-day', pattern: '59 23 * * *' },
