@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import meService from '#modules/users/services/me_service'
+import personalDataExportService from '#modules/users/services/personal_data_export_service'
 import accountDeletionService from '#modules/users/services/account_deletion_service'
 import passwordService from '#modules/auth/services/password_service'
 import {
@@ -75,6 +76,16 @@ export default class MeController {
   async organizations(ctx: HttpContext) {
     const rows = await meService.organizations(ctx.auth.getUserOrFail())
     return { data: rows.map(organizationDto) }
+  }
+
+  @ApiOperation({ summary: 'Export my personal data (GDPR, asynchronous)' })
+  async export(ctx: HttpContext) {
+    const result = await personalDataExportService.request(
+      ctx.auth.getUserOrFail(),
+      auditContext(ctx)
+    )
+    ctx.response.status(202)
+    return ctx.serialize(result)
   }
 
   @ApiOperation({ summary: 'Delete my account (GDPR anonymization)' })

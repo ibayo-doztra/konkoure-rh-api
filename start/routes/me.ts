@@ -22,6 +22,7 @@ export function registerMeRoutes() {
         .delete('sessions/:id', [MeController, 'revokeSession'])
         .as('revokeSession')
         .use(middleware.notImpersonating())
+      router.get('export', [MeController, 'export']).as('export').use(middleware.notImpersonating())
       router.get('organizations', [MeController, 'organizations']).as('organizations')
       // Notifications of the current organization: `X-Organization-Id` is required.
       router

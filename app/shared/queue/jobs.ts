@@ -7,6 +7,7 @@ import type { ExportJob } from '#modules/hr/services/employee_export_service'
 import type { TimeLogExportJob } from '#modules/timeclock/services/time_log_export_service'
 import type { UsageRecord } from '#modules/billing/services/ai_credit_service'
 import type { ScoreJob } from '#modules/recruitment/services/scoring_service'
+import type { PersonalDataExportJob } from '#modules/users/services/personal_data_export_service'
 import type { PublishJob } from '#modules/integrations/services/social_post_service'
 
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
@@ -78,6 +79,14 @@ export const jobs = {
     handle: async (payload) => {
       const { default: service } =
         await import('#modules/timeclock/services/time_log_export_service')
+      return service.build(payload)
+    },
+  }),
+  'users.export': defineJob<PersonalDataExportJob>({
+    queue: 'maintenance',
+    handle: async (payload) => {
+      const { default: service } =
+        await import('#modules/users/services/personal_data_export_service')
       return service.build(payload)
     },
   }),
