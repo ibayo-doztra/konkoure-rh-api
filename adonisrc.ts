@@ -76,6 +76,7 @@ export default defineConfig({
     () => import('#start/kernel'),
     () => import('#start/validator'),
     () => import('#start/queue'),
+    { file: () => import('#start/metrics'), environment: ['web'] },
   ],
 
   /*

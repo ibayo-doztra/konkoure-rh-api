@@ -3,7 +3,7 @@ import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 
 /** Monthly partitioned tables kept ahead by `partitions:ensure` (docs/backend/09 §4). */
-const TABLES = ['time_logs'] as const
+const TABLES = ['time_logs', 'audit_logs', 'usage_events'] as const
 const MONTHS_AHEAD = 3
 
 /**

@@ -1,5 +1,6 @@
 import OpenAI from 'openai'
 import logger from '@adonisjs/core/services/logger'
+import { aiCalls, aiCredits } from '#shared/metrics/metrics'
 import { AppException } from '#shared/exceptions/app_exception'
 import env from '#start/env'
 import aiCreditService from '#modules/billing/services/ai_credit_service'
@@ -75,11 +76,14 @@ export class AiService {
           kind: 'ai',
           metadata: { task: task.name, version: task.version, cost: 1, attempts: attempt },
         })
+        aiCalls.inc({ task: task.name, outcome: 'success' })
+        aiCredits.inc()
         return output
       } catch (error) {
         logger.warn({ err: error, task: task.name, attempt }, 'ai.call_failed')
       }
     }
+    aiCalls.inc({ task: task.name, outcome: 'failure' })
     await aiCreditService.refund(reservation)
     throw new AppException('E_AI_UNAVAILABLE')
   }

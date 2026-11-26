@@ -84,7 +84,16 @@ export default {
       },
     },
     attendance_days: {
-      columns: { anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate'` } },
+      columns: {
+        anomaly: { tsType: `'missing_out' | 'out_of_zone' | 'duplicate' | 'late'` },
+      },
+    },
+    work_schedules: {
+      columns: {
+        weekly_pattern: {
+          tsType: `Partial<Record<'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun', Array<{ start: string; end: string }>>>`,
+        },
+      },
     },
     jobs: {
       columns: {

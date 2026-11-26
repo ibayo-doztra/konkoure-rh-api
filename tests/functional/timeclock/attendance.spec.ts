@@ -190,7 +190,7 @@ test.group('GET /org/timeclock/attendance', (group) => {
     const tooLong = await expectStatus(call('?filter[from]=2026-01-01&filter[to]=2026-06-01'), 422)
     assert.equal(errorOf(tooLong).details[0].rule, 'range')
     await expectStatus(call('?filter[from]=2026-11-10&filter[to]=2026-11-01'), 422)
-    await expectStatus(call('?filter[anomaly]=late'), 422)
+    await expectStatus(call('?filter[anomaly]=early'), 422)
     await expectStatus(call('?filter[from]=10/11/2026'), 422)
     await expectStatus(call(''), 200)
   })

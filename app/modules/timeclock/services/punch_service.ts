@@ -26,6 +26,7 @@ import {
   type Point,
   type TimeclockSettings,
 } from '#modules/timeclock/timeclock_rules'
+import { punches } from '#shared/metrics/metrics'
 
 /** Offline window of 07 §2.7. */
 const MAX_PAST_HOURS = 72
@@ -207,6 +208,7 @@ export class PunchService {
   /** After the commit: the attendance day of a new punch is recomputed (08 §3). */
   private async recorded(organizationId: string, result: PunchResult) {
     if (result.replayed) return
+    punches.inc({ source: result.log.source })
     await attendanceService.punchChanged({
       organizationId,
       employeeId: result.employee.id,

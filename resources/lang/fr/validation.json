@@ -119,7 +119,13 @@
     "range": "La fin de la période doit suivre son début.",
     "attendanceRange": "La période ne peut pas dépasser 93 jours.",
     "exportRange": "Un export couvre au plus 366 jours.",
-    "exportTooLarge": "L’export dépasse 1 000 000 de pointages : réduisez la période ou filtrez."
+    "exportTooLarge": "L’export dépasse 1 000 000 de pointages : réduisez la période ou filtrez.",
+    "scheduleName": "Un horaire porte déjà ce nom.",
+    "scheduleOverlap": "Les plages d'un jour doivent se suivre sans se chevaucher ; seule la dernière peut finir le lendemain, avant la première plage du jour suivant.",
+    "scheduleEmployee": "Cet employé a déjà son propre horaire.",
+    "scheduleDefaultEmployee": "Un horaire propre à un employé ne peut pas être l'horaire par défaut.",
+    "scheduleDefault": "L'horaire par défaut ne peut pas être supprimé : désignez-en un autre d'abord.",
+    "employee": "Employé introuvable."
   },
   "pagination": {
     "cursor": "Curseur de pagination invalide."

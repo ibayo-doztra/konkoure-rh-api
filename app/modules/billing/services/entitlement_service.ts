@@ -8,6 +8,7 @@ import { AppException } from '#shared/exceptions/app_exception'
 import { withTenant } from '#shared/tenant/with_tenant'
 import { subscriptionsIn } from '#modules/billing/repositories/subscription_repository'
 import { MODULES_OPEN_FOR_TESTING, platformFlag } from '#shared/platform/platform_settings'
+import { recordCacheLookup } from '#shared/metrics/metrics'
 
 export type ModuleKey =
   | 'hr'
@@ -136,6 +137,7 @@ export function accessError(
 export class EntitlementService {
   async resolve(organizationId: string): Promise<Entitlements | null> {
     const cached = await this.readCache(organizationId)
+    recordCacheLookup('entitlements', cached !== null)
     if (cached) return cached
 
     const subscription = await withTenant(organizationId, (trx) =>

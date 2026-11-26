@@ -75,6 +75,10 @@ ANALYZE` prouvant l'absence de `Seq Scan` sur une table > 10 000 lignes.
 
 `time_logs`, `audit_logs` et `usage_events` sont partitionnées **par mois** sur
 leur colonne temporelle. Le job `partitions:ensure` maintient 3 mois d'avance.
+**État au 2026-11-26** : les trois tables sont partitionnées. `0131` a créé les 12 mois
+à venir de `time_logs` et `audit_logs` (les lignes de ces mois déjà rangées dans
+`DEFAULT` y sont déplacées) ; `0141` a recréé `usage_events` en table partitionnée
+(clé primaire `(id, created_at)`, lignes copiées) ; `partitions:ensure` couvre les trois.
 Les partitions de plus de 24 mois sont détachées puis exportées en stockage
 froid (Parquet/CSV compressé) avant suppression.
 
@@ -135,6 +139,25 @@ Métriques exposées : latence par route (histogramme), taux d'erreur par code,
 connexions DB actives/attente, profondeur et âge des files, jobs en échec,
 hit ratio du cache, scans de pointage par minute, appels IA et crédits
 consommés, paiements en attente.
+
+**Implémentation (décision du 2026-11-26)** : `prom-client`, serveur HTTP séparé du
+processus web (`METRICS_ENABLED=true`, `METRICS_PORT` défaut 9464, `METRICS_HOST` défaut
+`127.0.0.1`, `0.0.0.0` dans un conteneur), `GET /metrics` seulement, sans
+authentification : il n'est jamais publié par le proxy. Un port occupé est journalisé
+(`metrics.listen_failed`) sans empêcher l'API de démarrer. Séries (préfixe `konkoure_`,
+label `app`) :
+- `http_request_duration_seconds` (histogramme, `method`, `route` = motif de route ou
+  `unmatched`, `status_code` final) : latence et taux d'erreur ;
+- `db_pool_connections` (`connection`, `state` used/free/pending) ;
+- `queue_jobs` (`queue`, `state` waiting/active/delayed/failed) et
+  `queue_oldest_waiting_seconds`, lus dans Redis à chaque collecte (BullMQ seulement) ;
+- `cache_lookups_total` (`cache` entitlements/dashboard, `result` hit/miss) ;
+- `timeclock_punches_total` (`source`) ; `ai_calls_total` (`task`, `outcome`) et
+  `ai_credits_consumed_total` ; `webhook_rejections_total` (`provider` djomy/n8n) ;
+- `payments_pending` (`kind` count/oldest_seconds, paiements `pending` ou `processing`) ;
+- métriques du processus Node (`process_*`, `nodejs_*`).
+Les compteurs sont ceux du processus web ; le worker n'expose pas de métriques (files et
+jobs en échec se lisent dans Redis depuis l'API).
 
 Alertes : p95 > 1 s pendant 5 min · erreurs 5xx > 1 % pendant 5 min ·
 file `critical` > 100 en attente · job en échec définitif · connexions DB > 80 %

@@ -363,9 +363,14 @@ Aucune mise à jour ni suppression : uniquement des insertions.
 
 ### `work_schedules`
 `id`, `organization_id`, `name`, `is_default bool`,
-`weekly_pattern jsonb NOT NULL` (ex. `{"mon":{"start":"08:00","end":"17:00"},…}`),
-`employee_id uuid NULL` (null = modèle d'organisation). Sert au calcul des jours
-ouvrés et des anomalies de pointage.
+`weekly_pattern jsonb NOT NULL` (décision du 2026-11-26 : plusieurs plages par jour,
+`{"mon":[{"start":"08:00","end":"12:00"},{"start":"13:00","end":"17:00"}],…}`),
+`employee_id uuid NULL` (null = modèle d'organisation), `created_by`. Un seul
+`is_default` par organisation (index unique partiel), réservé aux modèles ; un seul
+horaire propre par employé. Sert au calcul des agrégats de pointage (fenêtre du jour,
+services de nuit, retard : 06 §6). Le décompte des jours de congé n'en dépend pas.
+`attendance_days.late_minutes int NULL` (0122) : retard du premier `in`, `null` un jour
+sans plage ; anomalie `late` ajoutée.
 
 ## 7. Recrutement
 
@@ -576,7 +581,8 @@ Partitionnée par mois. Rétention 24 mois puis archivage froid.
 `module text NULL`, `path text NULL`, `metadata jsonb NOT NULL DEFAULT '{}'`.
 Écriture asynchrone (file), jamais bloquante. Créée par 0102 (2026-11-24), insertion
 seule ; seul `kind = 'ai'` est émis pour l'instant (`metadata` : `task`, `version`,
-`cost`).
+`cost`). Partitionnée par mois sur `created_at` depuis 0141 (2026-11-26), clé primaire
+`(id, created_at)`.
 
 ### `system_logs`
 `id`, `channel text NOT NULL`, `level text NOT NULL`, `message text NOT NULL`,
@@ -645,7 +651,7 @@ Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
              "maxCarryOverDays": 10 },
   "timeclock": { "defaultRadiusMeters": 150, "requireZone": true,
                  "allowManualPunch": true, "maxAccuracyMeters": 100,
-                 "duplicateWindowSeconds": 120 },
+                 "duplicateWindowSeconds": 120, "lateToleranceMinutes": 10 },
   "performance": { "ratingScale": 5, "requireSignature": true },
   "recruitment": { "autoScore": true, "notifyOnApplication": true },
   "talents": { "nineBox": { "lowMax": 2, "mediumMax": 3 } },

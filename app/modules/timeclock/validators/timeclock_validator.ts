@@ -117,7 +117,7 @@ export const listAttendanceValidator = vine.create({
       employeeId: vine.string().uuid().optional(),
       from: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
       to: vine.date({ formats: ['YYYY-MM-DD'] }).optional(),
-      anomaly: vine.enum(['missing_out', 'out_of_zone', 'duplicate'] as const).optional(),
+      anomaly: vine.enum(['missing_out', 'out_of_zone', 'duplicate', 'late'] as const).optional(),
     })
     .optional(),
 })
@@ -132,4 +132,43 @@ export const exportLogsValidator = vine.create({
     source: vine.enum(['nfc', 'manual', 'mobile_gps', 'kiosk', 'import'] as const).optional(),
     anomaly: vine.enum(['out_of_zone', 'low_accuracy', 'clock_drift'] as const).optional(),
   }),
+})
+
+const time = () =>
+  vine
+    .string()
+    .trim()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/)
+const dayRanges = () =>
+  vine
+    .array(vine.object({ start: time(), end: time() }))
+    .maxLength(4)
+    .optional()
+
+/** `{ mon: [{ start, end }], … }`: a day left out is not worked (decision of 2026-11-26). */
+const weeklyPattern = () =>
+  vine.object({
+    mon: dayRanges(),
+    tue: dayRanges(),
+    wed: dayRanges(),
+    thu: dayRanges(),
+    fri: dayRanges(),
+    sat: dayRanges(),
+    sun: dayRanges(),
+  })
+
+/** POST /org/timeclock/schedules (02 §6). */
+export const createScheduleValidator = vine.create({
+  name: vine.string().trim().minLength(2).maxLength(120),
+  isDefault: vine.boolean().optional(),
+  weeklyPattern: weeklyPattern(),
+  employeeId: vine.string().uuid().nullable().optional(),
+})
+
+export const updateScheduleValidator = vine.create({
+  params: params(),
+  name: vine.string().trim().minLength(2).maxLength(120).optional(),
+  isDefault: vine.boolean().optional(),
+  weeklyPattern: weeklyPattern().optional(),
+  employeeId: vine.string().uuid().nullable().optional(),
 })
