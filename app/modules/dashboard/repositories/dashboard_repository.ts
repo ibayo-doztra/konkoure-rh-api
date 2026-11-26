@@ -154,6 +154,77 @@ export class DashboardRepository {
     }
   }
 
+  /** Staff present on `day`: hired by then and not gone before it (previous period). */
+  async headcountAt(scope: Scope, day: string) {
+    const row = await this.employees(scope)
+      .whereRaw('coalesce(hire_date, created_at::date) <= ?', [day])
+      .where((query) => query.whereNull('end_date').orWhere('end_date', '>=', day))
+      .count('* as total')
+      .first()
+    return num(row?.total)
+  }
+
+  /**
+   * Recruitment block (06 §3), whole organization: published offers now,
+   * candidates received and hires recorded in the period.
+   */
+  async recruitment(period: Period) {
+    const window = [period.start.toJSDate(), period.end.toJSDate()]
+    const jobs = await this.trx
+      .from('jobs')
+      .where('organization_id', this.organizationId)
+      .whereNull('deleted_at')
+      .where('status', 'published')
+      .count('* as total')
+      .first()
+    const candidates = await this.trx
+      .from('candidates')
+      .where('organization_id', this.organizationId)
+      .where('created_at', '>=', window[0])
+      .where('created_at', '<', window[1])
+      .count('* as total')
+      .first()
+    const hired = await this.trx
+      .from('candidate_events')
+      .where('organization_id', this.organizationId)
+      .where('type', 'stage_changed')
+      .whereRaw(`payload->>'to' = 'hired'`)
+      .where('created_at', '>=', window[0])
+      .where('created_at', '<', window[1])
+      .countDistinct('candidate_id as total')
+      .first()
+    return {
+      openJobs: num(jobs?.total),
+      newCandidates: num(candidates?.total),
+      hired: num(hired?.total),
+    }
+  }
+
+  /**
+   * Payroll (decision of 2026-11-26): sum of the salaries of the contracts in
+   * force on `day`, one per live employee (the latest started), in the
+   * organization's currency (others are left out, never added up). Today only `active` contracts count; for a past
+   * day the current status is unknown then, so any contract but a draft does.
+   */
+  async payroll(day: string, currency: string, past: boolean) {
+    const result = await this.trx.rawQuery(
+      `SELECT coalesce(sum(salary), 0) AS total FROM (
+         SELECT DISTINCT ON (c.employee_id) c.salary
+           FROM contracts c
+           JOIN employees e ON e.id = c.employee_id AND e.deleted_at IS NULL
+          WHERE c.organization_id = ?
+            AND c.currency = ?
+            AND c.start_date <= ?
+            AND (c.end_date IS NULL OR c.end_date >= ?)
+            AND ${past ? `c.status <> 'draft'` : `c.status = 'active'`}
+          ORDER BY c.employee_id, c.start_date DESC, c.id DESC
+       ) AS current
+       WHERE current.salary IS NOT NULL`,
+      [this.organizationId, currency, day, day]
+    )
+    return num(result.rows[0]?.total)
+  }
+
   /** Staff of each month: hired by its end, not gone before it started. */
   async headcountByMonth(scope: Scope, first: string, last: string) {
     const scopeSql = scope ? 'AND e.id = ANY(?::uuid[])' : ''

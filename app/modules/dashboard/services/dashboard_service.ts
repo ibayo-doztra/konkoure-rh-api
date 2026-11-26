@@ -12,14 +12,18 @@ import entitlementService, {
 import { employeesIn } from '#modules/hr/repositories/employee_repository'
 import attendanceService from '#modules/timeclock/services/attendance_service'
 import { dashboardIn, type Scope } from '#modules/dashboard/repositories/dashboard_repository'
+import { DateTime } from 'luxon'
 import {
   lastTwelveMonths,
   periodBounds,
+  previousPeriodBounds,
   type DashboardPeriod,
 } from '#modules/dashboard/dashboard_rules'
 
 /** Cache of 06 §3. */
 const CACHE_TTL_SECONDS = 5 * 60
+/** Bumped when the response shape changes, so no stale shape is served. */
+const CACHE_VERSION = 'v2'
 
 export interface Dashboard {
   period: { from: string; to: string }
@@ -37,18 +41,52 @@ export interface Dashboard {
     outOfZonePunches: number
   } | null
   leaves: { pending: number; approvedThisPeriod: number; daysTaken: number } | null
-  /** Module not delivered yet (lot 2 decision). */
-  recruitment: null
+  recruitment: { openJobs: number; newCandidates: number; hired: number } | null
   performance: {
     reviewsInProgress: number
     reviewsSigned: number
     avgGoalProgress: number | null
   } | null
+  /** owner and hr_admin only (decision of 2026-11-26). */
+  payroll: Payroll | null
+  previous: PreviousPeriod
   series: {
     headcountByMonth: Array<{ month: string; total: number }> | null
     punchesByDay: Array<{ day: string; count: number }> | null
     leavesByType: Array<{ type: string; days: number }> | null
   }
+}
+
+interface Payroll {
+  total: number
+  currency: string
+}
+
+/**
+ * Same blocks for the period just before (decision of 2026-11-26), without the
+ * series. Indicators that describe the present moment (`active`, `onLeave`,
+ * `absencesToday`, `pending`, `openJobs`, `reviewsInProgress`,
+ * `avgGoalProgress`, `punctualityRate`) are not kept in history: null here.
+ */
+export interface PreviousPeriod {
+  period: { from: string; to: string }
+  headcount: {
+    total: number
+    active: null
+    onLeave: null
+    newHires: number
+    exits: number
+  } | null
+  attendance: {
+    punctualityRate: null
+    avgWorkedHours: number | null
+    absencesToday: null
+    outOfZonePunches: number
+  } | null
+  leaves: { pending: null; approvedThisPeriod: number; daysTaken: number } | null
+  recruitment: { openJobs: null; newCandidates: number; hired: number } | null
+  performance: { reviewsInProgress: null; reviewsSigned: number; avgGoalProgress: null } | null
+  payroll: Payroll | null
 }
 
 /**
@@ -64,15 +102,24 @@ export class DashboardService {
       const organization = await organizations.findActive(organizationId, trx)
       if (!organization) throw new AppException('E_NOT_FOUND')
       const { scope, key } = await this.scope(tenant, trx)
-      const cacheKey = `dash:${organizationId}:${period}:${key}`
+      // Recruitment and payroll depend on the roles, not only on the scope.
+      const seesRecruitment = tenant.hasRole('owner', 'hr_admin', 'recruiter')
+      const seesPayroll = tenant.hasRole('owner', 'hr_admin')
+      const flags = `${seesRecruitment ? ':rec' : ''}${seesPayroll ? ':pay' : ''}`
+      const cacheKey = `dash:${CACHE_VERSION}:${organizationId}:${period}:${key}${flags}`
       const cached = await this.readCache(cacheKey)
       if (cached) return cached
 
       const timezone = organization.timezone
       const bounds = periodBounds(period, timezone)
+      const previous = previousPeriodBounds(period, timezone)
+      const today = DateTime.now().setZone(timezone).toISODate()!
+      const currency = organization.defaultCurrency
       const months = lastTwelveMonths(timezone)
       const can = (module: ModuleKey) => allowed(entitlements, module)
       const repository = dashboardIn(organizationId, trx)
+      const recruitmentOn = seesRecruitment && can('recruitment')
+      const payrollOn = seesPayroll && can('hr')
 
       const dashboard: Dashboard = {
         period: { from: bounds.from, to: bounds.to },
@@ -87,8 +134,33 @@ export class DashboardService {
             }
           : null,
         leaves: can('leaves') ? await repository.leaves(scope, bounds) : null,
-        recruitment: null,
+        recruitment: recruitmentOn ? await repository.recruitment(bounds) : null,
         performance: can('performance') ? await repository.performance(scope, bounds) : null,
+        payroll: payrollOn
+          ? { total: await repository.payroll(today, currency, false), currency }
+          : null,
+        previous: {
+          period: { from: previous.from, to: previous.to },
+          headcount: can('hr') ? await this.previousHeadcount(repository, scope, previous) : null,
+          attendance: can('timeclock')
+            ? {
+                punctualityRate: null,
+                avgWorkedHours: await repository.avgWorkedHours(scope, previous),
+                absencesToday: null,
+                outOfZonePunches: await repository.outOfZonePunches(scope, previous),
+              }
+            : null,
+          leaves: can('leaves') ? await this.previousLeaves(repository, scope, previous) : null,
+          recruitment: recruitmentOn
+            ? { ...(await repository.recruitment(previous)), openJobs: null }
+            : null,
+          performance: can('performance')
+            ? await this.previousPerformance(repository, scope, previous)
+            : null,
+          payroll: payrollOn
+            ? { total: await repository.payroll(previous.to, currency, true), currency }
+            : null,
+        },
         series: {
           headcountByMonth: can('hr')
             ? await repository.headcountByMonth(scope, months.first, months.last)
@@ -102,6 +174,34 @@ export class DashboardService {
       await this.writeCache(cacheKey, dashboard)
       return dashboard
     })
+  }
+
+  private async previousHeadcount(
+    repository: ReturnType<typeof dashboardIn>,
+    scope: Scope,
+    period: Parameters<ReturnType<typeof dashboardIn>['leaves']>[1]
+  ) {
+    const { newHires, exits } = await repository.headcount(scope, period)
+    const total = await repository.headcountAt(scope, period.to)
+    return { total, active: null, onLeave: null, newHires, exits }
+  }
+
+  private async previousPerformance(
+    repository: ReturnType<typeof dashboardIn>,
+    scope: Scope,
+    period: Parameters<ReturnType<typeof dashboardIn>['leaves']>[1]
+  ) {
+    const { reviewsSigned } = await repository.performance(scope, period)
+    return { reviewsInProgress: null, reviewsSigned, avgGoalProgress: null }
+  }
+
+  private async previousLeaves(
+    repository: ReturnType<typeof dashboardIn>,
+    scope: Scope,
+    period: Parameters<ReturnType<typeof dashboardIn>['leaves']>[1]
+  ) {
+    const { approvedThisPeriod, daysTaken } = await repository.leaves(scope, period)
+    return { pending: null, approvedThisPeriod, daysTaken }
   }
 
   /** Absent staff of today's board (`GET /org/timeclock/today`), within the scope. */

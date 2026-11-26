@@ -26,3 +26,13 @@ export function lastTwelveMonths(timezone: string, at: DateTime = DateTime.now()
   const current = at.setZone(timezone).startOf('month')
   return { first: current.minus({ months: 11 }).toISODate()!, last: current.toISODate()! }
 }
+
+/** The period just before the current one (previous week, month or quarter). */
+export function previousPeriodBounds(
+  period: DashboardPeriod,
+  timezone: string,
+  at: DateTime = DateTime.now()
+) {
+  const current = periodBounds(period, timezone, at)
+  return periodBounds(period, timezone, current.start.minus({ [`${period}s`]: 1 }))
+}
