@@ -26,6 +26,9 @@
   "member": {
     "lastOwner": "The organization must keep at least one active owner."
   },
+  "me": {
+    "lastOwner": "You are the only owner of this organization: appoint another owner or delete the organization before deleting your account."
+  },
   "employee": {
     "department": "This department does not exist.",
     "manager": "This manager does not exist.",

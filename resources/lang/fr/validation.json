@@ -26,6 +26,9 @@
   "member": {
     "lastOwner": "L'organisation doit conserver au moins un propriétaire actif."
   },
+  "me": {
+    "lastOwner": "Vous êtes le seul propriétaire de cette organisation : nommez un autre propriétaire ou supprimez l'organisation avant de supprimer votre compte."
+  },
   "employee": {
     "department": "Ce département n'existe pas.",
     "manager": "Ce responsable n'existe pas.",

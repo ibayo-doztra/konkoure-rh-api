@@ -22,3 +22,8 @@ export const changePasswordValidator = vine.create({
 export const sessionIdValidator = vine.create({
   params: vine.object({ id: vine.string().uuid() }),
 })
+
+/** DELETE /me — the password confirms the deletion (05 §13). */
+export const deleteMeValidator = vine.create({
+  password: vine.string().minLength(1).maxLength(128),
+})
