@@ -129,6 +129,7 @@ famille révoquée), `429` (60 / h / utilisateur).
             "emailVerified":false, "preferredLanguage":"fr",
             "mustChangePassword":false },
   "isPlatformAdmin": false,
+  "platformLevel": null,
   "organizations": [
     { "id":"0192…", "name":"Doztra", "slug":"doztra", "logoUrl":null,
       "defaultLanguage":"fr", "defaultCurrency":"GNF", "plan":"free",
@@ -146,6 +147,9 @@ famille révoquée), `429` (60 / h / utilisateur).
 - Le serveur ne choisit jamais l'organisation active (01 §4) : le client choisit
   dans `organizations` et envoie `X-Organization-Id`.
 - `mustChangePassword` reflète `users.must_reset_password` (comptes importés).
+- `platformLevel` (ajouté le 2026-11-25) : `support | root` pour un admin plateforme
+  actif, `null` sinon (admin désactivé compris) ; `isPlatformAdmin` vaut
+  `platformLevel !== null`. Le client s'en sert pour masquer les actions réservées à root.
 - `GET /me` accepte un en-tête `X-Organization-Id` **optionnel**. `employee`,
   `subscription` et `modules` (droits effectifs calculés serveur) sont ceux de cette
   organisation. Sans en-tête, ou s'il est invalide ou désigne une organisation dont
