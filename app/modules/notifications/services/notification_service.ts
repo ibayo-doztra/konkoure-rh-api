@@ -30,6 +30,7 @@ export type NotificationType =
   | 'trial.ending'
   | 'payment.succeeded'
   | 'payment.failed'
+  | 'social_account.expired'
 
 /** Identical unread notifications within this window are grouped (07 §8). */
 const GROUPING_MINUTES = 5

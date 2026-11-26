@@ -12,6 +12,8 @@ const N8nWebhookController = () => import('#modules/recruitment/controllers/n8n_
 const DjomyWebhookController = () => import('#modules/billing/controllers/djomy_webhook_controller')
 const DemoRequestsController = () =>
   import('#modules/platform/controllers/demo_requests_controller')
+const SocialAccountsController = () =>
+  import('#modules/integrations/controllers/social_accounts_controller')
 const PublicPaymentsController = () =>
   import('#modules/billing/controllers/public_payments_controller')
 
@@ -60,4 +62,10 @@ export function registerPublicRoutes() {
   /** Inbound webhooks (06 §12): signed by the sender, never authenticated by a session. */
   router.post('webhooks/n8n/scoring', [N8nWebhookController, 'scoring']).as('webhooks.n8n.scoring')
   router.post('webhooks/djomy/:token', [DjomyWebhookController, 'handle']).as('webhooks.djomy')
+
+  /** OAuth return of a social network (08 §8): the single-use `state` replaces a session. */
+  router
+    .get('oauth/social/:provider/callback', [SocialAccountsController, 'callback'])
+    .as('oauth.social.callback')
+    .use(throttleCareers)
 }

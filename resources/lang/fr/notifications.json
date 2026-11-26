@@ -94,5 +94,9 @@
   "paymentFailed": {
     "title": "Paiement échoué",
     "body": "Le paiement de {amount} GNF pour l'offre {plan} n'a pas abouti."
+  },
+  "socialAccountExpired": {
+    "title": "Compte social à reconnecter",
+    "body": "La connexion à {accountName} ({provider}) a expiré. Reconnectez le compte pour continuer à publier vos offres."
   }
 }

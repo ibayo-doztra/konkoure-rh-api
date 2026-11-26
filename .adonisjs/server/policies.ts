@@ -4,6 +4,7 @@ export const policies = {
   DashboardPolicy: () => import('#policies/dashboard_policy'),
   DepartmentPolicy: () => import('#policies/department_policy'),
   EmployeePolicy: () => import('#policies/employee_policy'),
+  IntegrationPolicy: () => import('#policies/integration_policy'),
   InvitationPolicy: () => import('#policies/invitation_policy'),
   LeavePolicy: () => import('#policies/leave_policy'),
   OrganizationPolicy: () => import('#policies/organization_policy'),

@@ -619,7 +619,9 @@ abandonné (`jobs`) et chaque écart de paiement (`payments`), purgée chaque nu
 - `social_posts` : `id`, `organization_id`, `job_id`, `social_account_id`,
   `provider`, `content text NOT NULL`, `media_urls jsonb NOT NULL DEFAULT '[]'`,
   `status social_post_status NOT NULL DEFAULT 'pending'`,
-  `external_post_id`, `external_url`, `error_message`, `published_at`.
+  `external_post_id`, `external_url`, `error_message`, `published_at`, `created_by`
+  (migrations 0120-0121, 2026-11-26 ; `social_account_id` passe à `null` quand le compte
+  est supprimé).
 
 ### `files`
 Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,

@@ -7,6 +7,8 @@ import db from '@adonisjs/lucid/services/db'
  * `KEPT_TABLES`: a test fails when a new table is in neither list.
  */
 export const PURGED_TABLES = [
+  'social_posts',
+  'social_accounts',
   'candidate_events',
   'candidate_notes',
   'candidates',
