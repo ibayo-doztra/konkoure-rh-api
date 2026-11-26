@@ -6,7 +6,7 @@ const MeController = () => import('#modules/users/controllers/me_controller')
 const NotificationsController = () =>
   import('#modules/notifications/controllers/notifications_controller')
 
-/** `/api/v1/me/*` — 06-api-reference §2 (export, deletion: later modules). */
+/** `/api/v1/me/*` — 06-api-reference §2 (deletion: later). */
 export function registerMeRoutes() {
   router
     .group(() => {
@@ -21,6 +21,7 @@ export function registerMeRoutes() {
         .delete('sessions/:id', [MeController, 'revokeSession'])
         .as('revokeSession')
         .use(middleware.notImpersonating())
+      router.get('export', [MeController, 'export']).as('export').use(middleware.notImpersonating())
       router.get('organizations', [MeController, 'organizations']).as('organizations')
       // Notifications of the current organization: `X-Organization-Id` is required.
       router
