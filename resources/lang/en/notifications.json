@@ -94,5 +94,9 @@
   "paymentFailed": {
     "title": "Payment failed",
     "body": "The payment of {amount} GNF for the {plan} plan did not go through."
+  },
+  "socialAccountExpired": {
+    "title": "Social account to reconnect",
+    "body": "The connection to {accountName} ({provider}) has expired. Reconnect the account to keep publishing your offers."
   }
 }

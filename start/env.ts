@@ -89,6 +89,14 @@ export default await Env.create(new URL('../', import.meta.url), {
   DJOMY_CLIENT_SECRET: Env.schema.secret.optional(),
   DJOMY_WEBHOOK_PATH_TOKEN: Env.schema.secret.optional(),
 
+  // Réseaux sociaux (docs/backend/08 §8, décision du 2026-11-26 : page entreprise
+  // LinkedIn et pages Facebook). Sans identifiants, la connexion et la publication
+  // sur ce réseau renvoient 503 E_DEPENDENCY_UNAVAILABLE.
+  LINKEDIN_CLIENT_ID: Env.schema.string.optional(),
+  LINKEDIN_CLIENT_SECRET: Env.schema.secret.optional(),
+  FACEBOOK_APP_ID: Env.schema.string.optional(),
+  FACEBOOK_APP_SECRET: Env.schema.secret.optional(),
+
   // IA (docs/backend/08 §7, décision du 2026-11-24 : OpenAI). Sans clé ni modèle,
   // les fonctions IA renvoient 503 E_AI_UNAVAILABLE sans consommer de crédit.
   AI_PROVIDER: Env.schema.enum.optional(['openai'] as const),

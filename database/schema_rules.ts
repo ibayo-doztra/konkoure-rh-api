@@ -9,6 +9,7 @@ import { type SchemaRules } from '@adonisjs/lucid/types/schema_generator'
 const APP_ROLE = `'owner' | 'hr_admin' | 'manager' | 'employee' | 'recruiter' | 'security_agent'`
 const JSON_OBJECT = { tsType: 'Record<string, unknown>' }
 const LEAVE_TYPE = `'annual' | 'sick' | 'maternity' | 'paternity' | 'unpaid' | 'special'`
+const SOCIAL_PROVIDER = `'facebook' | 'linkedin' | 'twitter'`
 const LEAVE_STATUS = `'pending' | 'approved' | 'rejected' | 'cancelled'`
 
 export default {
@@ -109,6 +110,21 @@ export default {
     },
     recruitment_webhook_configs: {
       columns: { active_env: { tsType: `'off' | 'test' | 'prod'` } },
+    },
+    social_accounts: {
+      columns: {
+        provider: { tsType: SOCIAL_PROVIDER },
+        status: { tsType: `'active' | 'expired' | 'revoked'` },
+        scopes: { tsType: 'string[]' },
+        metadata: JSON_OBJECT,
+      },
+    },
+    social_posts: {
+      columns: {
+        provider: { tsType: SOCIAL_PROVIDER },
+        status: { tsType: `'pending' | 'published' | 'failed'` },
+        media_urls: { tsType: 'string[]' },
+      },
     },
     webhook_receipts: {
       columns: { payload: { tsType: 'unknown' } },

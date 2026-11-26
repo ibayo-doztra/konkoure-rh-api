@@ -211,5 +211,9 @@
     "noTransaction": "Ce paiement n'a pas de transaction Djomy à vérifier.",
     "notPaid": "Djomy ne confirme pas ce paiement.",
     "assignee": "L'assignation exige un administrateur de la plateforme actif."
+  },
+  "social": {
+    "notPublished": "Seule une offre publiée peut être partagée sur les réseaux sociaux.",
+    "account": "Un des comptes sociaux est introuvable ou n'est plus actif."
   }
 }

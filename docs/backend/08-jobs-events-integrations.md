@@ -40,6 +40,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 | 03h30 | `partitions:ensure` | Crée 3 mois de partitions à l'avance, détache celles > 24 mois |
 | 03h45 | `files:purge-orphans` | Supprime les fichiers du registre `files` sans propriétaire depuis plus de 24 h (§6) |
 | 04h00 | `usage:rollup` | Agrège `usage_events` du jour |
+| 04h15 | `social:refresh-tokens` | Renouvelle les jetons LinkedIn qui expirent sous 7 jours (§8) |
 | 23h59 | `attendance:close-day` | Clôt la journée, détecte `missing_out` |
 | Le 1er à 00h15 | `ai_credits:reset` | Remet à zéro les compteurs mensuels |
 | Le 25 à 09h00 | `okr:checkin-reminder` | Rappel de check-in mensuel |
@@ -238,6 +239,13 @@ OAuth par organisation (Facebook, LinkedIn, X). Tokens chiffrés
 Publication : file `outbound`, statut `pending → published | failed`,
 `external_post_id` et `external_url` conservés, message d'erreur en clair pour
 diagnostic. Aucun jeton n'est jamais renvoyé par l'API.
+Décisions du 2026-11-26 (contrat en 06 §8) : LinkedIn (page entreprise) et Facebook
+(pages) appelés en `fetch`, sans SDK ; `twitter` n'est pas branché. Un refus du
+réseau est définitif (pas de nouvelle tentative), la publication peut être relancée.
+Les jetons de page Facebook, obtenus d'un jeton utilisateur longue durée, n'expirent
+pas ; ceux de LinkedIn (60 jours) sont renouvelés par `social:refresh-tokens`
+(04h15) avec le refresh token. LinkedIn ne prend pas PKCE pour une application web :
+la protection repose sur le `state` à usage unique et le secret client.
 
 ## 9. Exports
 

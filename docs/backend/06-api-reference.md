@@ -938,9 +938,50 @@ la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 | GET/POST | `/org/integrations/social/accounts` | O H |
 | DELETE | `/org/integrations/social/accounts/:id` | O H |
 | POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
+| POST | `/org/recruitment/jobs/:id/social-posts/suggest` | O H R |
+| GET | `/api/v1/oauth/social/:provider/callback` | public (retour OAuth) |
 
 Filtres candidats : `filter[jobId]`, `filter[stage]`, `filter[minScore]`, `q`.
 Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
+
+### Publication sur les réseaux sociaux (décisions du 2026-11-26)
+Réseaux branchés : **page entreprise LinkedIn** (API Community Management, scopes
+`r_organization_admin w_organization_social`) et **pages Facebook** (Graph API v21,
+`pages_manage_posts pages_read_engagement pages_show_list`). `twitter` reste dans
+l'enum sans client (`422` à la connexion). Sans identifiants du réseau
+(`LINKEDIN_CLIENT_ID`/`_SECRET`, `FACEBOOK_APP_ID`/`_SECRET`), la connexion et la
+publication répondent `503 E_DEPENDENCY_UNAVAILABLE`. Les routes de comptes exigent
+le module `integrations` ; la publication, `recruitment` et `integrations`.
+- `GET /org/integrations/social/accounts` (O H) : `{ data: [{ id, provider,
+  accountId, accountName, status, scopes, tokenExpiresAt, connectedBy, createdAt,
+  updatedAt }] }`. Les jetons ne sont jamais renvoyés.
+- `POST /org/integrations/social/accounts` (O H) : `{ provider: 'linkedin' |
+  'facebook' }` → `{ data: { authorizationUrl } }`. Le client y envoie le navigateur.
+  `state` aléatoire à usage unique, valable 10 min, lié à l'organisation et au membre.
+- `GET /api/v1/oauth/social/:provider/callback?code&state[&error]` (public, appelé
+  par le réseau) : redirige toujours vers
+  `<WEB_APP_URL>/app/settings/integrations?connected=<provider>&count=<n>` ou
+  `?error=<code>`, avec `code` ∈ `invalid_state` (absent, rejoué, expiré ou autre
+  réseau), `denied` (refus du membre), `forbidden` (le membre n'est plus O H),
+  `no_pages` (aucune page administrée), `provider_error`, `unavailable`. Chaque page
+  accordée devient un compte (une ligne par page LinkedIn ou Facebook) ; une
+  reconnexion met à jour la ligne existante. Journal `social_account.connected`.
+  URL de rappel à déclarer chez chaque réseau : `<APP_URL>/api/v1/oauth/social/<provider>/callback`.
+- `DELETE /org/integrations/social/accounts/:id` (O H) → `204`, journal
+  `social_account.disconnected` ; les publications passées gardent leur réseau
+  (`socialAccountId` devient `null`).
+- `POST /org/recruitment/jobs/:id/social-posts` (O H R) : `{ accountIds: uuid[]
+  (1 à 10), content (1 à 3000) }` → `202 { data: [post] }`, une publication `pending`
+  par compte, envoyée par la file `outbound` avec le lien de l'offre sur la page
+  carrières. `post` : `{ id, jobId, socialAccountId, provider, content, status,
+  externalPostId, externalUrl, errorMessage, publishedAt, createdAt }`. Offre non
+  publiée ⇒ `409` (`rule = "notPublished"`) ; compte inconnu, d'une autre
+  organisation ou non `active` ⇒ `422` (`field = "accountIds"`). Un refus du réseau
+  passe la publication en `failed` avec son message ; un jeton expiré passe aussi
+  le compte en `expired` et notifie les O H (`social_account.expired`).
+- `POST /org/recruitment/jobs/:id/social-posts/suggest` (O H R) : `{ provider,
+  language? }` → `{ data: { content } }`, texte et hashtags proposés par l'IA
+  (`social.post`, 1 crédit), sans URL ni salaire, non enregistré.
 
 ---
 

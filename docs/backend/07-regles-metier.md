@@ -441,7 +441,7 @@ Types émis : `leave.requested`, `leave.decided`, `review.opened`,
 `okr.submitted`, `okr.validated`, `okr.needs_revision`, `okr.checkin_reminder`,
 `candidate.applied`, `candidate.scored`, `contract.expiring`,
 `trial.ending`, `payment.succeeded`, `payment.failed`, `badge.assigned`,
-`feedback.received`.
+`feedback.received`, `social_account.expired` (2026-11-26, aux O H).
 
 Règles : jamais de notification à soi-même pour ses propres actions ;
 regroupement des notifications identiques dans une fenêtre de 5 minutes ;
