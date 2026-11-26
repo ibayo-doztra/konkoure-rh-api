@@ -1,4 +1,5 @@
 import { DateTime } from 'luxon'
+import Organization from '#models/organization'
 import Plan from '#models/plan'
 import type Subscription from '#models/subscription'
 import type User from '#models/user'
@@ -13,6 +14,7 @@ import entitlementService, {
   computeEntitlements,
 } from '#modules/billing/services/entitlement_service'
 import { planAmount } from '#modules/billing/pricing'
+import { PURGE_AFTER_DAYS } from '#modules/organizations/services/organization_purge_service'
 import organizations, {
   type OrganizationListFilters,
 } from '#modules/platform/repositories/platform_organization_repository'
@@ -147,6 +149,41 @@ export class PlatformOrganizationService {
         subscription.plan.code === 'free' && subscription.trialEndsAt ? 'trialing' : 'active'
       subscription.status = computeEntitlements(subscription, subscription.plan).status
     })
+  }
+
+  /**
+   * `POST /platform/organizations/:id/restore` (root, decision of 2026-11-26):
+   * cancels a `DELETE /org` within its 30 days. Afterwards the purge may be
+   * running (`409`, `rule = "purged"`), so the two never touch the same row.
+   */
+  async restore(id: string, actor: User, audit: AuditContext, now: DateTime = DateTime.now()) {
+    await withTenant(id, async (trx) => {
+      const organization = await Organization.query({ client: trx })
+        .where('id', id)
+        .forUpdate()
+        .first()
+      if (!organization) throw new AppException('E_NOT_FOUND')
+      if (!organization.deletedAt) throw conflict('notDeleted', 'validation.platform.notDeleted')
+      if (organization.purgedAt || organization.deletedAt < now.minus({ days: PURGE_AFTER_DAYS })) {
+        throw conflict('purged', 'validation.platform.purged')
+      }
+      const deletedAt = organization.deletedAt.toUTC().toISO()
+      organization.merge({ deletedAt: null, updatedBy: actor.id })
+      await organization.save()
+      await auditService.record(
+        trx,
+        { ...audit, organizationId: id, actorUserId: actor.id, actorRole: 'platform_root' },
+        {
+          action: 'platform.organization_restored',
+          targetType: 'organization',
+          targetId: id,
+          before: { deletedAt },
+          after: { deletedAt: null },
+        }
+      )
+    })
+    await entitlementService.invalidate(id)
+    return this.detail(id)
   }
 
   private async change(

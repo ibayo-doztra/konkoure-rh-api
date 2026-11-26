@@ -195,6 +195,8 @@
   "platform": {
     "notSuspendable": "Cet abonnement est déjà suspendu ou expiré.",
     "notSuspended": "Seul un abonnement suspendu peut être réactivé.",
+    "notDeleted": "Cette organisation n'est pas supprimée.",
+    "purged": "Le délai de 30 jours est passé : cette organisation est purgée ou en cours de purge.",
     "planCodeTaken": "Une offre porte déjà ce code.",
     "planInUse": "Cette offre est encore utilisée par un abonnement.",
     "self": "Cette action ne s'applique pas à votre propre compte.",

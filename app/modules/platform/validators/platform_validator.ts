@@ -35,6 +35,7 @@ export const listOrganizationsValidator = vine.create({
     .object({
       status: vine.enum(SUBSCRIPTION_STATUSES).optional(),
       plan: vine.string().trim().maxLength(40).optional(),
+      deleted: vine.boolean().optional(),
     })
     .optional(),
 })
