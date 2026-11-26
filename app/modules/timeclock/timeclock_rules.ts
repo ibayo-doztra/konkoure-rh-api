@@ -7,6 +7,8 @@ export interface TimeclockSettings {
   allowManualPunch: boolean
   maxAccuracyMeters: number
   duplicateWindowSeconds: number
+  /** Minutes after the scheduled start before a day is `late` (decision of 2026-11-26). */
+  lateToleranceMinutes: number
 }
 
 const DEFAULTS: TimeclockSettings = {
@@ -15,11 +17,18 @@ const DEFAULTS: TimeclockSettings = {
   allowManualPunch: true,
   maxAccuracyMeters: 100,
   duplicateWindowSeconds: 120,
+  lateToleranceMinutes: 10,
 }
 
 export function timeclockSettings(settings: Record<string, unknown> | null): TimeclockSettings {
   const raw = (settings?.timeclock ?? {}) as Partial<Record<keyof TimeclockSettings, unknown>>
-  const num = (key: 'defaultRadiusMeters' | 'maxAccuracyMeters' | 'duplicateWindowSeconds') => {
+  const num = (
+    key:
+      | 'defaultRadiusMeters'
+      | 'maxAccuracyMeters'
+      | 'duplicateWindowSeconds'
+      | 'lateToleranceMinutes'
+  ) => {
     const value = raw[key]
     return typeof value === 'number' ? value : DEFAULTS[key]
   }
@@ -33,6 +42,7 @@ export function timeclockSettings(settings: Record<string, unknown> | null): Tim
     allowManualPunch: bool('allowManualPunch'),
     maxAccuracyMeters: num('maxAccuracyMeters'),
     duplicateWindowSeconds: num('duplicateWindowSeconds'),
+    lateToleranceMinutes: num('lateToleranceMinutes'),
   }
 }
 

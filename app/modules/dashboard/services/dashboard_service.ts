@@ -3,6 +3,7 @@ import redis from '@adonisjs/redis/services/main'
 import { AppException } from '#shared/exceptions/app_exception'
 import { withTenant } from '#shared/tenant/with_tenant'
 import type { TenantContext } from '#shared/tenant/tenant_context'
+import { timeclockSettings } from '#modules/timeclock/timeclock_rules'
 import organizations from '#modules/organizations/repositories/organization_repository'
 import entitlementService, {
   accessError,
@@ -23,7 +24,7 @@ import {
 /** Cache of 06 §3. */
 const CACHE_TTL_SECONDS = 5 * 60
 /** Bumped when the response shape changes, so no stale shape is served. */
-const CACHE_VERSION = 'v2'
+const CACHE_VERSION = 'v3'
 
 export interface Dashboard {
   period: { from: string; to: string }
@@ -66,7 +67,7 @@ interface Payroll {
  * Same blocks for the period just before (decision of 2026-11-26), without the
  * series. Indicators that describe the present moment (`active`, `onLeave`,
  * `absencesToday`, `pending`, `openJobs`, `reviewsInProgress`,
- * `avgGoalProgress`, `punctualityRate`) are not kept in history: null here.
+ * `avgGoalProgress`) are not kept in history: null here.
  */
 export interface PreviousPeriod {
   period: { from: string; to: string }
@@ -78,7 +79,7 @@ export interface PreviousPeriod {
     exits: number
   } | null
   attendance: {
-    punctualityRate: null
+    punctualityRate: number | null
     avgWorkedHours: number | null
     absencesToday: null
     outOfZonePunches: number
@@ -118,6 +119,7 @@ export class DashboardService {
       const months = lastTwelveMonths(timezone)
       const can = (module: ModuleKey) => allowed(entitlements, module)
       const repository = dashboardIn(organizationId, trx)
+      const tolerance = timeclockSettings(organization.settings).lateToleranceMinutes
       const recruitmentOn = seesRecruitment && can('recruitment')
       const payrollOn = seesPayroll && can('hr')
 
@@ -126,8 +128,7 @@ export class DashboardService {
         headcount: can('hr') ? await repository.headcount(scope, bounds) : null,
         attendance: can('timeclock')
           ? {
-              // Needs work schedules to know when someone is late (lot 2 decision).
-              punctualityRate: null,
+              punctualityRate: await repository.punctualityRate(scope, bounds, tolerance),
               avgWorkedHours: await repository.avgWorkedHours(scope, bounds),
               absencesToday: await this.absencesToday(trx, organizationId, timezone, scope),
               outOfZonePunches: await repository.outOfZonePunches(scope, bounds),
@@ -144,7 +145,7 @@ export class DashboardService {
           headcount: can('hr') ? await this.previousHeadcount(repository, scope, previous) : null,
           attendance: can('timeclock')
             ? {
-                punctualityRate: null,
+                punctualityRate: await repository.punctualityRate(scope, previous, tolerance),
                 avgWorkedHours: await repository.avgWorkedHours(scope, previous),
                 absencesToday: null,
                 outOfZonePunches: await repository.outOfZonePunches(scope, previous),

@@ -387,7 +387,8 @@ Décisions du 2026-11-20 :
   `exits` comptent `hire_date` et `end_date` dans la période. `attendance.avgWorkedHours` =
   moyenne des journées complètes (`null` sans journée) ; `absencesToday` = les absents de
   `GET /org/timeclock/today` ; `outOfZonePunches` = pointages `out_of_zone` de la période ;
-  `punctualityRate` vaut `null` tant que `work_schedules` n'existe pas. `leaves.pending`
+  `punctualityRate` = part des journées prévues à l'horaire (`lateMinutes` non nul) dont le
+  retard ne dépasse pas la tolérance, arrondie à 0,01, `null` sans journée prévue. `leaves.pending`
   sans condition de date, `approvedThisPeriod` selon `decided_at`, `daysTaken` = jours
   approuvés commençant dans la période. Séries : `headcountByMonth` sur 12 mois
   `[{ month: 'YYYY-MM', total }]`, `punchesByDay` `[{ day, count }]` (jours sans pointage
@@ -408,7 +409,7 @@ Décisions du 2026-11-20 :
   - `previous` : les mêmes blocs pour la période équivalente précédente (semaine, mois
     ou trimestre d'avant), sans `series`, avec les mêmes règles de `null` (module, rôle).
     Les indicateurs d'état à l'instant présent ne sont pas historisés et valent `null` :
-    `headcount.active`, `onLeave`, `attendance.absencesToday`, `punctualityRate`,
+    `headcount.active`, `onLeave`, `attendance.absencesToday`,
     `leaves.pending`, `recruitment.openJobs`, `performance.reviewsInProgress` et
     `avgGoalProgress`. `headcount.total` = effectif présent le dernier jour de la période
     (embauché avant, sans départ antérieur). `payroll` = contrats en vigueur ce jour-là,
@@ -637,6 +638,9 @@ renvoient `{ data: [{ skillId, name, category, level, assessedAt }] }`.
 | GET | `/org/timeclock/zones` | O H M S |
 | POST | `/org/timeclock/zones` | O H |
 | PATCH/DELETE | `/org/timeclock/zones/:id` | O H |
+| GET | `/org/timeclock/schedules` | O H M S |
+| POST | `/org/timeclock/schedules` | O H |
+| PATCH/DELETE | `/org/timeclock/schedules/:id` | O H |
 | POST | `/org/timeclock/scan` ⚡ | O H M S |
 | POST | `/org/timeclock/punch` ⚡ | tous (pour soi) |
 | GET | `/org/timeclock/logs` | O H · M(team) · E(self) · S |
@@ -722,14 +726,45 @@ Refusé si `settings.timeclock.allowManualPunch = false`
 - **Agrégats** : `GET /attendance?page&perPage (≤ 200)&filter[employeeId|from|to|anomaly]`,
   `from`/`to` en dates locales `YYYY-MM-DD` (défaut : les 30 derniers jours, au plus
   93 jours, sinon `422` règle `range`), `anomaly` ∈ `missing_out`, `out_of_zone`,
-  `duplicate`. Réponse `{ data: [{ employeeId, day, firstIn, lastOut, workedMinutes,
-  punchCount, isComplete, anomaly }], meta }`, tri `day desc`. Périmètre de `/logs`
+  `duplicate`, `late`. Réponse `{ data: [{ employeeId, day, firstIn, lastOut, workedMinutes,
+  punchCount, isComplete, lateMinutes, anomaly }], meta }`, tri `day desc`. Périmètre de `/logs`
   (O H S tous, M équipe + soi, E soi).
-- **Jour** : date locale dans le fuseau de l'organisation ; un service de nuit est coupé
-  à minuit tant que `work_schedules` n'existe pas. Paires lues dans l'ordre : un `in`
+- **Jour** : date locale dans le fuseau de l'organisation, sauf service de nuit (horaires,
+  ci-dessous). Paires lues dans l'ordre : un `in`
   alors qu'une paire est ouverte, ou un `out` sans `in`, ⇒ `duplicate` (le premier `in`
   est gardé). Une anomalie : `missing_out` (paire ouverte sur un jour clos), puis
-  `duplicate`, puis `out_of_zone`.
+  `duplicate`, puis `late`, puis `out_of_zone`.
+
+### Horaires de travail (décisions du 2026-11-26)
+- **Routes** : `GET /schedules` (O H M S) ⇒ `{ data: [...] }`, modèles d'organisation
+  d'abord (celui par défaut en tête), puis horaires propres aux employés, par nom.
+  `POST /schedules` `{ name (2..120, unique sans casse, sinon 409 règle scheduleName),
+  isDefault?, weeklyPattern, employeeId? }` ⇒ `201` ; `PATCH /schedules/:id` (mêmes
+  champs, facultatifs) ; `DELETE /schedules/:id` ⇒ `204` (suppression physique).
+  Réponse `{ id, name, isDefault, employeeId, weeklyPattern, createdAt, updatedAt }`,
+  `weeklyPattern` avec les 7 jours (`[]` pour un jour non travaillé). Audit
+  `work_schedule.created|updated|deleted`. Module `timeclock`.
+- **`weeklyPattern`** : `{ mon|tue|wed|thu|fri|sat|sun: [{ start: "HH:MM", end: "HH:MM" }] }`,
+  4 plages par jour au plus, jour absent = non travaillé. Les plages d'un jour se suivent
+  sans se chevaucher ; une plage dont la fin n'est pas après le début finit le lendemain
+  (service de nuit) : seule la dernière du jour, et avant la première plage du jour
+  suivant (sinon `422` règle `scheduleOverlap`, champ `weeklyPattern`).
+- **Affectation** : `employeeId` = horaire propre à cet employé (un seul par employé, `409`
+  règle `scheduleEmployee` ; employé d'une autre organisation ou inconnu `422`). Un
+  employé suit son horaire propre, sinon l'horaire par défaut, sinon aucun (comportement
+  sans horaire : jour civil, pas de retard). Un seul `isDefault` : en marquer un autre
+  le retire à l'ancien ; un horaire propre ne peut pas être par défaut (`422` règle
+  `scheduleDefaultEmployee`) ; l'horaire par défaut ne se supprime pas (`409` règle
+  `scheduleDefault`). Un changement s'applique aux journées recalculées ensuite, les
+  agrégats passés ne sont pas recalculés.
+- **Service de nuit** : la journée qui finit par une plage de nuit s'étend jusqu'à la fin
+  de la plage + 4 h le lendemain, ou 1 h avant la première plage du lendemain si elle
+  vient plus tôt (jamais avant la fin de la plage). Les pointages de cette fenêtre
+  comptent pour le jour du début. La clôture de 23:59 ne ferme une journée que si sa
+  fenêtre finit au plus tard à minuit : une nuit reste ouverte jusqu'à la clôture suivante.
+- **Retard** : `lateMinutes` = minutes entre le début de la première plage du jour et le
+  premier `in` (0 si à l'heure) ; `null` un jour sans plage, un jour férié ou sans `in`.
+  `late` si `lateMinutes > settings.timeclock.lateToleranceMinutes` (0..120, défaut 10).
 - **Aujourd'hui** : `GET /today` ⇒ `{ data: { date, isHoliday, counts: { total, present,
   absent, onLeave }, present: [{ employeeId, fullName, departmentId, firstIn, lastOut,
   isComplete, anomaly }], absent: [{ employeeId, fullName, departmentId }], onLeave: […] } }`

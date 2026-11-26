@@ -119,7 +119,13 @@
     "range": "The end of the period must follow its start.",
     "attendanceRange": "The period cannot exceed 93 days.",
     "exportRange": "An export covers at most 366 days.",
-    "exportTooLarge": "The export exceeds 1,000,000 punches: shorten the period or filter."
+    "exportTooLarge": "The export exceeds 1,000,000 punches: shorten the period or filter.",
+    "scheduleName": "A schedule already has this name.",
+    "scheduleOverlap": "The ranges of a day must follow each other without overlapping; only the last one may end the next day, before the first range of that day.",
+    "scheduleEmployee": "This employee already has their own schedule.",
+    "scheduleDefaultEmployee": "An employee's own schedule cannot be the default schedule.",
+    "scheduleDefault": "The default schedule cannot be deleted: choose another one first.",
+    "employee": "Employee not found."
   },
   "pagination": {
     "cursor": "Invalid pagination cursor."

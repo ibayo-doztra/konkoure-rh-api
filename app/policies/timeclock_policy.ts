@@ -14,6 +14,11 @@ export default class TimeclockPolicy extends BasePolicy {
     return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager', 'security_agent')
   }
 
+  /** Work schedules: read by whoever reads the zones (decision of 2026-11-26). */
+  listSchedules(_user: User) {
+    return this.ctx.tenant.hasRole('owner', 'hr_admin', 'manager', 'security_agent')
+  }
+
   manage(_user: User) {
     return this.ctx.tenant.hasRole('owner', 'hr_admin')
   }

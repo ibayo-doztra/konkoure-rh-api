@@ -80,6 +80,27 @@ export class DashboardRepository {
     return Math.round((Number(row.minutes) / 60) * 10) / 10
   }
 
+  /**
+   * Share of the scheduled days of the period with a first `in` within the
+   * tolerance (decision of 2026-11-26); null without any scheduled day worked.
+   */
+  async punctualityRate(scope: Scope, period: Period, toleranceMinutes: number) {
+    const row = await this.trx
+      .from('attendance_days')
+      .where('organization_id', this.organizationId)
+      .whereBetween('day', [period.from, period.to])
+      .whereNotNull('late_minutes')
+      .whereIn('employee_id', this.scopeIds(scope))
+      .select(
+        this.trx.raw('count(*) as scheduled'),
+        this.trx.raw('count(*) filter (where late_minutes <= ?) as on_time', [toleranceMinutes])
+      )
+      .first()
+    const scheduled = num(row?.scheduled)
+    if (scheduled === 0) return null
+    return Math.round((num(row?.on_time) / scheduled) * 100) / 100
+  }
+
   async outOfZonePunches(scope: Scope, period: Period) {
     const row = await this.trx
       .from('time_logs')

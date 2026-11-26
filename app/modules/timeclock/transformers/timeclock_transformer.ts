@@ -4,7 +4,9 @@ import type NfcBadgeEvent from '#models/nfc_badge_event'
 import type TimeLog from '#models/time_log'
 import type AttendanceDay from '#models/attendance_day'
 import type Employee from '#models/employee'
+import type WorkSchedule from '#models/work_schedule'
 import type WorkZone from '#models/work_zone'
+import { WEEKDAYS } from '#modules/timeclock/schedule_rules'
 import type { PunchResult } from '#modules/timeclock/services/punch_service'
 
 const number = (value: string | null) => (value === null ? null : Number(value))
@@ -111,7 +113,23 @@ export function attendanceDayDto(day: AttendanceDay) {
     workedMinutes: day.workedMinutes,
     punchCount: day.punchCount,
     isComplete: day.isComplete,
+    lateMinutes: day.lateMinutes,
     anomaly: day.anomaly,
+  }
+}
+
+/** Every weekday is present in the output, `[]` for a day off. */
+export function workScheduleDto(schedule: WorkSchedule) {
+  return {
+    id: schedule.id,
+    name: schedule.name,
+    isDefault: schedule.isDefault,
+    employeeId: schedule.employeeId,
+    weeklyPattern: Object.fromEntries(
+      WEEKDAYS.map((day) => [day, schedule.weeklyPattern[day] ?? []])
+    ),
+    createdAt: schedule.createdAt.toISO(),
+    updatedAt: schedule.updatedAt.toISO(),
   }
 }
 

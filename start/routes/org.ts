@@ -450,6 +450,16 @@ export function registerOrgRoutes() {
           router.post('zones', [TimeclockSetupController, 'storeZone']).as('zones.store')
           router.patch('zones/:id', [TimeclockSetupController, 'updateZone']).as('zones.update')
           router.delete('zones/:id', [TimeclockSetupController, 'destroyZone']).as('zones.destroy')
+          router.get('schedules', [TimeclockSetupController, 'schedules']).as('schedules.index')
+          router
+            .post('schedules', [TimeclockSetupController, 'storeSchedule'])
+            .as('schedules.store')
+          router
+            .patch('schedules/:id', [TimeclockSetupController, 'updateSchedule'])
+            .as('schedules.update')
+          router
+            .delete('schedules/:id', [TimeclockSetupController, 'destroySchedule'])
+            .as('schedules.destroy')
           router
             .post('punch', [TimeclockController, 'punch'])
             .as('punch')
