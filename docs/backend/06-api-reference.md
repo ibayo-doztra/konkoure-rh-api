@@ -179,6 +179,23 @@ famille révoquée), `429` (60 / h / utilisateur).
   jour : `leave.requested`, `leave.decided`, `contract.expiring`, `badge.assigned` ; les
   autres de 07 §8 arrivent avec leurs modules.
 
+### `GET /me/export` (décision du 2026-11-26)
+Export RGPD des données personnelles (05 §13). `202 { data: { jobId } }` ; 1 export par
+heure et par utilisateur (`429` au-delà) ; audit `user.exported` (sans organisation) ;
+refusé en impersonation. Le job `users.export` écrit une archive JSON dans l'espace privé
+(clé `users/<userId>/export/<jobId>.json`, hors registre `files` qui est tenant) et envoie
+à l'utilisateur un lien signé valable 24 h (08 §9). Contenu : `exportedAt`, `user`
+(profil, `emailVerifiedAt`, `lastLoginAt`, `createdAt`), `sessions`, et
+`organizations[]` (organisations dont il est membre) : `{ id, name, roles,
+notifications, employee }`, `employee` valant `null` sans fiche liée, sinon
+`{ profile (avec baseSalary, salaryCurrency), contracts, skills, leaveRequests,
+leaveBalances, leaveLedger, timeLogs, attendanceDays, badges, reviews, goals, okrs,
+feedbackReceived, feedbackGiven, achievements }`, dans les formes des endpoints
+correspondants et **telles que l'employé les lit** : évaluations sans synthèse IA ni
+scores 9-box, côté manager visible seulement à partir de `sent_back`, auteur d'un
+feedback privé reçu masqué, badges sans empreinte d'UID. Compte désactivé au moment du
+job : rien n'est produit.
+
 ### `GET /me/sessions`
 `{ data: [{ id, deviceLabel, ip, userAgent, startedAt, lastActivityAt, expiresAt,
 current }] }` : une entrée par famille de refresh tokens ouverte ; `id` est

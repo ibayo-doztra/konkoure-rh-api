@@ -60,6 +60,11 @@
     "body": "The export of {rows} employee(s) is ready. The download link is valid for 24 hours.",
     "action": "Download the export"
   },
+  "personalDataExport": {
+    "subject": "Your personal data export is ready — Konkouré",
+    "body": "The archive of your personal data is ready. The download link is valid for 24 hours.",
+    "action": "Download my data"
+  },
   "timeLogsExport": {
     "subject": "Your punch export is ready — Konkouré",
     "body": "The export of {rows} punch(es) is ready. The download link is valid for 24 hours.",

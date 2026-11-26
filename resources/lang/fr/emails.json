@@ -60,6 +60,11 @@
     "body": "L'export de {rows} employé(s) est prêt. Le lien de téléchargement est valable 24 heures.",
     "action": "Télécharger l'export"
   },
+  "personalDataExport": {
+    "subject": "Votre export de données personnelles est prêt — Konkouré",
+    "body": "L'archive de vos données personnelles est prête. Le lien de téléchargement est valable 24 heures.",
+    "action": "Télécharger mes données"
+  },
   "timeLogsExport": {
     "subject": "Votre export des pointages est prêt — Konkouré",
     "body": "L'export de {rows} pointage(s) est prêt. Le lien de téléchargement est valable 24 heures.",
