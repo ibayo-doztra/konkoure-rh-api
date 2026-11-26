@@ -935,7 +935,8 @@ la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 | GET | `/org/recruitment/candidates/:id/events` | O H R |
 | GET/PUT | `/org/recruitment/webhooks` | O H |
 | POST | `/org/recruitment/webhooks/ping` | O H |
-| GET/POST | `/org/integrations/social/accounts` | O H |
+| GET | `/org/integrations/social/accounts` | O H · R (vue réduite) |
+| POST | `/org/integrations/social/accounts` | O H |
 | DELETE | `/org/integrations/social/accounts/:id` | O H |
 | GET/POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
 | POST | `/org/recruitment/jobs/:id/social-posts/suggest` | O H R |
@@ -954,7 +955,9 @@ publication répondent `503 E_DEPENDENCY_UNAVAILABLE`. Les routes de comptes exi
 le module `integrations` ; la publication, `recruitment` et `integrations`.
 - `GET /org/integrations/social/accounts` (O H) : `{ data: [{ id, provider,
   accountId, accountName, status, scopes, tokenExpiresAt, connectedBy, createdAt,
-  updatedAt }] }`. Les jetons ne sont jamais renvoyés.
+  updatedAt }] }`. Les jetons ne sont jamais renvoyés. Un `recruiter` (décision du
+  2026-11-26, pour choisir ses `accountIds`) reçoit la vue réduite `{ id, provider,
+  accountName, status }` ; il ne connecte ni ne supprime de compte.
 - `POST /org/integrations/social/accounts` (O H) : `{ provider: 'linkedin' |
   'facebook' }` → `{ data: { authorizationUrl } }`. Le client y envoie le navigateur.
   `state` aléatoire à usage unique, valable 10 min, lié à l'organisation et au membre.

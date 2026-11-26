@@ -2,7 +2,10 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import IntegrationPolicy from '#policies/integration_policy'
 import socialAccountService from '#modules/integrations/services/social_account_service'
-import { socialAccountDto } from '#modules/integrations/transformers/social_transformer'
+import {
+  socialAccountDto,
+  socialAccountSummaryDto,
+} from '#modules/integrations/transformers/social_transformer'
 import {
   connectSocialAccountValidator,
   socialAccountIdValidator,
@@ -12,11 +15,14 @@ import { auditContext } from '#modules/auth/http_helpers'
 
 /** Social accounts of the organization (06 §8, decisions of 2026-11-26). */
 export default class SocialAccountsController {
-  @ApiOperation({ summary: 'Connected social accounts (O H), tokens never included' })
+  @ApiOperation({
+    summary: 'Connected social accounts: full view for O H, reduced view for R; never tokens',
+  })
   async index(ctx: HttpContext) {
-    await ctx.bouncer.with(IntegrationPolicy).authorize('manageSocialAccounts')
+    await ctx.bouncer.with(IntegrationPolicy).authorize('listSocialAccounts')
     const accounts = await socialAccountService.list(ctx.tenant)
-    return { data: accounts.map(socialAccountDto) }
+    const full = ctx.tenant.hasRole('owner', 'hr_admin')
+    return { data: accounts.map(full ? socialAccountDto : socialAccountSummaryDto) }
   }
 
   @ApiOperation({ summary: 'Start connecting a LinkedIn or Facebook page (O H): consent URL' })

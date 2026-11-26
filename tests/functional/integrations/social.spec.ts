@@ -197,6 +197,21 @@ test.group('Social accounts', (group) => {
     assert.equal(replay.header('location'), front('error=invalid_state'))
 
     await expectStatus(orgCall(client, 'GET', accountsPath, manager, org), 403)
+
+    // A recruiter lists the accounts to publish on, in the reduced view only.
+    const recruiter = await hrSession(client, org, ['recruiter'])
+    const reduced = await expectStatus(orgCall(client, 'GET', accountsPath, recruiter, org), 200)
+    assert.deepEqual(reduced.body().data, [
+      { id: account.id, provider: 'linkedin', accountName: 'Doztra SA', status: 'active' },
+    ])
+    await expectStatus(
+      orgCall(client, 'POST', accountsPath, recruiter, org).json({ provider: 'linkedin' }),
+      403
+    )
+    await expectStatus(
+      orgCall(client, 'DELETE', `${accountsPath}/${account.id}`, recruiter, org),
+      403
+    )
     await expectStatus(
       orgCall(client, 'POST', accountsPath, manager, org).json({ provider: 'linkedin' }),
       403

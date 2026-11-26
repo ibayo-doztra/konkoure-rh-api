@@ -18,6 +18,16 @@ export function socialAccountDto(account: SocialAccount) {
 }
 
 /** `accountName`: null once the account was disconnected. */
+/** What a recruiter needs to choose where to publish (decision of 2026-11-26). */
+export function socialAccountSummaryDto(account: SocialAccount) {
+  return {
+    id: account.id,
+    provider: account.provider,
+    accountName: account.accountName,
+    status: account.status,
+  }
+}
+
 export function socialPostDto(post: SocialPost, accountName: string | null) {
   return {
     id: post.id,
