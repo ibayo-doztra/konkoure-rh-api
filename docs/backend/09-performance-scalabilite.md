@@ -75,10 +75,10 @@ ANALYZE` prouvant l'absence de `Seq Scan` sur une table > 10 000 lignes.
 
 `time_logs`, `audit_logs` et `usage_events` sont partitionnées **par mois** sur
 leur colonne temporelle. Le job `partitions:ensure` maintient 3 mois d'avance.
-**État au 2026-11-26** : `time_logs` et `audit_logs` sont partitionnées ; `0131` a créé
-les 12 mois à venir (les lignes de ces mois déjà rangées dans `DEFAULT` y sont
-déplacées) et `partitions:ensure` couvre les deux tables. `usage_events` est encore une
-table simple : la convertir demande de recréer la table, à faire avant le gros volume.
+**État au 2026-11-26** : les trois tables sont partitionnées. `0131` a créé les 12 mois
+à venir de `time_logs` et `audit_logs` (les lignes de ces mois déjà rangées dans
+`DEFAULT` y sont déplacées) ; `0141` a recréé `usage_events` en table partitionnée
+(clé primaire `(id, created_at)`, lignes copiées) ; `partitions:ensure` couvre les trois.
 Les partitions de plus de 24 mois sont détachées puis exportées en stockage
 froid (Parquet/CSV compressé) avant suppression.
 
