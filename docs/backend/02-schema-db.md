@@ -630,7 +630,9 @@ Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
 `uploaded_by uuid NULL`, `scanned_at timestamptz NULL`, `scan_result text NULL`,
 `category text NULL` et `name text NULL` (documents d'employé : `owner_type = 'employee'`,
 `category` ∈ `passport`, `national_id`, `diploma`, `certificate`, `medical`, `other`),
-`created_at`. `owner_type` utilisés : `employee`, `employee_photo`, `contract`.
+`created_at`. `owner_type` utilisés : `employee`, `employee_photo`, `contract`, `candidate`,
+`leave_attachment` (pièce d'un congé), `organization_logo` (`owner_id` = l'organisation),
+`employee_export` et `time_log_export` (`owner_id` = l'utilisateur).
 
 ## 11. `organizations.settings` (schéma du JSON)
 

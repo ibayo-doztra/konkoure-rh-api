@@ -212,6 +212,13 @@ export const jobs = {
       return service.run()
     },
   }),
+  'files.purge-orphans': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#shared/files/orphan_file_service')
+      return service.purge()
+    },
+  }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -252,6 +259,7 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'notifications.purge', pattern: '0 3 * * *' },
   { job: 'organizations.purge', pattern: '10 3 * * *' },
   { job: 'partitions.ensure', pattern: '30 3 * * *' },
+  { job: 'files.purge-orphans', pattern: '45 3 * * *' },
   { job: 'attendance.consolidate', pattern: '*/15 * * * *' },
   { job: 'attendance.close-day', pattern: '59 23 * * *' },
 ]

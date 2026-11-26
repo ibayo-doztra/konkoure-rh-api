@@ -6,6 +6,7 @@ import drive from '@adonisjs/drive/services/main'
 import type { ApiClient } from '@japa/api-client'
 import AuditLog from '#models/audit_log'
 import Organization from '#models/organization'
+import StoredFile from '#models/stored_file'
 import type { AppRole } from '#models/user_role'
 import { apiLogin, createOrganization, createUser, grantRoles } from '#tests/helpers/auth'
 import { errorOf, expectStatus } from '#tests/helpers/http'
@@ -188,6 +189,14 @@ test.group('POST /org/logo', (group) => {
     assert.isTrue(await disk.exists(keyOf(second)))
     assert.isFalse(await disk.exists(keyOf(first)))
     assert.lengthOf(await auditCount(org, 'organization.logo_updated'), 2)
+
+    const rows = await StoredFile.query()
+      .where('owner_type', 'organization_logo')
+      .where('owner_id', org.id)
+    assert.deepEqual(
+      rows.map((row) => [row.path, row.bucket, row.visibility]),
+      [[keyOf(second), 'public-assets', 'public']]
+    )
   })
 
   test('judges the real content, not the file name: SVG is refused', async ({ client, assert }) => {

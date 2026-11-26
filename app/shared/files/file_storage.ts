@@ -117,6 +117,24 @@ export class FileStorage {
     }
   }
 
+  /** Space of a `files.bucket` value, or null for an unknown bucket. */
+  spaceOf(bucket: string): Space | null {
+    if (bucket === SPACES.private.bucket) return 'private'
+    if (bucket === SPACES.public.bucket) return 'public'
+    return null
+  }
+
+  /** Deletes the object and tells whether it worked, for callers that retry later. */
+  async remove(space: Space, key: string) {
+    try {
+      await drive.use(SPACES[space].disk).delete(key)
+      return true
+    } catch (error) {
+      logger.warn({ err: error, key }, 'file.delete_failed')
+      return false
+    }
+  }
+
   /** Best effort: an orphan left behind is swept by the maintenance job (08 §6). */
   async deleteQuietly(space: Space, key: string) {
     try {

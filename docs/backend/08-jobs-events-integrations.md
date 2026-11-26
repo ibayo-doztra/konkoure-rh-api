@@ -38,6 +38,7 @@ Tout job est **idempotent** : il vérifie l'état cible avant d'agir.
 | 03h00 | `retention:purge` | Applique les durées de rétention (05 §13) |
 | 03h10 | `organizations:purge` | Purge les organisations supprimées depuis plus de 30 jours (06 §3) |
 | 03h30 | `partitions:ensure` | Crée 3 mois de partitions à l'avance, détache celles > 24 mois |
+| 03h45 | `files:purge-orphans` | Supprime les fichiers du registre `files` sans propriétaire depuis plus de 24 h (§6) |
 | 04h00 | `usage:rollup` | Agrège `usage_events` du jour |
 | 23h59 | `attendance:close-day` | Clôt la journée, détecte `missing_out` |
 | Le 1er à 00h15 | `ai_credits:reset` | Remet à zéro les compteurs mensuels |
@@ -196,7 +197,12 @@ bout du front. Par défaut (`s3`), rien ne change.
 
 Upload : taille et MIME réels vérifiés (05 §3), checksum SHA-256 stocké,
 entrée dans `files`. Les fichiers orphelins (aucun propriétaire après 24 h)
-sont supprimés par le job de maintenance. Analyse antivirus optionnelle
+sont supprimés par le job de maintenance. `files.purge-orphans` (03h45, décision du
+2026-11-26) ne lit que le registre, jamais la liste du bucket : une ligne de plus de
+24 h dont le propriétaire (`owner_type`, `owner_id`) n'existe plus, ou sans `owner_id`,
+est effacée avec son objet. Un propriétaire supprimé logiquement existe encore ; un
+`owner_type` inconnu n'est jamais touché ; une ligne dont l'objet n'a pas pu être
+supprimé reste pour le passage suivant. Analyse antivirus optionnelle
 (`FILE_SCAN_ENABLED`) : tant que `scanned_at` est nul, le fichier n'est pas
 téléchargeable.
 

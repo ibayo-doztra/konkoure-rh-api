@@ -6,6 +6,7 @@ import testUtils from '@adonisjs/core/services/test_utils'
 import limiter from '@adonisjs/limiter/services/main'
 import Employee from '#models/employee'
 import LeaveBalance from '#models/leave_balance'
+import StoredFile from '#models/stored_file'
 import { LeaveDecidedMail, LeaveRequestedMail } from '#modules/leaves/mails/leave_mails'
 import leaveScheduleService from '#modules/leaves/services/leave_schedule_service'
 import { errorOf, expectStatus } from '#tests/helpers/http'
@@ -163,6 +164,16 @@ test.group('Leave attachment', (group) => {
     await expectStatus(orgCall(client, 'POST', `/leaves/${id}/approve`, manager, org), 200)
     await expectStatus(upload(employee, PDF), 403)
     await expectStatus(upload(hr, PDF), 200)
+
+    // The registry keeps only the current document, the replaced one is gone.
+    const rows = await StoredFile.query()
+      .where('owner_type', 'leave_attachment')
+      .where('owner_id', id)
+    assert.lengthOf(rows, 1)
+    assert.equal(rows[0].organizationId, org.id)
+    assert.equal(rows[0].bucket, 'private-docs')
+    assert.equal(rows[0].uploadedBy, hr.user.id)
+    assert.isTrue(await drive.use('s3').exists(rows[0].path))
   })
 })
 
