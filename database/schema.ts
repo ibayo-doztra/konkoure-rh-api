@@ -990,7 +990,7 @@ export class OkrSchema extends BaseModel {
 }
 
 export class OrganizationSchema extends BaseModel {
-  static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
+  static $columns = ['countryCode', 'createdAt', 'createdBy', 'defaultCurrency', 'defaultLanguage', 'deletedAt', 'id', 'logoUrl', 'name', 'performanceModel', 'purgedAt', 'settings', 'slug', 'timezone', 'updatedAt', 'updatedBy'] as const
   $columns = OrganizationSchema.$columns
   @column()
   declare countryCode: string
@@ -1012,6 +1012,8 @@ export class OrganizationSchema extends BaseModel {
   declare name: string
   @column()
   declare performanceModel: 'classic' | 'sap'
+  @column.dateTime()
+  declare purgedAt: DateTime | null
   @column()
   declare settings: Record<string, unknown>
   @column()
@@ -1366,6 +1368,74 @@ export class SkillSchema extends BaseModel {
   declare updatedAt: DateTime
   @column()
   declare updatedBy: string | null
+}
+
+export class SocialAccountSchema extends BaseModel {
+  static $columns = ['accessTokenEncrypted', 'accountId', 'accountName', 'connectedBy', 'createdAt', 'id', 'metadata', 'organizationId', 'provider', 'refreshTokenEncrypted', 'scopes', 'status', 'tokenExpiresAt', 'updatedAt'] as const
+  $columns = SocialAccountSchema.$columns
+  @column()
+  declare accessTokenEncrypted: string
+  @column()
+  declare accountId: string
+  @column()
+  declare accountName: string
+  @column()
+  declare connectedBy: string | null
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare metadata: Record<string, unknown>
+  @column()
+  declare organizationId: string
+  @column()
+  declare provider: 'facebook' | 'linkedin' | 'twitter'
+  @column()
+  declare refreshTokenEncrypted: string | null
+  @column()
+  declare scopes: string[]
+  @column()
+  declare status: 'active' | 'expired' | 'revoked'
+  @column.dateTime()
+  declare tokenExpiresAt: DateTime | null
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+}
+
+export class SocialPostSchema extends BaseModel {
+  static $columns = ['content', 'createdAt', 'createdBy', 'errorMessage', 'externalPostId', 'externalUrl', 'id', 'jobId', 'mediaUrls', 'organizationId', 'provider', 'publishedAt', 'socialAccountId', 'status', 'updatedAt'] as const
+  $columns = SocialPostSchema.$columns
+  @column()
+  declare content: string
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare errorMessage: string | null
+  @column()
+  declare externalPostId: string | null
+  @column()
+  declare externalUrl: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare jobId: string
+  @column()
+  declare mediaUrls: string[]
+  @column()
+  declare organizationId: string
+  @column()
+  declare provider: 'facebook' | 'linkedin' | 'twitter'
+  @column.dateTime()
+  declare publishedAt: DateTime | null
+  @column()
+  declare socialAccountId: string | null
+  @column()
+  declare status: 'pending' | 'published' | 'failed'
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
 }
 
 export class SubscriptionSchema extends BaseModel {

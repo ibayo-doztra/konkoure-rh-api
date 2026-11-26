@@ -169,6 +169,7 @@ Index : `(user_id, revoked_at)`, `(family_id)`, `(expires_at)`.
 | `performance_model` | `performance_model NOT NULL DEFAULT 'classic'` | |
 | `settings` | `jsonb NOT NULL DEFAULT '{}'` | préférences libres (voir §11) |
 | `deleted_at` | `timestamptz NULL` | |
+| `purged_at` | `timestamptz NULL` | purge à 30 jours faite (migration 0117, 2026-11-26) |
 
 ### `user_roles`
 | Colonne | Type |
@@ -618,7 +619,9 @@ abandonné (`jobs`) et chaque écart de paiement (`payments`), purgée chaque nu
 - `social_posts` : `id`, `organization_id`, `job_id`, `social_account_id`,
   `provider`, `content text NOT NULL`, `media_urls jsonb NOT NULL DEFAULT '[]'`,
   `status social_post_status NOT NULL DEFAULT 'pending'`,
-  `external_post_id`, `external_url`, `error_message`, `published_at`.
+  `external_post_id`, `external_url`, `error_message`, `published_at`, `created_by`
+  (migrations 0120-0121, 2026-11-26 ; `social_account_id` passe à `null` quand le compte
+  est supprimé).
 
 ### `files`
 Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
@@ -629,7 +632,9 @@ Registre centralisé des fichiers stockés : `id`, `organization_id uuid NULL`,
 `uploaded_by uuid NULL`, `scanned_at timestamptz NULL`, `scan_result text NULL`,
 `category text NULL` et `name text NULL` (documents d'employé : `owner_type = 'employee'`,
 `category` ∈ `passport`, `national_id`, `diploma`, `certificate`, `medical`, `other`),
-`created_at`. `owner_type` utilisés : `employee`, `employee_photo`, `contract`.
+`created_at`. `owner_type` utilisés : `employee`, `employee_photo`, `contract`, `candidate`,
+`leave_attachment` (pièce d'un congé), `organization_logo` (`owner_id` = l'organisation),
+`employee_export` et `time_log_export` (`owner_id` = l'utilisateur).
 
 ## 11. `organizations.settings` (schéma du JSON)
 

@@ -33,6 +33,7 @@ export default class PlatformOrganizationsController {
       q: query.q,
       status: query.filter?.status,
       planCode: query.filter?.plan,
+      deleted: query.filter?.deleted,
     })
     return {
       data: rows.map(platformOrganizationRowDto),
@@ -83,6 +84,18 @@ export default class PlatformOrganizationsController {
     const { params } = await ctx.request.validateUsing(idValidator)
     await ctx.bouncer.with(PlatformPolicy).authorize('root')
     const detail = await organizationService.reactivate(
+      params.id,
+      ctx.auth.getUserOrFail(),
+      auditContext(ctx)
+    )
+    return ctx.serialize(platformOrganizationDto(detail))
+  }
+
+  @ApiOperation({ summary: 'Restore a deleted organization within its 30 days (root)' })
+  async restore(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(idValidator)
+    await ctx.bouncer.with(PlatformPolicy).authorize('root')
+    const detail = await organizationService.restore(
       params.id,
       ctx.auth.getUserOrFail(),
       auditContext(ctx)

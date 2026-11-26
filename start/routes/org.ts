@@ -34,6 +34,10 @@ const SuccessionController = () => import('#modules/talents/controllers/successi
 const NineBoxController = () => import('#modules/talents/controllers/nine_box_controller')
 const SkillsMatrixController = () => import('#modules/talents/controllers/skills_matrix_controller')
 const JobsController = () => import('#modules/recruitment/controllers/jobs_controller')
+const SocialAccountsController = () =>
+  import('#modules/integrations/controllers/social_accounts_controller')
+const SocialPostsController = () =>
+  import('#modules/integrations/controllers/social_posts_controller')
 const RecruitmentWebhooksController = () =>
   import('#modules/recruitment/controllers/recruitment_webhooks_controller')
 const CandidatesController = () => import('#modules/recruitment/controllers/candidates_controller')
@@ -379,6 +383,15 @@ export function registerOrgRoutes() {
               router.post(':id/duplicate', [JobsController, 'duplicate']).as('duplicate')
               router.get(':id/qr', [JobsController, 'qr']).as('qr')
               router.post(':id/generate', [JobsController, 'generate']).as('generate')
+              router
+                .get(':id/social-posts', [SocialPostsController, 'index'])
+                .as('social_posts.index')
+              router
+                .post(':id/social-posts', [SocialPostsController, 'store'])
+                .as('social_posts.store')
+              router
+                .post(':id/social-posts/suggest', [SocialPostsController, 'suggest'])
+                .as('social_posts.suggest')
             })
             .prefix('jobs')
             .as('jobs')
@@ -420,6 +433,16 @@ export function registerOrgRoutes() {
         .prefix('recruitment')
         .as('recruitment')
         .use(middleware.entitlement({ module: 'recruitment' }))
+
+      router
+        .group(() => {
+          router.get('/', [SocialAccountsController, 'index']).as('index')
+          router.post('/', [SocialAccountsController, 'store']).as('store')
+          router.delete(':id', [SocialAccountsController, 'destroy']).as('destroy')
+        })
+        .prefix('integrations/social/accounts')
+        .as('integrations.social_accounts')
+        .use(middleware.entitlement({ module: 'integrations' }))
 
       router
         .group(() => {

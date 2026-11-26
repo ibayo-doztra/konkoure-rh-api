@@ -19,6 +19,7 @@ export function platformOrganizationRowDto(row: OrganizationRow) {
     name: row.name,
     slug: row.slug,
     createdAt: iso(row.createdAt),
+    deletedAt: iso(row.deletedAt),
     employees: row.employees,
     subscription: row.subscriptionStatus
       ? {
@@ -51,6 +52,7 @@ export function platformOrganizationDto(detail: {
     defaultLanguage: organization.defaultLanguage,
     createdAt: organization.createdAt.toISO(),
     deletedAt: organization.deletedAt?.toISO() ?? null,
+    purgedAt: organization.purgedAt?.toISO() ?? null,
     subscription:
       detail.subscription && detail.entitlements
         ? {

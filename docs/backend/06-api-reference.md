@@ -256,6 +256,15 @@ En-tête `X-Organization-Id` absent ou non uuid ⇒ `400 E_BAD_REQUEST`
   signature ; SVG refusé (05 §3). Plus de 2 Mo ⇒ `413 E_PAYLOAD_TOO_LARGE`.
 - `DELETE` `{ confirmName }` → `204`. Nom différent ⇒ `422`,
   `details[0].rule = "mismatch"`. L'accès cesse immédiatement.
+  Décisions du 2026-11-26 : pendant 30 jours, un `root` peut annuler la suppression
+  (`POST /platform/organizations/:id/restore`, §13). Ensuite, la tâche
+  `organizations:purge` supprime les fichiers de l'organisation (préfixe `<orgId>/` des
+  deux espaces) et toutes ses lignes tenant, **sauf** les paiements, les factures (et
+  leurs PDF, sous `invoices/<orgId>/`), les abonnements et les journaux d'audit. La ligne
+  `organizations` reste, anonymisée (nom `Organisation supprimée`, slug
+  `deleted-<id>`, logo et réglages effacés) avec `purged_at` ; journal
+  `organization.purged` (acteur `system`, ancien nom et slug). Les comptes
+  utilisateurs restent, seuls leurs rôles dans l'organisation disparaissent.
 - Journaux `organization.updated`, `organization.settings_updated`,
   `organization.logo_updated`, `organization.deleted`.
 
@@ -318,11 +327,23 @@ Renvoie, filtré selon le rôle (un `employee` ne voit que ses propres chiffres)
   "recruitment": { "openJobs": 3, "newCandidates": 27, "hired": 2 },
   "performance": { "reviewsInProgress": 18, "reviewsSigned": 42,
                    "avgGoalProgress": 61 },
+  "payroll": { "total": 182500000, "currency": "GNF" },
+  "previous": {
+    "period": { "from":"2026-08-01","to":"2026-08-31" },
+    "headcount": { "total": 124, "active": null, "onLeave": null, "newHires": 3, "exits": 0 },
+    "attendance": { "punctualityRate": null, "avgWorkedHours": 7.4,
+                    "absencesToday": null, "outOfZonePunches": 5 },
+    "leaves": { "pending": null, "approvedThisPeriod": 11, "daysTaken": 40 },
+    "recruitment": { "openJobs": null, "newCandidates": 19, "hired": 1 },
+    "performance": { "reviewsInProgress": null, "reviewsSigned": 30, "avgGoalProgress": null },
+    "payroll": { "total": 179000000, "currency": "GNF" }
+  },
   "series": { "headcountByMonth": [], "punchesByDay": [], "leavesByType": [] }
 }}
 ```
 Sources : `attendance_days`, `leave_balances`, agrégats précalculés. Cache Redis
-5 min, clé `dash:<orgId>:<period>:<roleScope>`.
+5 min, clé `dash:v2:<orgId>:<period>:<roleScope>[:rec][:pay]` (suffixes selon que le
+rôle voit le recrutement ou la masse salariale).
 
 Décisions du 2026-11-20 :
 - **Période** : semaine (lundi–dimanche), mois ou trimestre calendaire **en cours**, dans
@@ -339,9 +360,27 @@ Décisions du 2026-11-20 :
   approuvés commençant dans la période. Séries : `headcountByMonth` sur 12 mois
   `[{ month: 'YYYY-MM', total }]`, `punchesByDay` `[{ day, count }]` (jours sans pointage
   omis), `leavesByType` `[{ type, days }]`.
-- **Modules** : `recruitment` vaut `null` tant que son module n'est pas livré ; un bloc (ou une série) dont le module n'est pas dans les droits de
+- **Modules** : un bloc (ou une série) dont le module n'est pas dans les droits de
   l'organisation vaut `null` (`hr` : effectifs, `timeclock` : présence, `leaves` : congés).
   La route n'a donc pas de middleware d'entitlement.
+- **Recrutement, masse salariale et période précédente** (2026-11-26) :
+  - `recruitment` (module `recruitment`) : toute l'organisation, pour `owner`, `hr_admin`
+    et `recruiter`, `null` pour les autres rôles. `openJobs` = offres `published` ;
+    `newCandidates` = candidatures reçues dans la période ; `hired` = candidats passés à
+    `hired` dans la période (événement `stage_changed`).
+  - `payroll` (module `hr`, donnée sensible) : `owner` et `hr_admin` seulement, `null`
+    pour tous les autres rôles, manager compris. `total` = somme des `contracts.salary`
+    des contrats `active` en vigueur aujourd'hui (début passé, fin absente ou à venir),
+    un par employé non supprimé (le plus récent), dans la devise de l'organisation
+    (`currency`) ; les contrats dans une autre devise sont ignorés, jamais additionnés.
+  - `previous` : les mêmes blocs pour la période équivalente précédente (semaine, mois
+    ou trimestre d'avant), sans `series`, avec les mêmes règles de `null` (module, rôle).
+    Les indicateurs d'état à l'instant présent ne sont pas historisés et valent `null` :
+    `headcount.active`, `onLeave`, `attendance.absencesToday`, `punctualityRate`,
+    `leaves.pending`, `recruitment.openJobs`, `performance.reviewsInProgress` et
+    `avgGoalProgress`. `headcount.total` = effectif présent le dernier jour de la période
+    (embauché avant, sans départ antérieur). `payroll` = contrats en vigueur ce jour-là,
+    quel que soit leur statut actuel, sauf `draft`. Le client calcule les écarts.
 - **Performance** (2026-11-23) : `reviewsInProgress` = évaluations du périmètre non
   signées ; `reviewsSigned` = signées dans la période ; `avgGoalProgress` = moyenne
   arrondie de la progression des objectifs non supprimés et non annulés (`null` sans
@@ -896,12 +935,61 @@ la soumission de la candidature (07 §4.4). La lecture d'un candidat renvoie
 | GET | `/org/recruitment/candidates/:id/events` | O H R |
 | GET/PUT | `/org/recruitment/webhooks` | O H |
 | POST | `/org/recruitment/webhooks/ping` | O H |
-| GET/POST | `/org/integrations/social/accounts` | O H |
+| GET | `/org/integrations/social/accounts` | O H · R (vue réduite) |
+| POST | `/org/integrations/social/accounts` | O H |
 | DELETE | `/org/integrations/social/accounts/:id` | O H |
-| POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
+| GET/POST | `/org/recruitment/jobs/:id/social-posts` | O H R |
+| POST | `/org/recruitment/jobs/:id/social-posts/suggest` | O H R |
+| GET | `/api/v1/oauth/social/:provider/callback` | public (retour OAuth) |
 
 Filtres candidats : `filter[jobId]`, `filter[stage]`, `filter[minScore]`, `q`.
 Le changement d'étape écrit un `candidate_events` et notifie les recruteurs.
+
+### Publication sur les réseaux sociaux (décisions du 2026-11-26)
+Réseaux branchés : **page entreprise LinkedIn** (API Community Management, scopes
+`r_organization_admin w_organization_social`) et **pages Facebook** (Graph API v21,
+`pages_manage_posts pages_read_engagement pages_show_list`). `twitter` reste dans
+l'enum sans client (`422` à la connexion). Sans identifiants du réseau
+(`LINKEDIN_CLIENT_ID`/`_SECRET`, `FACEBOOK_APP_ID`/`_SECRET`), la connexion et la
+publication répondent `503 E_DEPENDENCY_UNAVAILABLE`. Les routes de comptes exigent
+le module `integrations` ; la publication, `recruitment` et `integrations`.
+- `GET /org/integrations/social/accounts` (O H) : `{ data: [{ id, provider,
+  accountId, accountName, status, scopes, tokenExpiresAt, connectedBy, createdAt,
+  updatedAt }] }`. Les jetons ne sont jamais renvoyés. Un `recruiter` (décision du
+  2026-11-26, pour choisir ses `accountIds`) reçoit la vue réduite `{ id, provider,
+  accountName, status }` ; il ne connecte ni ne supprime de compte.
+- `POST /org/integrations/social/accounts` (O H) : `{ provider: 'linkedin' |
+  'facebook' }` → `{ data: { authorizationUrl } }`. Le client y envoie le navigateur.
+  `state` aléatoire à usage unique, valable 10 min, lié à l'organisation et au membre.
+- `GET /api/v1/oauth/social/:provider/callback?code&state[&error]` (public, appelé
+  par le réseau) : redirige toujours vers
+  `<WEB_APP_URL>/app/settings/integrations?connected=<provider>&count=<n>` ou
+  `?error=<code>`, avec `code` ∈ `invalid_state` (absent, rejoué, expiré ou autre
+  réseau), `denied` (refus du membre), `forbidden` (le membre n'est plus O H),
+  `no_pages` (aucune page administrée), `provider_error`, `unavailable`. Chaque page
+  accordée devient un compte (une ligne par page LinkedIn ou Facebook) ; une
+  reconnexion met à jour la ligne existante. Journal `social_account.connected`.
+  URL de rappel à déclarer chez chaque réseau : `<APP_URL>/api/v1/oauth/social/<provider>/callback`.
+- `DELETE /org/integrations/social/accounts/:id` (O H) → `204`, journal
+  `social_account.disconnected` ; les publications passées gardent leur réseau
+  (`socialAccountId` devient `null`).
+- `POST /org/recruitment/jobs/:id/social-posts` (O H R) : `{ accountIds: uuid[]
+  (1 à 10), content (1 à 3000) }` → `202 { data: [post] }`, une publication `pending`
+  par compte, envoyée par la file `outbound` avec le lien de l'offre sur la page
+  carrières. `post` : `{ id, jobId, socialAccountId, accountName (`null` si le compte est
+  supprimé), provider, content, status,
+  externalPostId, externalUrl, errorMessage, publishedAt, createdAt }`. Offre non
+  publiée ⇒ `409` (`rule = "notPublished"`) ; compte inconnu, d'une autre
+  organisation ou non `active` ⇒ `422` (`field = "accountIds"`). Un refus du réseau
+  passe la publication en `failed` avec son message ; un jeton expiré passe aussi
+  le compte en `expired` et notifie les O H (`social_account.expired`).
+- `GET /org/recruitment/jobs/:id/social-posts` (O H R, ajouté le 2026-11-26) :
+  `{ data: [post] }`, les publications de l'offre du plus récent au plus ancien
+  (100 au plus), pour suivre `pending → published | failed` (`externalUrl`,
+  `publishedAt`, `errorMessage`). Offre d'une autre organisation ⇒ `404`.
+- `POST /org/recruitment/jobs/:id/social-posts/suggest` (O H R) : `{ provider,
+  language? }` → `{ data: { content } }`, texte et hashtags proposés par l'IA
+  (`social.post`, 1 crédit), sans URL ni salaire, non enregistré.
 
 ---
 
@@ -1301,6 +1389,7 @@ invalide, `409` si `event_id` déjà traité (réponse idempotente `200` en prat
 | GET | `/platform/organizations/:id` | support | détail complet, usage |
 | PATCH | `/platform/organizations/:id/subscription` | **root** | plan, statut, cycle, échéance, overrides |
 | POST | `/platform/organizations/:id/suspend` \| `/reactivate` | **root** |
+| POST | `/platform/organizations/:id/restore` | **root** |
 | GET/POST | `/platform/plans` | lecture support / écriture **root** |
 | PATCH/DELETE | `/platform/plans/:id` | **root** |
 | GET | `/platform/users` | support | recherche globale |
@@ -1332,9 +1421,11 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   en cours (`active`, `past_due`, `canceled` avant échéance) ; churn = offres payantes
   dont l'accès a pris fin dans les 30 derniers jours.
 - `GET /platform/organizations` : `page`, `perPage`, `q` (nom ou slug),
-  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code) ;
-  lignes `{ id, name, slug, createdAt, employees, subscription: { status, cycle,
-  planCode, planName, trialEndsAt, currentPeriodEnd } | null }`.
+  `filter[status]` (statut enregistré de l'abonnement courant), `filter[plan]` (code),
+  `filter[deleted]` (booléen, 2026-11-26 : les organisations supprimées non encore
+  purgées au lieu des actives) ; lignes `{ id, name, slug, createdAt, deletedAt,
+  employees, subscription: { status, cycle, planCode, planName, trialEndsAt,
+  currentPeriodEnd } | null }`.
 - `GET /platform/organizations/:id` : organisation, `subscription` (forme de
   `GET /org/billing/subscription` + `storedStatus`, `maxEmployeesOverride`,
   `modulesOverride`), `usage`, `counts: { members, employees }`, `owners: [{ id,
@@ -1344,6 +1435,11 @@ Accès : `auth` puis admin plateforme actif (`403 E_FORBIDDEN` sinon, inactif co
   des droits invalidé. `POST suspend` : `suspended` (`hr` en lecture seule), `409` si
   déjà suspendu ou expiré ; `POST reactivate` : depuis `suspended` seulement, statut
   recalculé depuis l'échéance (`409` sinon). Réponse : le détail.
+- `POST /platform/organizations/:id/restore` (root, 2026-11-26) : annule un `DELETE /org`
+  dans les 30 jours (`deleted_at` remis à `null`, journal `platform.organization_restored`,
+  cache des droits invalidé). `409` `rule = "notDeleted"` pour une organisation active,
+  `rule = "purged"` après 30 jours ou après la purge ; `404` si inconnue. Réponse : le
+  détail, qui porte aussi `deletedAt` et `purgedAt`.
 - `GET /platform/plans` : toutes les offres, supprimées comprises (`planDto` +
   `priceGnf`, `explicitYearlyPriceGnf`, `sortOrder`, `isPublic`, `deletedAt`).
   `POST` (root) : `{ code (a-z, 0-9, -, _), name, priceGnf, priceYearlyGnf?,

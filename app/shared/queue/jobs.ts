@@ -7,6 +7,7 @@ import type { ExportJob } from '#modules/hr/services/employee_export_service'
 import type { TimeLogExportJob } from '#modules/timeclock/services/time_log_export_service'
 import type { UsageRecord } from '#modules/billing/services/ai_credit_service'
 import type { ScoreJob } from '#modules/recruitment/services/scoring_service'
+import type { PublishJob } from '#modules/integrations/services/social_post_service'
 
 type CompiledMail = Parameters<MailerMessenger['queue']>[0]
 
@@ -204,6 +205,37 @@ export const jobs = {
       return service.purge()
     },
   }),
+  'organizations.purge': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } =
+        await import('#modules/organizations/services/organization_purge_service')
+      return service.run()
+    },
+  }),
+  'files.purge-orphans': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } = await import('#shared/files/orphan_file_service')
+      return service.purge()
+    },
+  }),
+  'social.publish': defineJob<PublishJob>({
+    queue: 'outbound',
+    handle: async (payload) => {
+      const { default: service } =
+        await import('#modules/integrations/services/social_post_service')
+      return service.publish(payload)
+    },
+  }),
+  'social.refresh-tokens': defineJob<Record<string, never>>({
+    queue: 'maintenance',
+    handle: async () => {
+      const { default: service } =
+        await import('#modules/integrations/services/social_post_service')
+      return service.refreshTokens()
+    },
+  }),
   'subscriptions.lifecycle': defineJob<Record<string, never>>({
     queue: 'maintenance',
     handle: async () => {
@@ -242,7 +274,10 @@ export const SCHEDULES: ReadonlyArray<{ job: JobName; pattern: string }> = [
   { job: 'leaves.annual-rollover', pattern: '30 0 1 1 *' },
   { job: 'contracts.expiring', pattern: '0 2 * * *' },
   { job: 'notifications.purge', pattern: '0 3 * * *' },
+  { job: 'organizations.purge', pattern: '10 3 * * *' },
   { job: 'partitions.ensure', pattern: '30 3 * * *' },
+  { job: 'files.purge-orphans', pattern: '45 3 * * *' },
+  { job: 'social.refresh-tokens', pattern: '15 4 * * *' },
   { job: 'attendance.consolidate', pattern: '*/15 * * * *' },
   { job: 'attendance.close-day', pattern: '59 23 * * *' },
 ]

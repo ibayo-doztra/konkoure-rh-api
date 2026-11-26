@@ -10,6 +10,8 @@ export interface OrganizationListFilters {
   q?: string
   status?: SubscriptionStatus
   planCode?: string
+  /** Deleted organizations still restorable (not purged) instead of live ones. */
+  deleted?: boolean
 }
 
 export interface OrganizationRow {
@@ -17,6 +19,7 @@ export interface OrganizationRow {
   name: string
   slug: string
   createdAt: Date
+  deletedAt: Date | null
   employees: number
   subscriptionStatus: SubscriptionStatus | null
   cycle: string | null
@@ -49,7 +52,8 @@ export class PlatformOrganizationRepository {
         .from('organizations as o')
         .joinRaw(CURRENT_SUBSCRIPTION)
         .leftJoin('plans as p', 'p.id', 'cs.plan_id')
-        .whereNull('o.deleted_at')
+      if (filters.deleted) query.whereNotNull('o.deleted_at').whereNull('o.purged_at')
+      else query.whereNull('o.deleted_at')
       if (filters.q) {
         const pattern = likePattern(filters.q)
         query.where((search) =>
@@ -67,6 +71,7 @@ export class PlatformOrganizationRepository {
         'o.name',
         'o.slug',
         'o.created_at',
+        'o.deleted_at',
         'cs.status as subscription_status',
         'cs.cycle',
         'cs.trial_ends_at',
@@ -92,6 +97,7 @@ export class PlatformOrganizationRepository {
         name: row.name,
         slug: row.slug,
         createdAt: row.created_at,
+        deletedAt: row.deleted_at,
         employees: row.employees,
         subscriptionStatus: row.subscription_status,
         cycle: row.cycle,
