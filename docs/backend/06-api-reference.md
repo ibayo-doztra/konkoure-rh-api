@@ -196,6 +196,21 @@ scores 9-box, côté manager visible seulement à partir de `sent_back`, auteur 
 feedback privé reçu masqué, badges sans empreinte d'UID. Compte désactivé au moment du
 job : rien n'est produit.
 
+### `DELETE /me` (décision du 2026-11-26)
+Suppression RGPD du compte (04 §3, 05 §13). Corps `{ password }` : absent ⇒ `422`,
+faux ⇒ `422` (champ `password`, règle `invalid`). Refusée en impersonation. `409`
+`E_CONFLICT` si l'utilisateur est le **seul owner actif** d'une organisation non
+supprimée : un détail par organisation, `{ field: "organizations.<id>", rule: "lastOwner" }`
+(nommer un autre owner ou supprimer l'organisation d'abord) ; `409` règle `lastRoot`
+(champ `platform`) pour le dernier root plateforme actif. Sinon `204`, dans une seule
+transaction : compte anonymisé (`email = deleted+<id>@invalid`, `fullName`, `avatarUrl` et
+mot de passe vidés, `is_active = false`, `deleted_at` posé), toutes les sessions révoquées,
+tous les rôles retirés, jetons de réinitialisation supprimés, fiche admin plateforme
+désactivée ; dans chaque organisation, la fiche employé est **conservée** mais détachée du
+compte (`user_id = null`) et les notifications de l'utilisateur sont supprimées. Audit
+`user.deleted` sans e-mail ni organisation. L'ancienne adresse redevient libre pour une
+nouvelle inscription.
+
 ### `GET /me/sessions`
 `{ data: [{ id, deviceLabel, ip, userAgent, startedAt, lastActivityAt, expiresAt,
 current }] }` : une entrée par famille de refresh tokens ouverte ; `id` est

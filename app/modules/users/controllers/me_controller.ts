@@ -2,9 +2,11 @@ import type { HttpContext } from '@adonisjs/core/http'
 import { ApiBody, ApiOperation } from '@foadonis/openapi/decorators'
 import meService from '#modules/users/services/me_service'
 import personalDataExportService from '#modules/users/services/personal_data_export_service'
+import accountDeletionService from '#modules/users/services/account_deletion_service'
 import passwordService from '#modules/auth/services/password_service'
 import {
   changePasswordValidator,
+  deleteMeValidator,
   sessionIdValidator,
   updateMeValidator,
 } from '#modules/users/validators/me_validator'
@@ -84,5 +86,13 @@ export default class MeController {
     )
     ctx.response.status(202)
     return ctx.serialize(result)
+  }
+
+  @ApiOperation({ summary: 'Delete my account (GDPR anonymization)' })
+  @ApiBody({ type: () => deleteMeValidator })
+  async destroy(ctx: HttpContext) {
+    const { password } = await ctx.request.validateUsing(deleteMeValidator)
+    await accountDeletionService.delete(ctx.auth.getUserOrFail(), password, auditContext(ctx))
+    return ctx.response.noContent()
   }
 }
