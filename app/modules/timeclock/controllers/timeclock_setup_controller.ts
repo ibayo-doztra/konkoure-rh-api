@@ -4,10 +4,12 @@ import TimeclockPolicy from '#policies/timeclock_policy'
 import badgeService from '#modules/timeclock/services/badge_service'
 import deviceTokenService from '#modules/timeclock/services/device_token_service'
 import zoneService from '#modules/timeclock/services/zone_service'
+import workScheduleService from '#modules/timeclock/services/work_schedule_service'
 import {
   badgeDto,
   badgeEventDto,
   deviceTokenDto,
+  workScheduleDto,
   zoneDto,
 } from '#modules/timeclock/transformers/timeclock_transformer'
 import { pageMetaDto } from '#modules/hr/transformers/hr_transformer'
@@ -15,13 +17,15 @@ import {
   assignBadgeValidator,
   badgeEventsValidator,
   createDeviceTokenValidator,
+  createScheduleValidator,
   createZoneValidator,
   idValidator,
+  updateScheduleValidator,
   updateZoneValidator,
 } from '#modules/timeclock/validators/timeclock_validator'
 import { auditContext } from '#modules/auth/http_helpers'
 
-/** Zones, badges and kiosk tokens (06-api-reference §6). */
+/** Zones, work schedules, badges and kiosk tokens (06-api-reference §6). */
 export default class TimeclockSetupController {
   @ApiOperation({ summary: 'Work zones' })
   async zones(ctx: HttpContext) {
@@ -59,6 +63,50 @@ export default class TimeclockSetupController {
     const { params } = await ctx.request.validateUsing(idValidator)
     await ctx.bouncer.with(TimeclockPolicy).authorize('manage')
     await zoneService.remove(ctx.tenant, params.id, auditContext(ctx))
+    return ctx.response.noContent()
+  }
+
+  @ApiOperation({ summary: 'Work schedules' })
+  async schedules(ctx: HttpContext) {
+    await ctx.bouncer.with(TimeclockPolicy).authorize('listSchedules')
+    const schedules = await workScheduleService.list(ctx.tenant)
+    return { data: schedules.map(workScheduleDto) }
+  }
+
+  @ApiOperation({ summary: 'Create a work schedule' })
+  @ApiBody({ type: () => createScheduleValidator })
+  async storeSchedule(ctx: HttpContext) {
+    const input = await ctx.request.validateUsing(createScheduleValidator)
+    await ctx.bouncer.with(TimeclockPolicy).authorize('manage')
+    const schedule = await workScheduleService.create(
+      ctx.tenant,
+      ctx.auth.getUserOrFail(),
+      input,
+      auditContext(ctx)
+    )
+    ctx.response.status(201)
+    return ctx.serialize(workScheduleDto(schedule))
+  }
+
+  @ApiOperation({ summary: 'Change a work schedule' })
+  @ApiBody({ type: () => updateScheduleValidator })
+  async updateSchedule(ctx: HttpContext) {
+    const { params, ...input } = await ctx.request.validateUsing(updateScheduleValidator)
+    await ctx.bouncer.with(TimeclockPolicy).authorize('manage')
+    const schedule = await workScheduleService.update(
+      ctx.tenant,
+      params.id,
+      input,
+      auditContext(ctx)
+    )
+    return ctx.serialize(workScheduleDto(schedule))
+  }
+
+  @ApiOperation({ summary: 'Delete a work schedule' })
+  async destroySchedule(ctx: HttpContext) {
+    const { params } = await ctx.request.validateUsing(idValidator)
+    await ctx.bouncer.with(TimeclockPolicy).authorize('manage')
+    await workScheduleService.remove(ctx.tenant, params.id, auditContext(ctx))
     return ctx.response.noContent()
   }
 

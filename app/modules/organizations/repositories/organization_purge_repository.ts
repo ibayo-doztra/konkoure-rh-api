@@ -33,6 +33,7 @@ export const PURGED_TABLES = [
   'nfc_badges',
   'device_tokens',
   'work_zones',
+  'work_schedules',
   'leave_balance_ledger',
   'leave_balances',
   'leave_requests',

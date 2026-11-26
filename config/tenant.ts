@@ -16,6 +16,7 @@ export const organizationSettingsDefaults = {
     allowManualPunch: true,
     maxAccuracyMeters: 100,
     duplicateWindowSeconds: 120,
+    lateToleranceMinutes: 10,
   },
   performance: { ratingScale: 5, requireSignature: true },
   recruitment: { autoScore: true, notifyOnApplication: true },

@@ -43,6 +43,7 @@ export class AttendanceDayRepository extends TenantRepository<typeof AttendanceD
       worked_minutes: aggregate.workedMinutes,
       punch_count: aggregate.punchCount,
       is_complete: aggregate.isComplete,
+      late_minutes: aggregate.lateMinutes,
       anomaly: aggregate.anomaly,
     }
     await this.trx

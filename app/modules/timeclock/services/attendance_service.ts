@@ -13,7 +13,15 @@ import { leaveRequestsIn } from '#modules/leaves/repositories/leave_request_repo
 import { holidaysIn } from '#modules/leaves/repositories/holiday_repository'
 import { attendanceDaysIn } from '#modules/timeclock/repositories/attendance_day_repository'
 import { timeLogsIn } from '#modules/timeclock/repositories/time_log_repository'
+import { workSchedulesIn } from '#modules/timeclock/repositories/work_schedule_repository'
 import { aggregateDay, dayBounds, localDay } from '#modules/timeclock/attendance_rules'
+import {
+  attendanceDayOf,
+  attendanceWindow,
+  scheduledStart,
+  type WeeklyPattern,
+} from '#modules/timeclock/schedule_rules'
+import { timeclockSettings } from '#modules/timeclock/timeclock_rules'
 import { visibleEmployeeIds } from '#modules/timeclock/scope'
 
 /** Recompute delay after a punch (07 §2.8): a burst of punches costs one recompute. */
@@ -50,12 +58,15 @@ const member = (organizationId: string, employeeId: string, day: string) =>
 /**
  * Daily attendance (docs/backend/02 §5, 07 §2.8, 08 §2–3): `attendance_days`
  * is recomputed after each punch (debounced), every 15 minutes from the dirty
- * set, and closed at 23:59 local time.
+ * set, and closed at 23:59 local time. The employee's work schedule (their
+ * own, else the default) sets the day's window, a night range keeping the
+ * next morning on its day, and the start that decides lateness.
  */
 export class AttendanceService {
   /**
-   * Recomputes one employee's local day from its punches (idempotent). A day
-   * before today, or `closed` explicitly, turns an open pair into `missing_out`.
+   * Recomputes one employee's attendance day from its punches (idempotent).
+   * A day whose window has ended, or `closed` explicitly when the window ends
+   * by the end of the current local day, turns an open pair into `missing_out`.
    */
   recompute(
     organizationId: string,
@@ -69,15 +80,27 @@ export class AttendanceService {
       const logs = timeLogsIn(organizationId, trx)
       // Same lock as the punches: a concurrent punch waits, then marks the day again.
       await logs.lockEmployee(employeeId)
-      const { start, end } = dayBounds(day, organization.timezone)
+      const timezone = organization.timezone
+      const schedule = await workSchedulesIn(organizationId, trx).resolve(employeeId)
+      const pattern = schedule?.weeklyPattern ?? null
+      const { start, end } = attendanceWindow(day, timezone, pattern)
       const punches = await logs.ofEmployeeBetween(employeeId, start.toISO()!, end.toISO()!)
       const days = attendanceDaysIn(organizationId, trx)
       if (punches.length === 0) {
         await days.deleteDay(employeeId, day)
         return null
       }
-      const today = localDay(options.at ?? DateTime.now(), organization.timezone)
-      const aggregate = aggregateDay(punches, { closed: options.closed === true || day < today })
+      const now = options.at ?? DateTime.now()
+      const endOfToday = dayBounds(localDay(now, timezone), timezone).end
+      const closed = now >= end || (options.closed === true && end <= endOfToday)
+      // A public holiday is not a scheduled day: nobody is late on it.
+      const holidays = await holidaysIn(organizationId, trx).datesWithin(day, day)
+      const holiday = holidays.has(day)
+      const aggregate = aggregateDay(punches, {
+        closed,
+        scheduledStart: holiday ? null : scheduledStart(day, timezone, pattern),
+        lateToleranceMinutes: timeclockSettings(organization.settings).lateToleranceMinutes,
+      })
       await days.upsert(employeeId, day, aggregate)
       return aggregate
     })
@@ -89,7 +112,10 @@ export class AttendanceService {
    * without one (`sync`), it is recomputed at once. Never throws.
    */
   async punchChanged(change: PunchChange) {
-    const days = [...new Set(change.instants.map((at) => localDay(at, change.timezone)))]
+    const pattern = await this.patternOf(change.organizationId, change.employeeId)
+    const days = [
+      ...new Set(change.instants.map((at) => attendanceDayOf(at, change.timezone, pattern))),
+    ]
     for (const day of days) {
       try {
         if (queueService.driver === 'sync') {
@@ -111,6 +137,22 @@ export class AttendanceService {
         // The dirty set or the 15-minute consolidation catches up.
         logger.warn({ err: error, employeeId: change.employeeId, day }, 'attendance.mark_failed')
       }
+    }
+  }
+
+  /** Schedule of an employee for day attribution; none when it cannot be read. */
+  private async patternOf(
+    organizationId: string,
+    employeeId: string
+  ): Promise<WeeklyPattern | null> {
+    try {
+      const schedule = await withTenant(organizationId, (trx) =>
+        workSchedulesIn(organizationId, trx).resolve(employeeId)
+      )
+      return schedule?.weeklyPattern ?? null
+    } catch (error) {
+      logger.warn({ err: error, employeeId }, 'attendance.schedule_unavailable')
+      return null
     }
   }
 

@@ -40,6 +40,7 @@ export const updateOrganizationSettingsValidator = vine.create({
       allowManualPunch: vine.boolean().optional(),
       maxAccuracyMeters: vine.number().withoutDecimals().min(1).max(10_000).optional(),
       duplicateWindowSeconds: vine.number().withoutDecimals().min(0).max(3600).optional(),
+      lateToleranceMinutes: vine.number().withoutDecimals().min(0).max(120).optional(),
     })
     .optional(),
   performance: vine

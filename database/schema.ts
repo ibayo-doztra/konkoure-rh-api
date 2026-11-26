@@ -37,10 +37,10 @@ export class AchievementSchema extends BaseModel {
 }
 
 export class AttendanceDaySchema extends BaseModel {
-  static $columns = ['anomaly', 'createdAt', 'day', 'employeeId', 'firstIn', 'id', 'isComplete', 'lastOut', 'organizationId', 'punchCount', 'updatedAt', 'workedMinutes'] as const
+  static $columns = ['anomaly', 'createdAt', 'day', 'employeeId', 'firstIn', 'id', 'isComplete', 'lastOut', 'lateMinutes', 'organizationId', 'punchCount', 'updatedAt', 'workedMinutes'] as const
   $columns = AttendanceDaySchema.$columns
   @column()
-  declare anomaly: 'missing_out' | 'out_of_zone' | 'duplicate' | null
+  declare anomaly: 'missing_out' | 'out_of_zone' | 'duplicate' | 'late' | null
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
   @column.date()
@@ -55,6 +55,8 @@ export class AttendanceDaySchema extends BaseModel {
   declare isComplete: boolean
   @column.dateTime()
   declare lastOut: DateTime | null
+  @column()
+  declare lateMinutes: number | null
   @column()
   declare organizationId: string
   @column()
@@ -1698,6 +1700,29 @@ export class WebhookReceiptSchema extends BaseModel {
   declare provider: string
   @column()
   declare signatureValid: boolean
+}
+
+export class WorkScheduleSchema extends BaseModel {
+  static $columns = ['createdAt', 'createdBy', 'employeeId', 'id', 'isDefault', 'name', 'organizationId', 'updatedAt', 'weeklyPattern'] as const
+  $columns = WorkScheduleSchema.$columns
+  @column.dateTime({ autoCreate: true })
+  declare createdAt: DateTime
+  @column()
+  declare createdBy: string | null
+  @column()
+  declare employeeId: string | null
+  @column({ isPrimary: true })
+  declare id: string
+  @column()
+  declare isDefault: boolean
+  @column()
+  declare name: string
+  @column()
+  declare organizationId: string
+  @column.dateTime({ autoCreate: true, autoUpdate: true })
+  declare updatedAt: DateTime
+  @column()
+  declare weeklyPattern: Partial<Record<'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat' | 'sun', Array<{ start: string; end: string }>>>
 }
 
 export class WorkZoneSchema extends BaseModel {
