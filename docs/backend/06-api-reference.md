@@ -318,11 +318,23 @@ Renvoie, filtré selon le rôle (un `employee` ne voit que ses propres chiffres)
   "recruitment": { "openJobs": 3, "newCandidates": 27, "hired": 2 },
   "performance": { "reviewsInProgress": 18, "reviewsSigned": 42,
                    "avgGoalProgress": 61 },
+  "payroll": { "total": 182500000, "currency": "GNF" },
+  "previous": {
+    "period": { "from":"2026-08-01","to":"2026-08-31" },
+    "headcount": { "total": 124, "active": null, "onLeave": null, "newHires": 3, "exits": 0 },
+    "attendance": { "punctualityRate": null, "avgWorkedHours": 7.4,
+                    "absencesToday": null, "outOfZonePunches": 5 },
+    "leaves": { "pending": null, "approvedThisPeriod": 11, "daysTaken": 40 },
+    "recruitment": { "openJobs": null, "newCandidates": 19, "hired": 1 },
+    "performance": { "reviewsInProgress": null, "reviewsSigned": 30, "avgGoalProgress": null },
+    "payroll": { "total": 179000000, "currency": "GNF" }
+  },
   "series": { "headcountByMonth": [], "punchesByDay": [], "leavesByType": [] }
 }}
 ```
 Sources : `attendance_days`, `leave_balances`, agrégats précalculés. Cache Redis
-5 min, clé `dash:<orgId>:<period>:<roleScope>`.
+5 min, clé `dash:v2:<orgId>:<period>:<roleScope>[:rec][:pay]` (suffixes selon que le
+rôle voit le recrutement ou la masse salariale).
 
 Décisions du 2026-11-20 :
 - **Période** : semaine (lundi–dimanche), mois ou trimestre calendaire **en cours**, dans
@@ -339,9 +351,27 @@ Décisions du 2026-11-20 :
   approuvés commençant dans la période. Séries : `headcountByMonth` sur 12 mois
   `[{ month: 'YYYY-MM', total }]`, `punchesByDay` `[{ day, count }]` (jours sans pointage
   omis), `leavesByType` `[{ type, days }]`.
-- **Modules** : `recruitment` vaut `null` tant que son module n'est pas livré ; un bloc (ou une série) dont le module n'est pas dans les droits de
+- **Modules** : un bloc (ou une série) dont le module n'est pas dans les droits de
   l'organisation vaut `null` (`hr` : effectifs, `timeclock` : présence, `leaves` : congés).
   La route n'a donc pas de middleware d'entitlement.
+- **Recrutement, masse salariale et période précédente** (2026-11-26) :
+  - `recruitment` (module `recruitment`) : toute l'organisation, pour `owner`, `hr_admin`
+    et `recruiter`, `null` pour les autres rôles. `openJobs` = offres `published` ;
+    `newCandidates` = candidatures reçues dans la période ; `hired` = candidats passés à
+    `hired` dans la période (événement `stage_changed`).
+  - `payroll` (module `hr`, donnée sensible) : `owner` et `hr_admin` seulement, `null`
+    pour tous les autres rôles, manager compris. `total` = somme des `contracts.salary`
+    des contrats `active` en vigueur aujourd'hui (début passé, fin absente ou à venir),
+    un par employé non supprimé (le plus récent), dans la devise de l'organisation
+    (`currency`) ; les contrats dans une autre devise sont ignorés, jamais additionnés.
+  - `previous` : les mêmes blocs pour la période équivalente précédente (semaine, mois
+    ou trimestre d'avant), sans `series`, avec les mêmes règles de `null` (module, rôle).
+    Les indicateurs d'état à l'instant présent ne sont pas historisés et valent `null` :
+    `headcount.active`, `onLeave`, `attendance.absencesToday`, `punctualityRate`,
+    `leaves.pending`, `recruitment.openJobs`, `performance.reviewsInProgress` et
+    `avgGoalProgress`. `headcount.total` = effectif présent le dernier jour de la période
+    (embauché avant, sans départ antérieur). `payroll` = contrats en vigueur ce jour-là,
+    quel que soit leur statut actuel, sauf `draft`. Le client calcule les écarts.
 - **Performance** (2026-11-23) : `reviewsInProgress` = évaluations du périmètre non
   signées ; `reviewsSigned` = signées dans la période ; `avgGoalProgress` = moyenne
   arrondie de la progression des objectifs non supprimés et non annulés (`null` sans
