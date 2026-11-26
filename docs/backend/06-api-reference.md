@@ -654,6 +654,7 @@ renvoient `{ data: [{ skillId, name, category, level, assessedAt }] }`.
 | POST | `/org/employees/:id/badge` ⚡ | O H S | assignation |
 | DELETE | `/org/employees/:id/badge` | O H S | révocation |
 | GET | `/org/timeclock/badge-events` | O H | journal des badges |
+| GET | `/org/timeclock/device-tokens` | O H | liste des tokens kiosque (sans le token) |
 | POST | `/org/timeclock/device-tokens` | O H | token kiosque |
 | GET/DELETE | `/org/timeclock/device-tokens/:id` | O H |
 
