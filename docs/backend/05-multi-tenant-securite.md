@@ -239,7 +239,7 @@ Les appels sortants sont signés : en-têtes `X-Konkoure-Signature`
 | `notifications` | 180 jours |
 | Candidatures non retenues | 24 mois après clôture de l'offre, puis anonymisation |
 | Documents candidats | supprimés du stockage à l'anonymisation |
-| Comptes supprimés | anonymisation immédiate, journaux conservés sans PII |
+| Comptes supprimés | anonymisation immédiate ; journaux d'audit conservés avec l'e-mail du compte, trace légale (décision du 2026-11-26) |
 | Organisations supprimées | 30 jours restaurables, puis purge ; paiements, factures, abonnements et audit conservés (06 §3) |
 
 Droits : `GET /me/export` produit une archive JSON des données personnelles ;

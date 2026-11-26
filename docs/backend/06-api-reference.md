@@ -208,7 +208,8 @@ mot de passe vidés, `is_active = false`, `deleted_at` posé), toutes les sessio
 tous les rôles retirés, jetons de réinitialisation supprimés, fiche admin plateforme
 désactivée ; dans chaque organisation, la fiche employé est **conservée** mais détachée du
 compte (`user_id = null`) et les notifications de l'utilisateur sont supprimées. Audit
-`user.deleted` sans e-mail ni organisation. L'ancienne adresse redevient libre pour une
+`user.deleted` sans organisation, avec l'e-mail du compte : le journal d'audit
+conserve l'e-mail des comptes supprimés comme trace légale (décision du 2026-11-26). L'ancienne adresse redevient libre pour une
 nouvelle inscription.
 
 ### `GET /me/sessions`

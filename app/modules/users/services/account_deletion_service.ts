@@ -15,7 +15,8 @@ import refreshTokens from '#modules/auth/repositories/refresh_token_repository'
  * cleared, deactivated), every session ends, every role is removed, and the
  * employee records stay with their organizations, unlinked from the account.
  * Refused while the user is the only owner of an organization or the last
- * active root. Audit logs keep the technical id only.
+ * active root. Audit logs keep the e-mail of the deleted account as a legal
+ * trace (decision of 2026-11-26), the deletion entry included.
  */
 export class AccountDeletionService {
   async delete(user: User, password: string, audit: AuditContext) {
@@ -60,7 +61,7 @@ export class AccountDeletionService {
       await users.save(locked, trx)
       await auditService.record(
         trx,
-        { ...audit, actorUserId: user.id, actorEmail: null, organizationId: null },
+        { ...audit, actorUserId: user.id, actorEmail: user.email, organizationId: null },
         {
           action: 'user.deleted',
           targetType: 'user',
