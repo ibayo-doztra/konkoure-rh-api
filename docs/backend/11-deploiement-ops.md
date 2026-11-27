@@ -183,7 +183,7 @@ les files.
 
 | Environnement | Base | Données | Accès |
 |---|---|---|---|
-| `development` | locale Docker | seeders de démo | développeurs |
+| `development` | locale Docker | données saisies ou de test (pas de seeders, 03 §6) | développeurs |
 | `staging` | isolée | copie **anonymisée** de la production | équipe |
 | `production` | dédiée | réelles | déploiement automatisé uniquement |
 

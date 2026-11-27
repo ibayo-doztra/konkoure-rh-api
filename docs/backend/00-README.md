@@ -30,7 +30,7 @@ des rafales. L'architecture doit être **stateless et horizontalement scalable**
 |---|---------|---------|
 | 01 | [`01-architecture.md`](./01-architecture.md) | Structure du projet, couches, conventions HTTP |
 | 02 | [`02-schema-db.md`](./02-schema-db.md) | Schéma PostgreSQL repensé, table par table |
-| 03 | [`03-migrations-models.md`](./03-migrations-models.md) | Migrations Lucid, modèles, seeders, factories |
+| 03 | [`03-migrations-models.md`](./03-migrations-models.md) | Migrations Lucid, modèles, données de référence, factories |
 | 04 | [`04-auth-rbac.md`](./04-auth-rbac.md) | Auth native AdonisJS, tokens, matrice de rôles |
 | 05 | [`05-multi-tenant-securite.md`](./05-multi-tenant-securite.md) | Isolation tenant, règles de sécurité |
 | 06 | [`06-api-reference.md`](./06-api-reference.md) | Contrat d'API endpoint par endpoint |

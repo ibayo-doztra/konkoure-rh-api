@@ -176,8 +176,8 @@ Exemple, module « notes de frais » :
 3. Modèle, repository scopé, service, validators, policy.
 4. Controller et routes sous `/api/v1/org/expenses`, middlewares
    `auth`, `tenant`, `entitlement('expenses')`, `throttle('org')`.
-5. Ajouter `expenses` aux `modules` des plans concernés (seeder + migration de
-   données pour les plans existants).
+5. Ajouter `expenses` aux `modules` des plans concernés (migration de données
+   sur `plans`, 03 §6).
 6. Événements et notifications (soumission, validation, refus).
 7. Traductions fr/en, y compris les messages d'erreur.
 8. Tests : unitaires (calculs), fonctionnels (chaque endpoint × chaque rôle),
