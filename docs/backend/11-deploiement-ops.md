@@ -49,7 +49,7 @@ définie avec `NODE_ENV=production`. Les en-têtes `Retry-After`, `X-RateLimit-L
 
 ### Sécurité
 `CORS_ORIGINS` (liste séparée par des virgules), `NFC_UID_PEPPER` (≥ 32),
-`ROOT_ADMIN_EMAIL`, `PUBLIC_CAPTCHA_ENABLED` (bool),
+`PUBLIC_CAPTCHA_ENABLED` (bool),
 `CAPTCHA_SECRET` (si activé), `FILE_SCAN_ENABLED` (bool).
 
 ### Stockage
