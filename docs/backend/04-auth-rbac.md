@@ -103,9 +103,26 @@ sont l'**union** des rôles.
 | `support` | Lecture du back-office, consultation des journaux, changement de statut des demandes de démo |
 | `root` | Tout `support` + modification des plans, des abonnements, des rôles, des réglages plateforme, actions destructrices |
 
-Les admins plateforme sont dans `platform_admins`. **Aucun repli par variable
-d'environnement en production** ; `ROOT_ADMIN_EMAIL` ne sert qu'à créer le
-premier enregistrement au seed.
+Les admins plateforme sont dans `platform_admins`. **Aucun repli ni amorçage
+par variable d'environnement** (décision du 2026-11-27 : une variable
+permanente redonnerait `root` à un admin révoqué à chaque déploiement et le
+donnerait à quiconque inscrit l'adresse en premier).
+
+Le **premier `root`** est créé par `node ace platform:grant <email> root`,
+lancé depuis un shell du conteneur. En production, la commande :
+
+- n'accepte que le niveau `root`, et seulement s'il n'existe **aucun `root`
+  actif** (verrou consultatif contre deux exécutions simultanées) ;
+- exige un compte existant, actif, non supprimé et dont l'e-mail est
+  **vérifié** (`email_verified_at`) ;
+- demande une confirmation (`--force` la saute) ;
+- refuse `--revoke` ;
+- journalise `platform_admin.granted` (`actorRole: system`,
+  `after: { level: 'root', bootstrap: true }`).
+
+Tous les admins suivants passent par `/platform/admins` (06), qui protège le
+dernier `root`. Hors production, la commande accepte aussi `support` et
+`--revoke` (tests de bout en bout, support local).
 
 ## 5. Matrice d'autorisation
 

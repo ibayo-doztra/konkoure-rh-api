@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+import { DateTime } from 'luxon'
 import testUtils from '@adonisjs/core/services/test_utils'
 import AuditLog from '#models/audit_log'
 import PlatformAdmin from '#models/platform_admin'
@@ -55,5 +56,66 @@ test.group('platform:grant (decision of 2026-11-25)', (group) => {
       /No account/
     )
     await assert.rejects(() => platformGrantService.revoke('nobody@konkoure.test'), /No account/)
+  })
+})
+
+test.group('platform:grant in production (decision of 2026-11-27)', (group) => {
+  group.each.setup(() => testUtils.db().withGlobalTransaction())
+
+  const production = { production: true }
+  const verified = () => ({ emailVerifiedAt: DateTime.now(), isActive: true })
+
+  test('bootstraps the first root, journaled as such', async ({ assert }) => {
+    await PlatformAdmin.query().where('level', 'root').update({ isActive: false })
+    const user = await createUser({ email: 'founder@konkoure.test', ...verified() })
+
+    const created = await platformGrantService.grant('founder@konkoure.test', 'root', production)
+    assert.deepInclude(created.$attributes, { userId: user.id, level: 'root', isActive: true })
+
+    const entry = await AuditLog.query().where('target_id', user.id).firstOrFail()
+    assert.equal(entry.action, 'platform_admin.granted')
+    assert.deepEqual(entry.afterData, { level: 'root', bootstrap: true })
+  })
+
+  test('refuses once an active root exists', async ({ assert }) => {
+    await PlatformAdmin.query().where('level', 'root').update({ isActive: false })
+    const root = await createUser(verified())
+    await PlatformAdmin.create({ userId: root.id, level: 'root', isActive: true })
+    const other = await createUser({ email: 'second@konkoure.test', ...verified() })
+
+    await assert.rejects(
+      () => platformGrantService.grant('second@konkoure.test', 'root', production),
+      /already exists/
+    )
+    assert.isNull(await PlatformAdmin.findBy('user_id', other.id))
+  })
+
+  test('refuses support, revocation, unverified or inactive accounts', async ({ assert }) => {
+    await PlatformAdmin.query().where('level', 'root').update({ isActive: false })
+    await createUser({ email: 'pending@konkoure.test', isActive: true })
+    await createUser({
+      email: 'banned@konkoure.test',
+      emailVerifiedAt: DateTime.now(),
+      isActive: false,
+    })
+
+    await assert.rejects(
+      () => platformGrantService.grant('pending@konkoure.test', 'support', production),
+      /only creates the first root/
+    )
+    await assert.rejects(
+      () => platformGrantService.revoke('pending@konkoure.test', production),
+      /disabled in production/
+    )
+    await assert.rejects(
+      () => platformGrantService.grant('pending@konkoure.test', 'root', production),
+      /not verified/
+    )
+    await assert.rejects(
+      () => platformGrantService.grant('banned@konkoure.test', 'root', production),
+      /inactive/
+    )
+    const roots = await PlatformAdmin.query().where('level', 'root').where('is_active', true)
+    assert.lengthOf(roots, 0)
   })
 })

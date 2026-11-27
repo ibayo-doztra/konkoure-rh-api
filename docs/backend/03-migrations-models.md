@@ -317,7 +317,9 @@ annoté et couvert par le middleware `platform_admin`.
 | `02_platform_settings_seeder` | clés par défaut (`support_email`, `trial_days`, `signup_open`, `maintenance_mode`) | tous |
 | `03_guinea_holidays_seeder` | jours fériés légaux guinéens (référence à cloner par organisation) | tous |
 | `04_demo_org_seeder` | organisation de démonstration, 25 employés, 3 départements, zones, congés, OKR | dev/test uniquement |
-| `05_root_admin_seeder` | premier `platform_admin` `root` à partir de `ROOT_ADMIN_EMAIL` | tous |
+
+Pas de seeder d'admin plateforme : le premier `root` est créé par
+`node ace platform:grant` (04 §4).
 
 Contenu de `01_plans_seeder` (modules par plan, aligné sur 07 §6) :
 
