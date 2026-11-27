@@ -1,4 +1,4 @@
-# 03 — Migrations Lucid, modèles, seeders, factories
+# 03 — Migrations Lucid, modèles, données de référence, factories
 
 ## 1. Ordre des migrations
 
@@ -74,8 +74,9 @@ Les fichiers sont horodatés dans cet ordre strict (dépendances de clés
 
 **Règles** : une migration ne modifie jamais une migration déjà déployée ;
 toute correction passe par une nouvelle migration ; chaque migration implémente
-`up()` **et** `down()` ; aucune donnée métier dans une migration (cela relève des
-seeders), sauf données de référence immuables (jours fériés légaux, plans).
+`up()` **et** `down()` ; aucune donnée métier dans une migration, sauf les données
+de référence dont la plateforme a besoin dès son installation (offres, réglages
+plateforme connus, §6).
 
 ## 2. Fonctions et triggers
 
@@ -309,19 +310,24 @@ Un repository **ne peut pas** être instancié sans `organizationId`. Les rares
 requêtes hors tenant (plateforme) passent par un `PlatformRepository` distinct,
 annoté et couvert par le middleware `platform_admin`.
 
-## 6. Seeders
+## 6. Données de référence (pas de seeders)
 
-| Seeder | Contenu | Environnements |
-|---|---|---|
-| `01_plans_seeder` | `free` (essai 30 j), `starter`, `pro`, `enterprise` avec prix GNF, `max_employees`, modules | tous |
-| `02_platform_settings_seeder` | clés par défaut (`support_email`, `trial_days`, `signup_open`, `maintenance_mode`) | tous |
-| `03_guinea_holidays_seeder` | jours fériés légaux guinéens (référence à cloner par organisation) | tous |
-| `04_demo_org_seeder` | organisation de démonstration, 25 employés, 3 départements, zones, congés, OKR | dev/test uniquement |
+Décision du 2026-11-27 : **aucun seeder**. Les données dont la plateforme a
+besoin sont créées ainsi, dans tous les environnements :
 
-Pas de seeder d'admin plateforme : le premier `root` est créé par
-`node ace platform:grant` (04 §4).
+| Données | Source |
+|---|---|
+| Offres `free`, `starter`, `pro`, `enterprise` | insérées par la migration `0090_plans` ; modifiées ensuite par le back-office (`/platform/plans`) |
+| Réglages plateforme | insérés par la migration qui introduit la clé (`0111` : `modules_open_for_testing`) ; seules les clés lues par le code existent, `PUT /platform/settings` refuse les autres (06) |
+| Jours fériés guinéens | constante `GUINEA_FIXED_HOLIDAYS` (07 §9), copiée dans l'organisation par `POST /org/holidays/import` |
+| Premier admin `root` | `node ace platform:grant <email> root` (04 §4) |
 
-Contenu de `01_plans_seeder` (modules par plan, aligné sur 07 §6) :
+Pas d'organisation de démonstration : les tests utilisent `tests/helpers`, les
+e2e du frontend `node ace subscription:grant` et `node ace platform:grant`.
+Une nouvelle clé de `platform_settings` s'ajoute par une migration, avec le
+code qui la lit.
+
+Contenu initial des offres (`0090_plans`, modules par plan, aligné sur 07 §6) :
 
 ```ts
 const PLANS = [

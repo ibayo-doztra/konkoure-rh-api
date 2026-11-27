@@ -63,8 +63,7 @@ konkoure-api/
 │  └─ mails/
 ├─ config/                 # app, database, auth, redis, mail, drive, limiter, cors, i18n
 ├─ database/
-│  ├─ migrations/
-│  ├─ seeders/
+│  ├─ migrations/          # données de référence comprises (03 §6), pas de seeders
 │  └─ factories/
 ├─ start/
 │  ├─ routes/              # un fichier de routes par module, importé par index
